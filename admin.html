@@ -181,7 +181,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <div class="section-title">Asistencia de hoy</div>
         <div class="section-sub" id="fecha-sub"></div>
       </div>
-      <div id="lista-hoy"><div class="empty-state">Cargando...</div></div>
+      <div id="lista-hoy"><div class="empty-state">Sin registros hoy todavia</div></div>
     </div>
   </div>
 
@@ -193,7 +193,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     </div>
     <div class="section">
       <div class="section-header"><div class="section-title">Detalle por alumno</div></div>
-      <div id="lista-mes"><div class="empty-state">Cargando...</div></div>
+      <div id="lista-mes"><div class="empty-state">Sin datos este mes</div></div>
     </div>
   </div>
 
@@ -204,7 +204,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <div class="section-title">Sin venir hace más de 7 días</div>
         <div class="section-sub">Ordenados por ausencia</div>
       </div>
-      <div id="lista-ausentes"><div class="empty-state">Cargando...</div></div>
+      <div id="lista-ausentes"><div class="empty-state">Sin ausentes registrados</div></div>
     </div>
   </div>
 
@@ -217,13 +217,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
           <div class="section-sub">Llevan 6+ meses desde la última graduación</div>
         </div>
       </div>
-      <div id="lista-candidatos" style="padding:1rem 1.25rem"><div class="empty-state">Cargando...</div></div>
+      <div id="lista-candidatos" style="padding:1rem 1.25rem"><div class="empty-state">Ningun alumno cumple los 6 meses todavia</div></div>
     </div>
     <div class="section">
       <div class="section-header">
         <div class="section-title">Todos los alumnos</div>
       </div>
-      <div id="lista-grad-alumnos"><div class="empty-state">Cargando...</div></div>
+      <div id="lista-grad-alumnos"><div class="empty-state">Sin alumnos cargados</div></div>
     </div>
   </div>
 
@@ -234,7 +234,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <div class="section-title">Alumnos registrados</div>
         <button class="btn-red" onclick="showModal('alumno')">+ Agregar</button>
       </div>
-      <div id="lista-alumnos-panel"><div class="empty-state">Cargando...</div></div>
+      <div id="lista-alumnos-panel"><div class="empty-state">Sin alumnos cargados</div></div>
     </div>
   </div>
 
@@ -265,18 +265,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   <div class="panel" id="panel-config">
     <div class="section">
       <div class="section-header"><div class="section-title">Tolerancia de tardanza por turno</div></div>
-      <div id="config-turnos-list"><div class="empty-state">Cargando...</div></div>
+      <div id="config-turnos-list"><div class="empty-state">Sin turnos configurados</div></div>
     </div>
     <div class="section" style="margin-top:1.25rem">
       <div class="section-header"><div class="section-title">Stripes máximos por cinturón</div></div>
-      <div id="config-cinturones-list"><div class="empty-state">Cargando...</div></div>
+      <div id="config-cinturones-list"><div class="empty-state">Sin cinturones configurados</div></div>
     </div>
     <div class="section" style="margin-top:1.25rem">
       <div class="section-header">
         <div class="section-title">Cronograma de clases</div>
         <button class="btn-red" onclick="showModal('clase')">+ Agregar clase</button>
       </div>
-      <div id="config-clases-list"><div class="empty-state">Cargando...</div></div>
+      <div id="config-clases-list"><div class="empty-state">Sin clases cargadas</div></div>
     </div>
   </div>
 
@@ -689,19 +689,26 @@ const turnos = [
 ];
 function renderQR() {
   const BASE = 'https://kaizo-asistencia.vercel.app/index.html';
-  document.getElementById('qr-url-label').textContent = BASE;
+  const urlLabel = document.getElementById('qr-url-label');
+  if (urlLabel) urlLabel.textContent = BASE;
   const wrap = document.getElementById('qr-unico');
+  if (!wrap) return;
   wrap.innerHTML = '';
-  if (typeof QRCode !== 'undefined') {
-    new QRCode(wrap, {
-      text: BASE,
-      width: 220,
-      height: 220,
-      colorDark: '#111111',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H
-    });
+  function doQR() {
+    if (typeof QRCode !== 'undefined') {
+      new QRCode(wrap, {
+        text: BASE,
+        width: 220,
+        height: 220,
+        colorDark: '#111111',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    } else {
+      setTimeout(doQR, 200);
+    }
   }
+  doQR();
 }
 
 function copiarLinkUnico() {
