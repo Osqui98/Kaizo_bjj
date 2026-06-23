@@ -709,7 +709,14 @@ function filtrarAusentes() {
 // ── GRADUACIONES ─────────────────────────────────────────────
 async function renderGraduaciones() {
   getMain().innerHTML =
-    '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div><div class="section-title">Candidatos a stripe</div><div class="section-sub">Llevan 6+ meses desde la ultima graduacion</div></div></div><div id="lista-cand" style="padding:1rem 1.25rem"><div class="empty-state">Cargando...</div></div></div>'+
+    '<div class="section" style="margin-bottom:1.25rem">'+
+    '<div class="section-header"><div><div class="section-title">Candidatos a stripe</div><div class="section-sub" id="cand-sub">Cargando...</div></div></div>'+
+    '<div style="padding:8px 1.25rem;border-bottom:1px solid var(--g2)">'+
+    '<input type="text" id="srch-cand" placeholder="Buscar candidato..." style="width:100%;padding:6px 10px;border:1px solid var(--g2);border-radius:var(--rs);font-size:13px;outline:none;background:var(--g1)" oninput="filtrarCandidatos()" />'+
+    '</div>'+
+    '<div id="lista-cand"><div class="empty-state">Cargando...</div></div>'+
+    '<div id="pag-cand"></div>'+
+    '</div>'+
     '<div class="section"><div class="section-header section-collapsible" data-sec="buscar-grad"><div class="section-title">Graduar alumno</div><span id="arr-buscar-grad" style="color:var(--g5)">&#9660;</span></div>'+
     '<div id="buscar-grad" style="display:none">'+
     '<div style="padding:10px 1.25rem;border-bottom:1px solid var(--g2)">'+
@@ -742,30 +749,59 @@ async function renderGraduaciones() {
     return Object.assign({},a,{dias:dias});
   });
 
-  var candHTML = '';
-  candidatos.forEach(function(a){
-    var nom = (a.nombre||'')+' '+(a.apellido||'');
-    candHTML += '<div class="grad-alert listo" data-gid="'+a.id+'" data-nom="'+nom.replace(/"/g,'')+'">'+
-      '<div style="font-size:18px">&#11088;</div>'+
-      '<div><div class="grad-alert-name">'+nom+'</div>'+
-      '<div class="grad-alert-sub">'+a.cinturon+' - '+Math.floor(a.dias/30)+' meses</div></div>'+
-      '<div class="grad-alert-action" style="margin-left:auto">Registrar &#8250;</div></div>';
-  });
-  revisar.forEach(function(a){
-    var nom = (a.nombre||'')+' '+(a.apellido||'');
-    candHTML += '<div class="grad-alert revisar" data-gid="'+a.id+'" data-nom="'+nom.replace(/"/g,'')+'">'+
-      '<div style="font-size:18px">&#9888;</div>'+
-      '<div><div class="grad-alert-name">'+nom+'</div>'+
-      '<div class="grad-alert-sub">Baja asistencia reciente</div></div>'+
-      '<div class="grad-alert-action" style="margin-left:auto">Revisar &#8250;</div></div>';
-  });
+  candAllData = candidatos.map(function(a){ return Object.assign({},a,{_tipo:'listo'}); })
+    .concat(revisar.map(function(a){ return Object.assign({},a,{_tipo:'revisar'}); }));
+  candFiltrados = candAllData.slice();
+  candPagina = 0;
+  var sub = document.getElementById('cand-sub');
+  if(sub) sub.textContent = candAllData.length + ' candidato' + (candAllData.length!==1?'s':'') + ' · 6+ meses sin graduar';
+  filtrarCandidatos();
+}
 
-  var elCand = document.getElementById('lista-cand');
-  if(elCand) {
-    elCand.innerHTML = candHTML || '<div class="empty-state">Ningun alumno cumple los 6 meses todavia</div>';
-    elCand.querySelectorAll('.grad-alert').forEach(function(el) {
-      el.onclick = function() { abrirGrad(parseInt(el.dataset.gid), el.dataset.nom||''); };
-    });
+function filtrarCandidatos() {
+  var srch = ((document.getElementById('srch-cand')||{}).value||'').toLowerCase().trim();
+  candFiltrados = srch
+    ? candAllData.filter(function(a){ return ((a.nombre||'')+' '+(a.apellido||'')).toLowerCase().indexOf(srch)!==-1; })
+    : candAllData.slice();
+  candPagina = 0;
+  renderCandidatosPaginado();
+}
+
+function renderCandidatosPaginado() {
+  var el = document.getElementById('lista-cand');
+  var pag = document.getElementById('pag-cand');
+  if(!el) return;
+  var total = candFiltrados.length;
+  var totalPags = Math.ceil(total/CAND_PP)||1;
+  if(candPagina>=totalPags) candPagina=totalPags-1;
+  var desde = candPagina*CAND_PP;
+  var pagina = candFiltrados.slice(desde, desde+CAND_PP);
+  el.innerHTML = pagina.map(function(a){
+    var nom = (a.nombre||'')+' '+(a.apellido||'');
+    var meses = Math.floor(a.dias/30);
+    var esTipo = a._tipo==='revisar';
+    var tipoBadge = esTipo
+      ? '<span class="dias-badge alerta" style="margin-left:8px;white-space:nowrap">&#9888; Revisar</span>'
+      : '<span class="dias-badge" style="margin-left:8px;white-space:nowrap">&#11088; Listo</span>';
+    return '<div class="row-item" style="cursor:pointer" onclick="abrirGrad('+a.id+',\''+nom.replace(/'/g,'')+'\')">'+
+      avHTML(a)+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="row-name">'+nom+'</div>'+
+        '<div class="row-sub">'+(a.turno||'')+' &nbsp;·&nbsp; '+meses+' meses sin graduar</div>'+
+      '</div>'+
+      beltHTML(a.cinturon, a.stripes)+
+      tipoBadge+
+      '<div style="margin-left:6px;color:#c9ccd1;font-size:22px;font-weight:300;line-height:1">&rsaquo;</div>'+
+    '</div>';
+  }).join('') || '<div class="empty-state">'+(candAllData.length?'Sin resultados':'Ningun alumno cumple los 6 meses todavia')+'</div>';
+  if(pag) {
+    if(totalPags<=1){ pag.innerHTML=''; return; }
+    pag.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 1.25rem;border-top:1px solid var(--g2)">'+
+      '<button class="btn-mes-nav" onclick="if(candPagina>0){candPagina--;renderCandidatosPaginado()}" '+(candPagina===0?'disabled':'')+'>&#8249;</button>'+
+      '<span style="font-size:13px;color:var(--g5)">'+(candPagina+1)+' de '+totalPags+' &nbsp;·&nbsp; '+total+' candidatos</span>'+
+      '<button class="btn-mes-nav" onclick="if(candPagina<'+(totalPags-1)+'){candPagina++;renderCandidatosPaginado()}" '+(candPagina===totalPags-1?'disabled':'')+'>&#8250;</button>'+
+      '</div>';
   }
 }
 
@@ -1002,6 +1038,7 @@ function copiarTel(tel) {
 // ── EDITAR ALUMNO (ficha completa) ───────────────────────────
 var alumnosAll = []; var alumnosFiltrados = []; var alumnoPagina = 0; var ALUMNOS_PP = 10;
 var gradAllData = []; var ausAllData = [];
+var candAllData = []; var candFiltrados = []; var candPagina = 0; var CAND_PP = 10;
 var feHistId = null;
 
 function feTabSwitch(tab) {
