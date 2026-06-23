@@ -354,7 +354,8 @@ function mkDNI(clases) {
     '<div class="emsg" id="em"></div>'+
     '<div class="dniw"><input type="number" id="di" class="dnii" placeholder="12345678" inputmode="numeric" /><button class="bbsc" id="bbs">Buscar</button></div>'+
     '<p class="dhnt">Si es tu primera vez te pediremos que completes tu ficha</p>'+
-    '<button class="btn-ficha" id="btn-ver-ficha">Ver mi ficha</button>';
+    '<div style="border-top:1px solid var(--g2);margin:1rem 0"></div>'+
+    '<button class="btn-ficha" id="btn-ver-ficha">Ver / editar mi ficha</button>';
 }
 
 function bindDNI() {
@@ -368,7 +369,16 @@ async function init() {
   if(CLASES.length === 0) await cargarClases();
   clasesActivas = findClasesActivas();
   var cp = document.getElementById('cp');
-  if(!clasesActivas.length) { cp.innerHTML = mkCron(); return; }
+  if(!clasesActivas.length) {
+    cp.innerHTML = mkCron()+
+      '<div style="padding:0 0 1.25rem">'+
+      '<div style="border-top:1px solid var(--g2);margin-bottom:1.25rem"></div>'+
+      '<button class="btn-ficha" id="btn-ver-ficha-cron">Ver / editar mi ficha</button>'+
+      '</div>';
+    var bfc=document.getElementById('btn-ver-ficha-cron');
+    if(bfc) bfc.onclick=function(){ mkFichaFlow(); };
+    return;
+  }
   cp.innerHTML = mkDNI(clasesActivas);
   bindDNI();
   if(clasesActivas.length === 1) {
