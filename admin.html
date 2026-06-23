@@ -146,6 +146,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .fe-chk:hover{border-color:#d8d8dc}
 .fe-chk input{width:18px;height:18px;accent-color:var(--red);cursor:pointer;flex-shrink:0}
 .fe-chk label{font-size:13px;font-weight:500;color:var(--black);cursor:pointer;margin:0}
+.fe-tabs{display:flex;border-bottom:1px solid var(--g2);margin:-1.2rem -1.3rem 1.2rem}
+.fe-tab{flex:1;padding:11px 4px;font-size:12px;font-weight:700;color:var(--g5);background:none;border:none;border-bottom:2.5px solid transparent;cursor:pointer;text-transform:uppercase;letter-spacing:.03em;transition:color .15s}
+.fe-tab.on{color:var(--red);border-bottom-color:var(--red)}
+.fe-tab-panel{display:none}
+.fe-tab-panel.on{display:block}
 .fe-foot{padding:.9rem 1.3rem;border-top:1px solid var(--g2);display:flex;gap:10px;background:#fff;flex-shrink:0}
 .fe-foot button{flex:1;padding:13px;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .12s,box-shadow .12s}
 .fe-cancel{background:var(--g1);color:var(--g7);border:1.5px solid var(--g2)}
@@ -309,82 +314,94 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <div class="fe-body">
       <input type="hidden" id="fe-id" />
 
-      <div class="fe-sec">
-        <div class="fe-sec-t">Datos personales</div>
-        <div class="fe-grid">
-          <div class="fe-f"><label>Nombre *</label><input id="fe-nombre" /></div>
-          <div class="fe-f"><label>Apellido *</label><input id="fe-apellido" /></div>
-          <div class="fe-f"><label>DNI *</label><input id="fe-dni" inputmode="numeric" /></div>
-          <div class="fe-f"><label>Fecha de nacimiento</label><input type="date" id="fe-fnac" /></div>
-          <div class="fe-f"><label>Sexo</label><select id="fe-sexo"><option value="">Seleccionar...</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="otro">Otro</option></select></div>
-          <div class="fe-f"><label>Fecha de inicio</label><input type="date" id="fe-finicio" /></div>
+      <!-- Tab bar -->
+      <div class="fe-tabs">
+        <button class="fe-tab on" id="fe-tb-datos" onclick="feTabSwitch('datos')">Datos</button>
+        <button class="fe-tab" id="fe-tb-bjj" onclick="feTabSwitch('bjj')">BJJ</button>
+        <button class="fe-tab" id="fe-tb-cont" onclick="feTabSwitch('cont')">Contactos</button>
+      </div>
+
+      <!-- Tab 1: Datos -->
+      <div id="fe-tp-datos" class="fe-tab-panel on">
+        <div class="fe-sec">
+          <div class="fe-sec-t">Datos personales</div>
+          <div class="fe-grid">
+            <div class="fe-f"><label>Nombre *</label><input id="fe-nombre" /></div>
+            <div class="fe-f"><label>Apellido *</label><input id="fe-apellido" /></div>
+            <div class="fe-f"><label>DNI *</label><input id="fe-dni" inputmode="numeric" /></div>
+            <div class="fe-f"><label>Fecha de nacimiento</label><input type="date" id="fe-fnac" /></div>
+            <div class="fe-f"><label>Sexo</label><select id="fe-sexo"><option value="">Seleccionar...</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="otro">Otro</option></select></div>
+            <div class="fe-f"><label>Fecha de inicio</label><input type="date" id="fe-finicio" /></div>
+          </div>
+        </div>
+        <div class="fe-sec">
+          <div class="fe-sec-t">Contacto</div>
+          <div class="fe-grid">
+            <div class="fe-f"><label>Teléfono</label><input id="fe-telefono" inputmode="tel" /></div>
+            <div class="fe-f"><label>Email</label><input id="fe-email" inputmode="email" /></div>
+            <div class="fe-f full"><label>Domicilio</label><input id="fe-domicilio" /></div>
+            <div class="fe-f full"><label>Instagram</label><input id="fe-instagram" placeholder="@usuario" /></div>
+          </div>
+        </div>
+        <div class="fe-sec">
+          <div class="fe-sec-t">Estado</div>
+          <div class="fe-grid">
+            <div class="fe-f"><label>Estado</label><select id="fe-estado"><option value="activo">Activo</option><option value="lesionado">Lesionado</option><option value="inactivo">Inactivo</option><option value="baja">Baja</option></select></div>
+            <div class="fe-f" style="display:flex;align-items:flex-end"><div class="fe-chk" style="width:100%" onclick="var c=document.getElementById('fe-activo');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-activo" /><label>Activo (aparece en listados)</label></div></div>
+            <div class="fe-f full"><label>Notas</label><textarea id="fe-notas" placeholder="Observaciones del profe..."></textarea></div>
+          </div>
         </div>
       </div>
 
-      <div class="fe-sec">
-        <div class="fe-sec-t">Contacto</div>
-        <div class="fe-grid">
-          <div class="fe-f"><label>Teléfono</label><input id="fe-telefono" inputmode="tel" /></div>
-          <div class="fe-f"><label>Email</label><input id="fe-email" inputmode="email" /></div>
-          <div class="fe-f full"><label>Domicilio</label><input id="fe-domicilio" /></div>
-          <div class="fe-f full"><label>Instagram</label><input id="fe-instagram" placeholder="@usuario" /></div>
+      <!-- Tab 2: BJJ -->
+      <div id="fe-tp-bjj" class="fe-tab-panel">
+        <div class="fe-sec">
+          <div class="fe-sec-t">Jiu-Jitsu</div>
+          <div class="fe-grid">
+            <div class="fe-f"><label>Cinturón</label><select id="fe-cinturon"><option value="blanco">Blanco</option><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marrón</option><option value="negro">Negro</option></select></div>
+            <div class="fe-f"><label>Stripes</label><input type="number" id="fe-stripes" min="0" max="6" /></div>
+            <div class="fe-f"><label>Última graduación</label><input type="date" id="fe-fgrad" /></div>
+            <div class="fe-f"><label>Turno</label><input id="fe-turno" /></div>
+          </div>
+          <div class="fe-hint">Para registrar una graduacion con historial, usa la pestana Graduaciones.</div>
+          <div class="fe-chk" onclick="var c=document.getElementById('fe-competidor');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-competidor" /><label>Es competidor</label></div>
+          <div class="fe-chk" onclick="var c=document.getElementById('fe-profe');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-profe" /><label>Es profe / instructor</label></div>
+        </div>
+        <div class="fe-sec">
+          <div class="fe-sec-t">Físico</div>
+          <div class="fe-grid">
+            <div class="fe-f"><label>Peso (kg)</label><input type="number" step="0.1" id="fe-peso" /></div>
+            <div class="fe-f"><label>Altura (cm)</label><input type="number" id="fe-altura" /></div>
+            <div class="fe-f"><label>Vencimiento apto físico</label><input type="date" id="fe-apto-venc" /></div>
+          </div>
+          <div class="fe-chk" onclick="var c=document.getElementById('fe-apto');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-apto" /><label>Apto físico presentado</label></div>
         </div>
       </div>
 
-      <div class="fe-sec">
-        <div class="fe-sec-t">Jiu-Jitsu</div>
-        <div class="fe-grid">
-          <div class="fe-f"><label>Cinturón</label><select id="fe-cinturon"><option value="blanco">Blanco</option><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marrón</option><option value="negro">Negro</option></select></div>
-          <div class="fe-f"><label>Stripes</label><input type="number" id="fe-stripes" min="0" max="6" /></div>
-          <div class="fe-f"><label>Última graduación</label><input type="date" id="fe-fgrad" /></div>
-          <div class="fe-f"><label>Turno</label><input id="fe-turno" /></div>
+      <!-- Tab 3: Contactos & Historial -->
+      <div id="fe-tp-cont" class="fe-tab-panel">
+        <div class="fe-sec">
+          <div class="fe-sec-t">Contacto de emergencia</div>
+          <div class="fe-grid">
+            <div class="fe-f"><label>Nombre</label><input id="fe-emerg-nombre" /></div>
+            <div class="fe-f"><label>Relación</label><input id="fe-emerg-relacion" /></div>
+            <div class="fe-f full"><label>Teléfono</label><input id="fe-emerg-telefono" inputmode="tel" /></div>
+          </div>
         </div>
-        <div class="fe-hint">Para registrar una graduacion con historial, usa la pestana Graduaciones.</div>
-        <div class="fe-chk" onclick="var c=document.getElementById('fe-competidor');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-competidor" /><label>Es competidor</label></div>
-        <div class="fe-chk" onclick="var c=document.getElementById('fe-profe');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-profe" /><label>Es profe / instructor</label></div>
-      </div>
-
-      <div class="fe-sec">
-        <div class="fe-sec-t">Físico</div>
-        <div class="fe-grid">
-          <div class="fe-f"><label>Peso (kg)</label><input type="number" step="0.1" id="fe-peso" /></div>
-          <div class="fe-f"><label>Altura (cm)</label><input type="number" id="fe-altura" /></div>
-          <div class="fe-f"><label>Vencimiento apto físico</label><input type="date" id="fe-apto-venc" /></div>
+        <div class="fe-sec">
+          <div class="fe-sec-t">Tutor (menores)</div>
+          <div class="fe-grid">
+            <div class="fe-f"><label>Nombre</label><input id="fe-tutor-nombre" /></div>
+            <div class="fe-f"><label>Relación</label><input id="fe-tutor-relacion" placeholder="Madre, padre..." /></div>
+            <div class="fe-f"><label>Teléfono</label><input id="fe-tutor-telefono" inputmode="tel" /></div>
+            <div class="fe-f"><label>Email</label><input id="fe-tutor-email" inputmode="email" /></div>
+          </div>
         </div>
-        <div class="fe-chk" onclick="var c=document.getElementById('fe-apto');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-apto" /><label>Apto físico presentado</label></div>
-      </div>
-
-      <div class="fe-sec">
-        <div class="fe-sec-t">Tutor (menores)</div>
-        <div class="fe-grid">
-          <div class="fe-f"><label>Nombre</label><input id="fe-tutor-nombre" /></div>
-          <div class="fe-f"><label>Relación</label><input id="fe-tutor-relacion" placeholder="Madre, padre..." /></div>
-          <div class="fe-f"><label>Teléfono</label><input id="fe-tutor-telefono" inputmode="tel" /></div>
-          <div class="fe-f"><label>Email</label><input id="fe-tutor-email" inputmode="email" /></div>
-        </div>
-      </div>
-
-      <div class="fe-sec">
-        <div class="fe-sec-t">Contacto de emergencia</div>
-        <div class="fe-grid">
-          <div class="fe-f"><label>Nombre</label><input id="fe-emerg-nombre" /></div>
-          <div class="fe-f"><label>Relación</label><input id="fe-emerg-relacion" /></div>
-          <div class="fe-f full"><label>Teléfono</label><input id="fe-emerg-telefono" inputmode="tel" /></div>
-        </div>
-      </div>
-
-      <div class="fe-sec">
-        <div class="fe-sec-t">Estado y notas</div>
-        <div class="fe-grid">
-          <div class="fe-f"><label>Estado</label><select id="fe-estado"><option value="activo">Activo</option><option value="lesionado">Lesionado</option><option value="inactivo">Inactivo</option><option value="baja">Baja</option></select></div>
-          <div class="fe-f" style="display:flex;align-items:flex-end"><div class="fe-chk" style="width:100%" onclick="var c=document.getElementById('fe-activo');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-activo" /><label>Activo (aparece en listados)</label></div></div>
-          <div class="fe-f full"><label>Notas</label><textarea id="fe-notas" placeholder="Observaciones del profe..."></textarea></div>
-        </div>
-      </div>
-      <div class="fe-sec" id="fe-sec-hist">
-        <div class="fe-sec-t" style="cursor:pointer;user-select:none" onclick="toggleHistorial()">Historial &nbsp;<span id="arr-hist" style="font-size:12px;color:var(--g5);font-family:sans-serif">&#9660;</span></div>
-        <div id="fe-hist-body" style="display:none">
-          <div id="fe-hist-content" style="padding:6px 0"><div style="font-size:13px;color:var(--g5)">Cargando...</div></div>
+        <div class="fe-sec" id="fe-sec-hist">
+          <div class="fe-sec-t" style="cursor:pointer;user-select:none" onclick="toggleHistorial()">Historial &nbsp;<span id="arr-hist" style="font-size:12px;color:var(--g5);font-family:sans-serif">&#9660;</span></div>
+          <div id="fe-hist-body" style="display:none">
+            <div id="fe-hist-content" style="padding:6px 0"><div style="font-size:13px;color:var(--g5)">Cargando...</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -987,6 +1004,13 @@ var alumnosAll = []; var alumnosFiltrados = []; var alumnoPagina = 0; var ALUMNO
 var gradAllData = []; var ausAllData = [];
 var feHistId = null;
 
+function feTabSwitch(tab) {
+  ['datos','bjj','cont'].forEach(function(t){
+    document.getElementById('fe-tp-'+t).classList.toggle('on', t===tab);
+    document.getElementById('fe-tb-'+t).classList.toggle('on', t===tab);
+  });
+}
+
 function toggleHistorial() {
   var body=document.getElementById('fe-hist-body'), arr=document.getElementById('arr-hist');
   if(!body) return;
@@ -1042,6 +1066,7 @@ async function abrirEditarAlumno(id){
   document.getElementById('fe-av').innerHTML = '';
   feFoto = undefined;
   feHistId = id;
+  feTabSwitch('datos');
   var fhb=document.getElementById('fe-hist-body'), arrH=document.getElementById('arr-hist');
   if(fhb){fhb.style.display='none'; document.getElementById('fe-hist-content').innerHTML='<div style="font-size:13px;color:var(--g5)">Cargando...</div>';}
   if(arrH) arrH.innerHTML='&#9660;';
