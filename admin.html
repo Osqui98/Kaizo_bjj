@@ -176,7 +176,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <h1>Kaizo BJJ - Panel del Profe</h1>
     <p id="fecha-hoy"></p>
   </div>
-  <div class="topbar-right">
+  <div class="topbar-right" style="display:flex;align-items:center;gap:10px">
+    <div id="alerta-badge" style="display:none;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;cursor:pointer;white-space:nowrap" onclick="showTab('graduaciones')" title="Ver candidatos a graduacion"></div>
     <button class="btn-red" onclick="exportarCSV()">Exportar</button>
   </div>
 </div>
@@ -338,7 +339,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <div class="fe-f"><label>Última graduación</label><input type="date" id="fe-fgrad" /></div>
           <div class="fe-f"><label>Turno</label><input id="fe-turno" /></div>
         </div>
-        <div class="fe-hint">Para registrar una graduación con historial, usá la pestaña Graduaciones.</div>
+        <div class="fe-hint">Para registrar una graduacion con historial, usa la pestana Graduaciones.</div>
         <div class="fe-chk" onclick="var c=document.getElementById('fe-competidor');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-competidor" /><label>Es competidor</label></div>
         <div class="fe-chk" onclick="var c=document.getElementById('fe-profe');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-profe" /><label>Es profe / instructor</label></div>
       </div>
@@ -380,6 +381,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
           <div class="fe-f full"><label>Notas</label><textarea id="fe-notas" placeholder="Observaciones del profe..."></textarea></div>
         </div>
       </div>
+      <div class="fe-sec" id="fe-sec-hist">
+        <div class="fe-sec-t" style="cursor:pointer;user-select:none" onclick="toggleHistorial()">Historial &nbsp;<span id="arr-hist" style="font-size:12px;color:var(--g5);font-family:sans-serif">&#9660;</span></div>
+        <div id="fe-hist-body" style="display:none">
+          <div id="fe-hist-content" style="padding:6px 0"><div style="font-size:13px;color:var(--g5)">Cargando...</div></div>
+        </div>
+      </div>
     </div>
     <div class="fe-foot">
       <button class="fe-cancel" onclick="cerrarModal('editar')">Cancelar</button>
@@ -416,6 +423,7 @@ const TABS = [
   {id:'ausentes',   label:'Ausentes'},
   {id:'graduaciones',label:'Graduaciones'},
   {id:'alumnos',    label:'Alumnos'},
+  {id:'emergencia', label:'Emergencia'},
   {id:'qr',         label:'QR'},
   {id:'torneos',    label:'Torneos'},
   {id:'config',     label:'Config'},
@@ -441,6 +449,7 @@ function showTab(id) {
   var fn = {
     hoy: renderHoy, mes: renderMes, ausentes: renderAusentes,
     graduaciones: renderGraduaciones, alumnos: renderAlumnos,
+    emergencia: renderEmergencia,
     qr: renderQR, torneos: renderTorneos, config: renderConfig
   }[id];
   if(fn) fn();
@@ -532,14 +541,16 @@ function toggleRanking(){ var b=document.getElementById('rank-body'); if(!b) ret
 async function renderMes(){
   if(!mesInforme) mesInforme = mesActual;
   getMain().innerHTML =
-    '<div class="section" style="margin-bottom:1.25rem"><div class="section-header" style="justify-content:center;gap:18px">'+
+    '<div class="section" style="margin-bottom:1.25rem"><div class="section-header" style="justify-content:center;gap:18px;flex-wrap:wrap">'+
     '<button class="btn-mes-nav" id="mes-prev">&#8249;</button>'+
     '<div class="section-title" id="mes-label" style="min-width:150px;text-align:center">Informe</div>'+
     '<button class="btn-mes-nav" id="mes-next">&#8250;</button>'+
+    '<button class="btn-save-cfg" id="mes-export" style="font-size:12px;padding:6px 14px">Exportar mes</button>'+
     '</div></div>'+
     '<div id="informes-cont"><div class="empty-state">Cargando informes...</div></div>';
   document.getElementById('mes-prev').onclick=function(){ mesInforme=mesShift(mesInforme,-1); cargarInformes(); };
   document.getElementById('mes-next').onclick=function(){ if(mesInforme>=mesActual) return; mesInforme=mesShift(mesInforme,1); cargarInformes(); };
+  document.getElementById('mes-export').onclick=function(){ exportarMes(mesInforme); };
   cargarInformes();
 }
 
@@ -635,44 +646,63 @@ async function cargarInformes(){
 
 // ── AUSENTES ─────────────────────────────────────────────────
 async function renderAusentes() {
-  getMain().innerHTML = '<div class="section"><div class="section-header"><div class="section-title">Sin venir hace mas de 7 dias</div><div class="section-sub">Ordenados por ausencia</div></div><div id="lista-aus"><div class="empty-state">Cargando...</div></div></div>';
+  getMain().innerHTML =
+    '<div class="section"><div class="section-header"><div class="section-title">Sin venir hace mas de 7 dias</div><div class="section-sub" id="aus-sub">Ordenados por ausencia</div></div>'+
+    '<div style="padding:8px 1.25rem;border-bottom:1px solid var(--g2)">'+
+    '<input type="text" id="srch-aus" placeholder="Buscar por nombre..." style="width:100%;padding:6px 10px;border:1px solid var(--g2);border-radius:var(--rs);font-size:13px;outline:none;background:var(--g1)" oninput="filtrarAusentes()" />'+
+    '</div>'+
+    '<div id="lista-aus"><div class="empty-state">Cargando...</div></div></div>';
   var cutoff = ymdLocal(new Date(Date.now()-30*86400000));
   var [ral, rr] = await Promise.all([
-    sb.from('alumnos').select('nombre,apellido,turno,estado,notas').eq('activo',true),
+    sb.from('alumnos').select('nombre,apellido,turno,estado,notas,foto_url').eq('activo',true),
     sb.from('asistencia').select('nombre,fecha').gte('fecha',cutoff)
   ]);
   var ultima = {};
   (rr.data||[]).forEach(function(x){if(!ultima[x.nombre]||x.fecha>ultima[x.nombre])ultima[x.nombre]=x.fecha;});
-  var res = (ral.data||[]).map(function(a){
+  ausAllData = (ral.data||[]).map(function(a){
     var dias = ultima[a.nombre] ? Math.floor((new Date(fechaHoy)-new Date(ultima[a.nombre]))/86400000) : 999;
     return Object.assign({},a,{dias:dias});
   }).filter(function(a){return a.dias>7;}).sort(function(a,b){return b.dias-a.dias;});
+  var sub = document.getElementById('aus-sub');
+  if(sub) sub.textContent = ausAllData.length+' alumno'+(ausAllData.length!==1?'s':'')+' ausentes · ordenados por ausencia';
+  filtrarAusentes();
+}
+
+function filtrarAusentes() {
+  var srch = ((document.getElementById('srch-aus')||{}).value||'').toLowerCase().trim();
+  var filt = srch ? ausAllData.filter(function(a){ return ((a.nombre||'')+' '+(a.apellido||'')).toLowerCase().indexOf(srch)!==-1; }) : ausAllData;
   function escAttr(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
   var el = document.getElementById('lista-aus');
   if(!el) return;
-  el.innerHTML = res.length ? res.map(function(a){
+  el.innerHTML = filt.length ? filt.map(function(a){
     var lesion = '';
     if(a.estado==='lesionado'){
       var notas = (a.notas||'').trim() || 'Sin notas del instructor';
-      lesion = '<span class="lesion-badge" title="'+escAttr(notas)+'" data-n="'+escAttr(notas)+'" onclick="alert(this.getAttribute(\'data-n\'))">🩹 Lesión</span>';
+      lesion = '<span class="lesion-badge" title="'+escAttr(notas)+'" data-n="'+escAttr(notas)+'" onclick="showNota(this.getAttribute(\'data-n\'))">&#129657; Lesion</span>';
     }
     return '<div class="row-item">'+
-      '<div class="avatar">'+ini(a.nombre)+'</div>'+
-      '<div style="flex:1"><div class="row-name">'+a.nombre+' '+( a.apellido||'')+'</div><div class="row-sub">'+(a.turno||'')+'</div></div>'+
+      avHTML(a)+
+      '<div style="flex:1"><div class="row-name">'+a.nombre+' '+(a.apellido||'')+'</div><div class="row-sub">'+(a.turno||'')+'</div></div>'+
       lesion+
       '<span class="dias-badge'+(a.dias>=14?' alerta':'')+'">'+( a.dias>=999?'Sin registros':a.dias+' dias')+'</span>'+
     '</div>';
-  }).join('') : '<div class="empty-state">Todos vinieron esta semana!</div>';
+  }).join('') : '<div class="empty-state">'+(srch?'Sin resultados':'Todos vinieron esta semana!')+'</div>';
 }
 
 // ── GRADUACIONES ─────────────────────────────────────────────
 async function renderGraduaciones() {
   getMain().innerHTML =
     '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div><div class="section-title">Candidatos a stripe</div><div class="section-sub">Llevan 6+ meses desde la ultima graduacion</div></div></div><div id="lista-cand" style="padding:1rem 1.25rem"><div class="empty-state">Cargando...</div></div></div>'+
-    '<div class="section"><div class="section-header"><div class="section-title">Todos los alumnos</div></div><div id="lista-grad"><div class="empty-state">Cargando...</div></div></div>';
+    '<div class="section"><div class="section-header section-collapsible" data-sec="buscar-grad"><div class="section-title">Graduar alumno</div><span id="arr-buscar-grad" style="color:var(--g5)">&#9660;</span></div>'+
+    '<div id="buscar-grad" style="display:none">'+
+    '<div style="padding:10px 1.25rem;border-bottom:1px solid var(--g2)">'+
+    '<input type="text" id="srch-grad" placeholder="Buscar alumno por nombre..." style="width:100%;padding:6px 10px;border:1px solid var(--g2);border-radius:var(--rs);font-size:13px;outline:none;background:var(--g1)" oninput="filtrarGrad()" />'+
+    '</div>'+
+    '<div id="lista-grad"><div class="empty-state" style="padding:1.25rem">Escribi un nombre para buscar</div></div>'+
+    '</div></div>';
 
   var [ral, rg, ras] = await Promise.all([
-    sb.from('alumnos').select('id,nombre,apellido,cinturon,stripes,fecha_grad,turno').eq('activo',true).order('apellido'),
+    sb.from('alumnos').select('id,nombre,apellido,cinturon,stripes,fecha_grad,turno,foto_url').eq('activo',true).order('apellido'),
     sb.from('graduaciones').select('alumno_id,fecha').order('fecha',{ascending:false}),
     sb.from('asistencia').select('nombre,fecha,tarde').gte('fecha',ymdLocal(new Date(Date.now()-180*86400000)))
   ]);
@@ -683,8 +713,7 @@ async function renderGraduaciones() {
   (ras.data||[]).forEach(function(r){var m=r.fecha.slice(0,7);if(!conteoMes[r.nombre])conteoMes[r.nombre]={};conteoMes[r.nombre][m]=(conteoMes[r.nombre][m]||0)+1;});
 
   var candidatos = [], revisar = [];
-  var gradHTML = (ral.data||[]).map(function(a) {
-    if(a.cinturon==='negro') return '<div class="row-item"><div class="avatar">'+ini(a.nombre)+'</div><div style="flex:1"><div class="row-name">'+a.nombre+' '+(a.apellido||'')+'</div></div>'+beltHTML('negro',0)+'</div>';
+  gradAllData = (ral.data||[]).map(function(a) {
     var ultima = ultiGrad[a.id] || a.fecha_grad;
     var dias = ultima ? Math.floor((new Date(fechaHoy)-new Date(ultima))/86400000) : 999;
     var hist = Object.values(conteoMes[a.nombre]||{});
@@ -693,14 +722,8 @@ async function renderGraduaciones() {
     var promRec = (ultm[0]+ultm[1])/2;
     var caida = prom>0 && promRec<prom*0.6;
     if(dias>=180) { if(caida) revisar.push(Object.assign({},a,{dias:dias})); else candidatos.push(Object.assign({},a,{dias:dias})); }
-    var meses = Math.floor(dias/30);
-    return '<div class="row-item">'+
-      '<div class="avatar">'+ini(a.nombre)+'</div>'+
-      '<div style="flex:1"><div class="row-name">'+a.nombre+' '+(a.apellido||'')+'</div><div class="row-sub">'+(a.turno||'')+' - '+meses+' meses</div></div>'+
-      beltHTML(a.cinturon, a.stripes)+
-      '<button data-gid="'+a.id+'" class="btn-grad" style="margin-left:8px;padding:4px 10px;font-size:12px;background:var(--red);color:#fff;border:none;border-radius:6px;cursor:pointer">+</button>'+
-    '</div>';
-  }).join('') || '<div class="empty-state">Sin alumnos</div>';
+    return Object.assign({},a,{dias:dias});
+  });
 
   var candHTML = '';
   candidatos.forEach(function(a){
@@ -721,15 +744,34 @@ async function renderGraduaciones() {
   });
 
   var elCand = document.getElementById('lista-cand');
-  var elGrad = document.getElementById('lista-grad');
-  if(elCand) elCand.innerHTML = candHTML || '<div class="empty-state">Ningun alumno cumple los 6 meses todavia</div>';
-  if(elGrad) elGrad.innerHTML = gradHTML;
-  document.querySelectorAll('.btn-grad, .grad-alert').forEach(function(el) {
-    el.onclick = function() {
-      var id = parseInt(el.dataset.gid);
-      var nom = el.dataset.nom || el.closest('.row-item')?.querySelector('.row-name')?.textContent || '';
-      abrirGrad(id, nom);
-    };
+  if(elCand) {
+    elCand.innerHTML = candHTML || '<div class="empty-state">Ningun alumno cumple los 6 meses todavia</div>';
+    elCand.querySelectorAll('.grad-alert').forEach(function(el) {
+      el.onclick = function() { abrirGrad(parseInt(el.dataset.gid), el.dataset.nom||''); };
+    });
+  }
+}
+
+function filtrarGrad() {
+  var srch = ((document.getElementById('srch-grad')||{}).value||'').toLowerCase().trim();
+  var el = document.getElementById('lista-grad');
+  if(!el) return;
+  if(!srch) { el.innerHTML = '<div class="empty-state" style="padding:1.25rem">Escribi un nombre para buscar</div>'; return; }
+  var filt = gradAllData.filter(function(a){
+    return ((a.nombre||'')+' '+(a.apellido||'')).toLowerCase().indexOf(srch) !== -1;
+  });
+  el.innerHTML = filt.slice(0,15).map(function(a){
+    var nom = (a.nombre||'')+' '+(a.apellido||'');
+    var meses = a.cinturon==='negro' ? '' : ' - '+Math.floor(a.dias/30)+' meses';
+    return '<div class="row-item">'+
+      avHTML(a)+
+      '<div style="flex:1"><div class="row-name">'+nom+'</div><div class="row-sub">'+(a.turno||'')+meses+'</div></div>'+
+      beltHTML(a.cinturon, a.stripes)+
+      (a.cinturon!=='negro' ? '<button data-gid="'+a.id+'" data-nom="'+nom.replace(/"/g,'')+'" class="btn-grad-r" style="margin-left:8px;padding:5px 12px;font-size:12px;background:var(--red);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700">+ Graduar</button>' : '')+
+    '</div>';
+  }).join('') || '<div class="empty-state" style="padding:1.25rem">Sin resultados</div>';
+  el.querySelectorAll('.btn-grad-r').forEach(function(b){
+    b.onclick = function(){ abrirGrad(parseInt(b.dataset.gid), b.dataset.nom); };
   });
 }
 
@@ -779,8 +821,15 @@ async function guardarGrad() {
 async function renderAlumnos() {
   getMain().innerHTML =
     '<div class="section">'+
-    '<div class="section-header"><div><div class="section-title">Alumnos registrados</div><div class="section-sub">Tocá un alumno para editar su ficha completa</div></div><button class="btn-red" onclick="abrirAgregarAlumno()">+ Agregar</button></div>'+
+    '<div class="section-header"><div><div class="section-title">Alumnos registrados</div><div class="section-sub" id="alumnos-sub">Cargando...</div></div><button class="btn-red" onclick="abrirAgregarAlumno()">+ Agregar</button></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;padding:10px 1.25rem;border-bottom:1px solid var(--g2)">'+
+    '<input type="text" id="srch-alumnos" placeholder="Buscar por nombre..." style="flex:1;min-width:130px;padding:6px 10px;border:1px solid var(--g2);border-radius:var(--rs);font-size:13px;outline:none;background:var(--g1)" oninput="filtrarAlumnos()" />'+
+    '<select class="filter-select" id="fil-al-turno" onchange="filtrarAlumnos()"><option value="">Todos los turnos</option><option value="manana">Manana</option><option value="noche">Noche</option><option value="sabado">Sabado</option></select>'+
+    '<select class="filter-select" id="fil-al-cint" onchange="filtrarAlumnos()"><option value="">Todos los cinturones</option><option value="blanco">Blanco</option><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marron</option><option value="negro">Negro</option></select>'+
+    '<select class="filter-select" id="fil-al-est" onchange="filtrarAlumnos()"><option value="">Todos los estados</option><option value="activo">Activo</option><option value="lesionado">Lesionado</option><option value="inactivo">Inactivo</option></select>'+
+    '</div>'+
     '<div id="lista-alumnos"><div class="empty-state">Cargando...</div></div>'+
+    '<div id="pag-alumnos"></div>'+
     '</div>';
   var [ral, ras] = await Promise.all([
     sb.from('alumnos').select('*').eq('activo',true).order('apellido'),
@@ -788,17 +837,80 @@ async function renderAlumnos() {
   ]);
   var tard = {};
   (ras.data||[]).filter(function(x){return x.tarde;}).forEach(function(x){tard[x.nombre]=(tard[x.nombre]||0)+1;});
+  alumnosAll = (ral.data||[]).map(function(a){ return Object.assign({},a,{_tard:tard[a.nombre]||0}); });
+  alumnosFiltrados = alumnosAll.slice();
+  alumnoPagina = 0;
+  filtrarAlumnos();
+}
+
+function estadoBadge(estado) {
+  if(!estado || estado==='activo') return '';
+  if(estado==='lesionado') return '<span style="background:#fff4e0;color:#b9770e;border:1px solid #f0c98a;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap">&#129657; Lesion</span>';
+  if(estado==='inactivo') return '<span style="background:#f0f0f0;color:#666;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap">Inactivo</span>';
+  return '';
+}
+
+function avHTML(a) {
+  var foto = a && a.foto_url;
+  return '<div class="avatar">'+(foto?'<img src="'+foto+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">':ini(a&&a.nombre||'?'))+'</div>';
+}
+
+function showNota(texto) {
+  var old=document.getElementById('nota-pop'); if(old) old.remove();
+  var d=document.createElement('div'); d.id='nota-pop';
+  d.style.cssText='position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#2c2c2e;color:#fff;padding:12px 18px;border-radius:12px;font-size:13px;max-width:320px;width:calc(100% - 2rem);z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.4);cursor:pointer;line-height:1.5;text-align:left';
+  d.textContent=texto; d.onclick=function(){d.remove();};
+  document.body.appendChild(d);
+  setTimeout(function(){if(d.parentNode)d.remove();},6000);
+}
+
+function filtrarAlumnos() {
+  var srch = ((document.getElementById('srch-alumnos')||{}).value||'').toLowerCase().trim();
+  var turno = (document.getElementById('fil-al-turno')||{}).value||'';
+  var cint = (document.getElementById('fil-al-cint')||{}).value||'';
+  var est = (document.getElementById('fil-al-est')||{}).value||'';
+  alumnosFiltrados = alumnosAll.filter(function(a){
+    if(srch && (((a.nombre||'')+' '+(a.apellido||'')).toLowerCase().indexOf(srch)===-1)) return false;
+    if(turno && (a.turno||'')!==turno) return false;
+    if(cint && (a.cinturon||'')!==cint) return false;
+    if(est && (a.estado||'activo')!==est) return false;
+    return true;
+  });
+  alumnoPagina = 0;
+  renderAlumnosPaginado();
+}
+
+function renderAlumnosPaginado() {
   var el = document.getElementById('lista-alumnos');
+  var pag = document.getElementById('pag-alumnos');
+  var sub = document.getElementById('alumnos-sub');
   if(!el) return;
-  el.innerHTML = (ral.data||[]).map(function(a){
+  var total = alumnosFiltrados.length;
+  var totalPags = Math.ceil(total/ALUMNOS_PP)||1;
+  if(alumnoPagina>=totalPags) alumnoPagina=totalPags-1;
+  var desde = alumnoPagina*ALUMNOS_PP;
+  var pagina = alumnosFiltrados.slice(desde, desde+ALUMNOS_PP);
+  if(sub) sub.textContent = total+' alumno'+(total!==1?'s':'')+(total!==alumnosAll.length?' (filtrado de '+alumnosAll.length+')':'');
+  el.innerHTML = pagina.map(function(a){
+    var badge = estadoBadge(a.estado);
     return '<div class="row-item" style="cursor:pointer" onclick="abrirEditarAlumno('+a.id+')">'+
-      '<div class="avatar">'+ini(a.nombre)+'</div>'+
-      '<div style="flex:1"><div class="row-name">'+( a.nombre||'')+' '+(a.apellido||'')+'</div><div class="row-sub">'+(a.turno||'')+' - '+(a.sexo||'')+'</div></div>'+
-      beltHTML(a.cinturon, a.stripes)+
-      '<div style="margin-left:8px">'+punctBadge(tard[a.nombre]||0)+'</div>'+
+      avHTML(a)+
+      '<div style="flex:1;min-width:0"><div class="row-name">'+( a.nombre||'')+' '+(a.apellido||'')+(badge?' '+badge:'')+'</div>'+
+      '<div class="row-sub">'+(a.turno||'')+' - '+(a.sexo||'')+'</div></div>'+
+      beltHTML(a.cinturon,a.stripes)+
+      '<div style="margin-left:8px">'+punctBadge(a._tard)+'</div>'+
       '<div style="margin-left:6px;color:#c9ccd1;font-size:22px;font-weight:300;line-height:1">&rsaquo;</div>'+
     '</div>';
-  }).join('') || '<div class="empty-state">Sin alumnos cargados</div>';
+  }).join('')||'<div class="empty-state">Sin resultados</div>';
+  if(pag) {
+    if(totalPags<=1){ pag.innerHTML=''; return; }
+    pag.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 1.25rem;border-top:1px solid var(--g2)">'+
+      '<button class="btn-mes-nav" onclick="if(alumnoPagina>0){alumnoPagina--;renderAlumnosPaginado()}" '+(alumnoPagina===0?'disabled':'')+'>&#8249;</button>'+
+      '<span style="font-size:13px;color:var(--g5)">'+(alumnoPagina+1)+' de '+totalPags+' &nbsp;·&nbsp; '+total+' alumnos</span>'+
+      '<button class="btn-mes-nav" onclick="if(alumnoPagina<'+(totalPags-1)+'){alumnoPagina++;renderAlumnosPaginado()}" '+(alumnoPagina===totalPags-1?'disabled':'')+'>&#8250;</button>'+
+      '</div>';
+  }
 }
 
 function abrirAgregarAlumno() {
@@ -830,7 +942,93 @@ async function guardarAlumno() {
   renderAlumnos();
 }
 
+// ── EMERGENCIA ───────────────────────────────────────────────
+async function renderEmergencia() {
+  getMain().innerHTML =
+    '<div class="section">'+
+    '<div class="section-header"><div class="section-title">Contactos de emergencia</div><div class="section-sub">Toca el numero para copiarlo al portapapeles</div></div>'+
+    '<div id="lista-emerg"><div class="empty-state">Cargando...</div></div>'+
+    '</div>';
+  var r = await sb.from('alumnos').select('id,nombre,apellido,turno,emerg_nombre,emerg_telefono,emerg_relacion,estado,foto_url').eq('activo',true).order('apellido');
+  var el = document.getElementById('lista-emerg');
+  if(!el) return;
+  var todos = r.data||[];
+  var conDatos = todos.filter(function(a){ return a.emerg_nombre||a.emerg_telefono; });
+  var sinDatos = todos.length - conDatos.length;
+  el.innerHTML = conDatos.map(function(a){
+    var tel = a.emerg_telefono||'';
+    var badge = estadoBadge(a.estado);
+    return '<div class="row-item">'+
+      avHTML(a)+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="row-name">'+( a.nombre||'')+' '+(a.apellido||'')+(badge?' '+badge:'')+'</div>'+
+        '<div class="row-sub">'+(a.turno||'')+(a.emerg_relacion?' · '+a.emerg_relacion:'')+'</div>'+
+        '<div style="font-size:12px;color:var(--g5);margin-top:1px">'+(a.emerg_nombre||'')+'</div>'+
+      '</div>'+
+      (tel
+        ? '<button onclick="copiarTel(\''+tel+'\')" style="background:var(--red-light);color:var(--red);border:1.5px solid var(--red);border-radius:var(--rs);padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">'+tel+'</button>'
+        : '<span style="font-size:12px;color:var(--g5)">Sin telefono</span>'
+      )+
+    '</div>';
+  }).join('')||'<div class="empty-state">Ningun alumno tiene contacto de emergencia cargado</div>';
+  if(sinDatos>0) el.innerHTML += '<div style="padding:8px 1.25rem;font-size:12px;color:var(--g5);border-top:1px solid var(--g2)">'+sinDatos+' alumno'+(sinDatos!==1?'s':'')+' sin contacto de emergencia registrado</div>';
+}
+
+function copiarTel(tel) {
+  if(navigator.clipboard) {
+    navigator.clipboard.writeText(tel).then(function(){ showToast('Copiado: '+tel); }).catch(function(){ showToast(tel); });
+  } else {
+    showToast(tel);
+  }
+}
+
 // ── EDITAR ALUMNO (ficha completa) ───────────────────────────
+var alumnosAll = []; var alumnosFiltrados = []; var alumnoPagina = 0; var ALUMNOS_PP = 10;
+var gradAllData = []; var ausAllData = [];
+var feHistId = null;
+
+function toggleHistorial() {
+  var body=document.getElementById('fe-hist-body'), arr=document.getElementById('arr-hist');
+  if(!body) return;
+  var hidden=body.style.display==='none';
+  body.style.display=hidden?'block':'none';
+  if(arr) arr.innerHTML=hidden?'&#9650;':'&#9660;';
+  if(hidden && feHistId) cargarHistorial(feHistId);
+}
+
+async function cargarHistorial(id) {
+  var cont=document.getElementById('fe-hist-content'); if(!cont) return;
+  cont.innerHTML='<div style="font-size:13px;color:var(--g5)">Cargando...</div>';
+  var corte=ymdLocal(new Date(Date.now()-60*86400000));
+  var [rAs,rGr,rTr]=await Promise.all([
+    sb.from('asistencia').select('fecha,tarde').eq('alumno_id',id).gte('fecha',corte).order('fecha'),
+    sb.from('graduaciones').select('tipo,cinturon_despues,stripes_despues,fecha').eq('alumno_id',id).order('fecha',{ascending:false}).limit(5),
+    sb.from('torneos_participantes').select('nombre_torneo,puesto,categoria,fecha').eq('alumno_id',id).order('fecha',{ascending:false}).limit(5)
+  ]);
+  var asSet={};
+  (rAs.data||[]).forEach(function(a){ asSet[a.fecha]=a.tarde?'tarde':'ok'; });
+  var today=new Date(fechaHoy), dots='';
+  for(var i=29;i>=0;i--){
+    var d=new Date(today.getTime()-i*86400000), k=ymdLocal(d);
+    var color=asSet[k]==='ok'?'#27ae60':asSet[k]==='tarde'?'#e67e22':'#e9e9ec';
+    dots+='<div title="'+k+'" style="width:13px;height:13px;border-radius:3px;background:'+color+';flex-shrink:0"></div>';
+  }
+  var gradHTML=(rGr.data||[]).map(function(g){
+    var tipo=g.tipo==='cinturon'?('Cinturon '+g.cinturon_despues):('Stripe '+g.stripes_despues);
+    return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--g2);font-size:13px"><span>'+tipo+'</span><span style="color:var(--g5)">'+g.fecha+'</span></div>';
+  }).join('');
+  var tornHTML=(rTr.data||[]).map(function(t){
+    var p=t.puesto?t.puesto+'° puesto':'Participo';
+    return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--g2);font-size:13px"><span>'+(t.nombre_torneo||'Torneo')+'</span><span style="color:var(--g5)">'+p+'</span></div>';
+  }).join('');
+  var total=(rAs.data||[]).length;
+  var aTiempo=(rAs.data||[]).filter(function(x){return !x.tarde;}).length;
+  cont.innerHTML=
+    '<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Asistencia ultimos 30 dias &nbsp;<span style="font-weight:400">('+total+' presencias, '+aTiempo+' a tiempo)</span></div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:1.1rem">'+dots+'</div>'+
+    (gradHTML?'<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Ultimas graduaciones</div>'+gradHTML+'<div style="margin-bottom:.8rem"></div>':'')+
+    (tornHTML?'<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Torneos</div>'+tornHTML:'');
+}
 var feFoto = undefined; // undefined = sin cambios; string = foto nueva
 function feVal(id){var e=document.getElementById(id);return e?e.value:'';}
 function feSet(id,v){var e=document.getElementById(id);if(e)e.value=(v==null?'':v);}
@@ -843,6 +1041,10 @@ async function abrirEditarAlumno(id){
   document.getElementById('fe-head-sub').textContent = '';
   document.getElementById('fe-av').innerHTML = '';
   feFoto = undefined;
+  feHistId = id;
+  var fhb=document.getElementById('fe-hist-body'), arrH=document.getElementById('arr-hist');
+  if(fhb){fhb.style.display='none'; document.getElementById('fe-hist-content').innerHTML='<div style="font-size:13px;color:var(--g5)">Cargando...</div>';}
+  if(arrH) arrH.innerHTML='&#9660;';
   var r = await sb.from('alumnos').select('*').eq('id',id).single();
   if(r.error || !r.data){ alert('No se pudo cargar el alumno'); cerrarModal('editar'); return; }
   var a = r.data;
@@ -1023,7 +1225,7 @@ async function renderConfig() {
   getMain().innerHTML =
     '<div class="section" style="margin-bottom:1.25rem">'+
     '<div class="section-header" data-sec="s-turnos"><div class="section-title">Tolerancia de tardanza por turno</div><span id="arr-turnos">&#9660;</span></div>'+
-    '<div id="s-turnos"><div id="lista-tolerancias"><div class="empty-state">Cargando...</div></div></div>'+
+    '<div id="s-turnos" style="display:none"><div id="lista-tolerancias"><div class="empty-state">Cargando...</div></div></div>'+
     '</div>'+
     '<div class="section" style="margin-bottom:1.25rem">'+
     '<div class="section-header" data-sec="s-cinturones"><div class="section-title">Stripes maximos por cinturon</div><span id="arr-cinturones">&#9660;</span></div>'+
@@ -1225,7 +1427,30 @@ document.addEventListener('click', function(e) {
 
 // ── AUTENTICACION (login Google autorizado) ──────────────────
 var gateBooted = false;
-function bootApp(){ if(gateBooted) return; gateBooted=true; buildTabs(); showTab('hoy'); }
+function bootApp(){ if(gateBooted) return; gateBooted=true; buildTabs(); showTab('hoy'); checkAlertas(); }
+
+async function checkAlertas() {
+  var r = await sb.from('alumnos').select('id,fecha_grad').eq('activo',true).neq('cinturon','negro');
+  var cand = (r.data||[]).filter(function(a){
+    if(!a.fecha_grad) return true;
+    return Math.floor((new Date(fechaHoy)-new Date(a.fecha_grad))/86400000)>=180;
+  }).length;
+  var b=document.getElementById('alerta-badge');
+  if(b){ if(cand>0){b.textContent=cand+' para graduar';b.style.display='inline-block';}else b.style.display='none'; }
+}
+
+async function exportarMes(ym) {
+  var ini=ym+'-01', fin=mesShift(ym,1)+'-01';
+  var r=await sb.from('asistencia').select('*').gte('fecha',ini).lt('fecha',fin).order('fecha');
+  if(!r.data||!r.data.length){showToast('Sin datos en '+mesLabel(ym));return;}
+  var rows=[['Fecha','Nombre','Apellido','Turno','Horario','Tarde','Motivo','Con Fisico']];
+  r.data.forEach(function(x){rows.push([x.fecha,x.nombre||'',x.apellido||'',x.turno||'',x.horario||'',x.tarde?'Si':'No',x.motivo_tarde||'',x.con_fisico?'Si':'No']);});
+  var csv=rows.map(function(row){return row.join(',');}).join('\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='kaizo-'+ym+'.csv'; a.click();
+  showToast('CSV exportado: '+mesLabel(ym));
+}
 
 async function authGoogle(){ await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href.split('#')[0] } }); }
 async function authSignout(){ await sb.auth.signOut(); location.reload(); }

@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#d61f26">
+<link rel="manifest" href="/manifest.json">
 <title>Kaizo BJJ</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -190,6 +192,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <div class="mi" data-motivo="otro"><span style="font-size:18px">&#9999;</span><span style="font-size:14px;font-weight:500;flex:1">Otro</span><svg class="mchk" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
   </div>
   <input type="text" id="otro" class="otro" placeholder="Contanos brevemente..." />
+  <div id="err-tarde" style="background:var(--red-light);border:1px solid #f09595;border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:8px;display:none"></div>
   <button class="bok org" id="btn-tarde" style="display:none">Registrar asistencia</button>
 </div>
 
@@ -197,7 +200,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
   <div class="ocirc" id="oc"><svg width="38" height="38" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
   <h2 id="ot">Asistencia registrada!</h2>
   <p class="osub" id="on"></p>
-  <p class="ocls" id="ocl"></p>
+  <div id="odet" style="background:var(--g1);border-radius:var(--rs);padding:12px 16px;margin:.75rem 0 0;text-align:left;width:100%;display:none"></div>
   <p class="otrd" id="otm"></p>
   <p class="ofis" id="ofi">Con fisico registrado</p>
   <button class="bvlv" id="bvlv">Volver</button>
@@ -504,6 +507,7 @@ async function regNuevo(dni) {
 
 async function confirmarAsistencia() {
   if(!alu||!claseSeleccionada) return;
+  var btn=document.getElementById('bcnf'); if(btn){btn.disabled=true;btn.textContent='Registrando...';}
   if(esTarde) {
     document.getElementById('mc').classList.add('hide');
     document.getElementById('ts').classList.add('show');
@@ -528,7 +532,8 @@ function selMotivo(el,v) {
 
 async function confirmarTarde() {
   var m=motivoSel;
-  if(!m){var t=document.getElementById('otro').value.trim();if(!t){alert('Escribe el motivo');return;}m=t;}
+  if(!m){var t=document.getElementById('otro').value.trim();if(!t){var e=document.getElementById('err-tarde');if(e){e.textContent='Escribi el motivo para continuar';e.style.display='block';}return;}m=t;}
+  var e=document.getElementById('err-tarde');if(e)e.style.display='none';
   await registrar(true,m);
 }
 
@@ -540,7 +545,7 @@ async function registrar(est,mot) {
     var r=await sb.from('asistencia').insert({alumno_id:alu.id,nombre:alu.nombre,apellido:alu.apellido,fecha:dHoy(),turno:claseSeleccionada.tur,horario:claseSeleccionada.hi+' - '+claseSeleccionada.hf,tarde:est,motivo_tarde:mot,con_fisico:cf,timestamp:ahora.toISOString()});
     if(r.error) throw r.error;
     mostrarOk(est,mot,cf,hs);
-  } catch(e) { console.error(e); alert('Error al registrar. Intenta de nuevo.'); }
+  } catch(e) { console.error(e); var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} alert('Error al registrar. Intenta de nuevo.'); }
 }
 
 function mostrarOk(est,mot,cf,hs) {
@@ -552,13 +557,26 @@ function mostrarOk(est,mot,cf,hs) {
   oc.querySelector('svg').style.color=est?'#e67e22':'#27ae60';
   document.getElementById('ot').textContent=est?'Asistencia registrada':'Asistencia registrada!';
   document.getElementById('on').textContent=(alu.nombre||'')+' '+(alu.apellido||'');
-  document.getElementById('ocl').textContent=claseSeleccionada.nom+' '+hs;
-  var otm=document.getElementById('otm'); otm.textContent=est?'Tardanza: '+mot:''; otm.style.display=est?'block':'none';
+  var det=document.getElementById('odet');
+  det.style.display='block';
+  det.innerHTML=
+    '<div style="margin-bottom:8px">'+
+      '<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em">Clase</div>'+
+      '<div style="font-size:14px;font-weight:600;margin-top:2px">'+(claseSeleccionada.nom||'')+'</div>'+
+    '</div>'+
+    '<div style="display:flex;gap:16px">'+
+      '<div><div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em">Horario</div>'+
+      '<div style="font-size:13px;font-weight:600;margin-top:2px">'+(claseSeleccionada.hi||'')+' - '+(claseSeleccionada.hf||'')+'</div></div>'+
+      '<div><div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em">Llegada</div>'+
+      '<div style="font-size:13px;font-weight:600;margin-top:2px;color:'+(est?'var(--orange)':'var(--green)')+'">'+hs+(est?' (+'+minTarde+' min)':' ✓')+'</div></div>'+
+    '</div>';
+  var otm=document.getElementById('otm'); otm.textContent=est&&mot?'Motivo: '+mot:''; otm.style.display=(est&&mot)?'block':'none';
   document.getElementById('ofi').style.display=cf?'block':'none';
 }
 
 function volver() {
   alu=null;motivoSel=null;sexoSel=null;esTarde=false;minTarde=0;claseSeleccionada=null;
+  var det=document.getElementById('odet'); if(det){det.style.display='none';det.innerHTML='';}
   document.getElementById('mc').classList.remove('hide');
   document.getElementById('ts').classList.remove('show');
   document.getElementById('ts').classList.remove('hide');
@@ -608,11 +626,28 @@ async function mostrarFicha(a) {
     var file = e.target.files[0];
     if(!file) return;
     var reader = new FileReader();
-    reader.onload = async function(ev) {
+    reader.onload = function(ev) {
       var base64 = ev.target.result;
       fav.innerHTML = '<img src="'+base64+'" />';
-      await sb.from('alumnos').update({foto_url: base64}).eq('id',a.id);
-      showToastF('Foto actualizada');
+      var prev = document.getElementById('foto-preview-bar');
+      if(prev) prev.remove();
+      var bar = document.createElement('div');
+      bar.id = 'foto-preview-bar';
+      bar.style.cssText = 'display:flex;gap:8px;margin:10px 1.25rem 0;';
+      bar.innerHTML =
+        '<button style="flex:1;padding:9px;background:linear-gradient(180deg,#e2262d,#bb171d);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer" id="btn-confirmar-foto">Confirmar foto</button>'+
+        '<button style="flex:1;padding:9px;background:var(--g1);border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;cursor:pointer" id="btn-cancelar-foto">Cancelar</button>';
+      fav.closest('.ficha-hdr').insertAdjacentElement('afterend', bar);
+      document.getElementById('btn-confirmar-foto').onclick = async function() {
+        bar.remove();
+        await sb.from('alumnos').update({foto_url: base64}).eq('id',a.id);
+        a.foto_url = base64;
+        showToastF('Foto actualizada');
+      };
+      document.getElementById('btn-cancelar-foto').onclick = function() {
+        bar.remove();
+        fav.innerHTML = a.foto_url ? '<img src="'+a.foto_url+'" />' : '<span>'+ini+'</span>';
+      };
     };
     reader.readAsDataURL(file);
   };

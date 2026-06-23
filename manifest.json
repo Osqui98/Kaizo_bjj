@@ -1,0 +1,13 @@
+{
+  "name": "Kaizo BJJ",
+  "short_name": "Kaizo",
+  "description": "Sistema de asistencia Kaizo BJJ - Mataderos",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#d61f26",
+  "icons": [
+    { "src": "/kaizo_logo.jpeg", "sizes": "192x192", "type": "image/jpeg" },
+    { "src": "/kaizo_logo.jpeg", "sizes": "512x512", "type": "image/jpeg" }
+  ]
+}
