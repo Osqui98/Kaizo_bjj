@@ -5,25 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Kaizo BJJ</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--red:#c0392b;--red-dark:#96281b;--red-light:#fdf0ef;--black:#111;--white:#fff;--g6:#666;--g5:#888;--g2:#e8e8e8;--g1:#f5f5f5;--green:#27ae60;--orange:#e67e22;--r:14px;--rs:8px}
+:root{--red:#d61f26;--red-dark:#a01419;--red-light:#fdecec;--red-glow:rgba(214,31,38,.35);--ink:#0d0d0d;--ink-2:#171717;--silver-1:#f5f5f7;--silver-2:#cfd2d6;--silver-3:#8b8f96;--black:#111;--white:#fff;--g6:#666;--g5:#8a8d92;--g2:#e9e9ec;--g1:#f5f5f7;--green:#27ae60;--orange:#e67e22;--r:16px;--rs:10px;--shadow:0 12px 34px rgba(0,0,0,.10)}
 html,body{height:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--black);color:var(--white);min-height:100vh;display:flex;flex-direction:column}
-.hdr{padding:1rem 1.25rem .75rem;display:flex;align-items:center;gap:12px}
-.logo{width:48px;height:48px;border-radius:50%;object-fit:cover;flex-shrink:0}
-.hdr h1{font-size:17px;font-weight:700}
-.hdr p{font-size:11px;color:var(--g5);margin-top:1px}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--ink);color:var(--white);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+.hdr{position:relative;padding:1.1rem 1.25rem .9rem;display:flex;align-items:center;gap:13px;background:radial-gradient(130% 150% at 0% 0%,#1f1f1f 0%,var(--ink) 62%);border-bottom:1px solid rgba(255,255,255,.06)}
+.logo{width:50px;height:50px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--red);box-shadow:0 0 0 3px rgba(214,31,38,.16),0 4px 12px rgba(0,0,0,.55)}
+.hdr h1{font-family:'Oswald',sans-serif;font-size:23px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1;background:linear-gradient(180deg,#fff 0%,#cfd2d6 48%,#9aa0a6 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hdr p{font-size:10px;color:var(--silver-3);margin-top:4px;letter-spacing:.16em;text-transform:uppercase}
 .clock{margin-left:auto;text-align:right}
-.clock .hr{font-size:18px;font-weight:700}
-.clock .dy{font-size:11px;color:var(--g5)}
-.card{background:var(--white);border-radius:var(--r) var(--r) 0 0;padding:1.5rem 1.25rem 2rem;flex:1;color:var(--black)}
+.clock .hr{font-family:'Oswald',sans-serif;font-size:21px;font-weight:600;color:#fff}
+.clock .dy{font-size:10.5px;color:var(--silver-3);text-transform:capitalize}
+.card{background:var(--white);border-radius:22px 22px 0 0;padding:1.6rem 1.25rem 2rem;flex:1;color:var(--black);box-shadow:0 -6px 24px rgba(0,0,0,.20)}
 /* CRONOGRAMA */
 .noc-hdr{text-align:center;padding:1rem 0 1.25rem}
-.noc-hdr h2{font-size:18px;font-weight:700;margin-bottom:4px}
+.noc-hdr h2{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
 .noc-hdr p{font-size:14px;color:var(--g5)}
-.slbl{font-size:11px;font-weight:600;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
-.chi{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--g1);border-radius:var(--rs);margin-bottom:8px}
+.slbl{font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.chi{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--g1);border:1px solid var(--g2);border-radius:var(--rs);margin-bottom:8px;transition:transform .15s,box-shadow .15s}
 .cdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 .cdot.activa{background:var(--red)}.cdot.proxima{background:var(--orange)}.cdot.pasada{background:var(--g2)}
 .chi-info{flex:1}
@@ -38,7 +40,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .scl:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
 .scl .sh{font-weight:700;color:var(--red)}
 /* BANNER */
-.bnr{background:var(--red);border-radius:var(--rs);padding:12px 16px;margin-bottom:1.25rem;display:flex;align-items:center;gap:12px}
+.bnr{background:linear-gradient(135deg,#e2262d 0%,#a01419 100%);border-radius:var(--rs);padding:13px 16px;margin-bottom:1.25rem;display:flex;align-items:center;gap:12px;box-shadow:0 8px 22px var(--red-glow)}
 .bdot{width:8px;height:8px;border-radius:50%;background:#fff;animation:pulse 1.5s infinite;flex-shrink:0}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .binfo{flex:1}
@@ -57,14 +59,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .clase-opt-chk{color:var(--red);display:none}
 .clase-opt.on .clase-opt-chk{display:block}
 /* DNI */
-.card h2{font-size:19px;font-weight:700;margin-bottom:4px}
+.card h2{font-family:'Oswald',sans-serif;font-size:23px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-bottom:4px}
 .sub{font-size:14px;color:var(--g5);margin-bottom:1.25rem}
 .dniw{display:flex;gap:8px;margin-bottom:1rem}
-.dnii{flex:1;padding:14px 16px;border:2px solid var(--g2);border-radius:var(--rs);font-size:20px;font-weight:700;color:var(--black);background:var(--g1);outline:none;letter-spacing:2px;text-align:center;transition:border-color .2s}
-.dnii:focus{border-color:var(--red);background:var(--white)}
-.bbsc{padding:14px 20px;background:var(--red);color:var(--white);border:none;border-radius:var(--rs);font-size:15px;font-weight:600;cursor:pointer}
+.dnii{flex:1;padding:14px 16px;border:2px solid var(--g2);border-radius:var(--rs);font-size:20px;font-weight:700;color:var(--black);background:var(--g1);outline:none;letter-spacing:2px;text-align:center;transition:border-color .2s,box-shadow .2s}
+.dnii:focus{border-color:var(--red);background:var(--white);box-shadow:0 0 0 4px rgba(214,31,38,.12)}
+.bbsc{padding:14px 22px;background:linear-gradient(180deg,#e2262d,#bb171d);color:var(--white);border:none;border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px var(--red-glow);transition:transform .12s,box-shadow .12s}
+.bbsc:hover{box-shadow:0 8px 22px var(--red-glow)}.bbsc:active{transform:translateY(1px)}
 .dhnt{font-size:12px;color:var(--g5);text-align:center;margin-bottom:1rem}
-.btn-ficha{width:100%;padding:12px;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn-ficha{width:100%;padding:12px;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;transition:background .15s}
+.btn-ficha:hover{background:var(--red-light)}
 /* CONFIRM ALUMNO */
 .acard{background:var(--g1);border-radius:var(--rs);padding:16px;margin-bottom:1rem;display:flex;align-items:center;gap:14px}
 .aav{width:48px;height:48px;border-radius:50%;background:var(--red-light);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--red);flex-shrink:0;overflow:hidden}
@@ -75,15 +79,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .ff{margin-bottom:14px}
 .fl{font-size:13px;font-weight:600;color:#444;margin-bottom:5px;display:block}
 .fi{width:100%;padding:11px 14px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:15px;color:var(--black);background:var(--g1);outline:none;transition:border-color .2s}
-.fi:focus{border-color:var(--red);background:var(--white)}
+.fi:focus{border-color:var(--red);background:var(--white);box-shadow:0 0 0 4px rgba(214,31,38,.1)}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .sxo{display:flex;gap:8px}
 .sxb{flex:1;padding:10px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:13px;font-weight:500;background:var(--g1);color:#444;cursor:pointer;text-align:center;transition:all .15s}
 .sxb.on{border-color:var(--red);background:var(--red-light);color:var(--red);font-weight:700}
 .emsg{background:var(--red-light);border:1px solid #f09595;border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:12px;display:none}
 .yareg{background:#fff8e6;border:1.5px solid #f0c040;border-radius:var(--rs);padding:10px 14px;font-size:13px;color:#856404;margin-bottom:12px;text-align:center;display:none}
-.bok{width:100%;padding:14px;background:var(--red);color:var(--white);border:none;border-radius:var(--rs);font-size:16px;font-weight:700;cursor:pointer;margin-top:6px}
-.bok.org{background:var(--orange)}
+.bok{width:100%;padding:14px;background:linear-gradient(180deg,#e2262d,#bb171d);color:var(--white);border:none;border-radius:var(--rs);font-size:16px;font-weight:700;cursor:pointer;margin-top:6px;box-shadow:0 6px 16px var(--red-glow);transition:transform .12s}
+.bok:active{transform:translateY(1px)}
+.bok.org{background:linear-gradient(180deg,#f08a30,#d96f12);box-shadow:0 6px 16px rgba(230,126,34,.32)}
 .bsec{width:100%;padding:11px;background:transparent;color:var(--g6);border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;cursor:pointer;margin-top:8px}
 .ld{text-align:center;padding:2rem 0;color:var(--g5)}
 .dot{display:inline-block;width:6px;height:6px;background:var(--red);border-radius:50%;margin:0 2px;animation:bnc 1s infinite}
@@ -115,10 +120,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 /* FICHA */
 .ficha-scr{display:none;flex-direction:column;flex:1;background:var(--white);border-radius:var(--r) var(--r) 0 0;color:var(--black);overflow-y:auto}
 .ficha-scr.show{display:flex}
-.ficha-hdr{background:var(--black);padding:1.25rem;display:flex;align-items:center;gap:14px}
+.ficha-hdr{background:radial-gradient(130% 150% at 0% 0%,#1f1f1f 0%,var(--ink) 65%);padding:1.4rem 1.25rem;display:flex;align-items:center;gap:14px}
 .ficha-av{width:64px;height:64px;border-radius:50%;background:var(--red-light);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--red);flex-shrink:0;overflow:hidden;cursor:pointer;border:2px solid var(--red)}
 .ficha-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.ficha-name{font-size:18px;font-weight:700;color:#fff}
+.ficha-name{font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#fff}
 .ficha-belt{font-size:13px;color:rgba(255,255,255,.7);margin-top:2px}
 .ficha-body{padding:1.25rem;flex:1}
 .fsec{margin-bottom:1.5rem}
@@ -127,14 +132,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .fitem{margin-bottom:10px}
 .fitem label{font-size:12px;color:var(--g5);display:block;margin-bottom:3px}
 .fitem input,.fitem select{width:100%;padding:9px 12px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;color:var(--black);background:var(--g1);outline:none}
-.fitem input:focus,.fitem select:focus{border-color:var(--red);background:var(--white)}
+.fitem input:focus,.fitem select:focus{border-color:var(--red);background:var(--white);box-shadow:0 0 0 4px rgba(214,31,38,.1)}
 .ftag-read{font-size:14px;color:var(--black);padding:9px 0}
 .belt-vis{display:flex;align-items:center;gap:8px;padding:9px 0}
 .belt-bar{height:14px;border-radius:3px}
 .chk-row{display:flex;align-items:center;gap:8px;padding:8px 0}
 .chk-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--red);cursor:pointer}
 .chk-row label{font-size:14px;color:var(--black);cursor:pointer}
-.btn-guardar-ficha{width:100%;padding:13px;background:var(--red);color:#fff;border:none;border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
+.btn-guardar-ficha{width:100%;padding:13px;background:linear-gradient(180deg,#e2262d,#bb171d);color:#fff;border:none;border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;box-shadow:0 6px 16px var(--red-glow);transition:transform .12s}
+.btn-guardar-ficha:active{transform:translateY(1px)}
 .btn-back-ficha{width:100%;padding:11px;background:transparent;color:var(--g6);border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;cursor:pointer;margin-top:8px}
 .foto-input{display:none}
 .ficha-foto-hint{font-size:11px;color:rgba(255,255,255,.5);margin-top:4px}
@@ -151,15 +157,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:1rem}
 .modal-bg.show{display:flex}
 .modal{background:var(--white);border-radius:var(--r);padding:1.5rem;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
-.modal h3{font-size:16px;font-weight:700;margin-bottom:1rem;color:var(--black)}
+.modal h3{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;color:var(--black)}
 .mfield{margin-bottom:12px}
 .mfield label{font-size:12px;font-weight:600;color:#444;display:block;margin-bottom:4px}
 .mfield input,.mfield select{width:100%;padding:9px 12px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;color:var(--black);background:var(--g1);outline:none}
 .mbts{display:flex;gap:8px;margin-top:1rem}
 .mbts button{flex:1;padding:10px;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer}
-.mbts .bconf{background:var(--red);color:#fff}
+.mbts .bconf{background:linear-gradient(180deg,#e2262d,#bb171d);color:#fff;box-shadow:0 4px 12px var(--red-glow)}
 .mbts .bcanc{background:var(--g1);color:#444}
-@media(min-width:600px){body{background:#1a1a1a;align-items:center}.hdr{max-width:480px;width:100%}.card,.tscr,.oscr,.ficha-scr{max-width:480px;width:100%;border-radius:var(--r);margin-top:1rem;flex:none}.card{margin-top:2rem}}
+@media(min-width:600px){body{background:radial-gradient(120% 80% at 50% 0%,#1c1c1c 0%,#0a0a0a 70%);align-items:center}.hdr{max-width:480px;width:100%;border-radius:var(--r) var(--r) 0 0;margin-top:2rem;border-bottom:none}.card,.tscr,.oscr,.ficha-scr{max-width:480px;width:100%;border-radius:0 0 var(--r) var(--r);flex:none;box-shadow:var(--shadow)}.card{border-radius:0 0 var(--r) var(--r)}}
 </style>
 </head>
 <body>
