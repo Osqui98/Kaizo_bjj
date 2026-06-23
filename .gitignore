@@ -1,0 +1,6 @@
+# Claude Code (config local, no subir)
+.claude/
+
+# Archivos de SO
+Thumbs.db
+.DS_Store
