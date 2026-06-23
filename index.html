@@ -457,14 +457,16 @@ function mkConfirm(a) {
   var bc=BELT_COLORS[belt]||'#e0e0e0';
   var warn=esTarde?'<div style="background:#fff5e6;border-radius:8px;padding:8px 12px;font-size:13px;color:#854F0B;margin-bottom:12px">Llegaste +'+minTarde+' min tarde</div>':'';
   var avHTML = a.foto_url ? '<img src="'+a.foto_url+'" />' : ini;
+  var hayClase = !!claseSeleccionada;
   document.getElementById('cp').innerHTML=
     '<div class="acard"><div class="aav">'+avHTML+'</div><div><div class="aname">'+(a.nombre||'')+' '+(a.apellido||'')+'</div><div class="asub"><span style="display:inline-block;width:24px;height:8px;background:'+bc+';border-radius:2px;vertical-align:middle;margin-right:4px"></span>'+belt+(a.stripes?' - '+a.stripes+' grados':'')+'</div></div></div>'+
     warn+
-    '<button class="bok'+(esTarde?' org':'')+'" id="bcnf">Confirmar asistencia</button>'+
-    '<button class="bsec" id="bni">No soy yo</button>'+
-    '<button class="btn-ficha" id="bvf" style="margin-top:8px">Ver mi ficha</button>';
-  document.getElementById('bcnf').onclick = confirmarAsistencia;
-  document.getElementById('bni').onclick = init;
+    (hayClase?'<button class="bok'+(esTarde?' org':'')+'" id="bcnf">Confirmar asistencia</button><button class="bsec" id="bni">No soy yo</button>':'')+
+    '<button class="'+(hayClase?'btn-ficha':'bok')+'" id="bvf" style="margin-top:8px">Ver / editar mi ficha</button>';
+  if(hayClase){
+    document.getElementById('bcnf').onclick = confirmarAsistencia;
+    document.getElementById('bni').onclick = init;
+  }
   document.getElementById('bvf').onclick = function(){ mostrarFicha(a); };
 }
 
@@ -788,7 +790,7 @@ async function mostrarFicha(a) {
   function volverDesFicha() {
     document.getElementById('fs').classList.remove('show');
     document.getElementById('mc').classList.remove('hide');
-    if(alu) mkConfirm(alu); else init();
+    if(alu && claseSeleccionada) mkConfirm(alu); else init();
   }
 
   document.getElementById('bgficha').onclick = function() { guardarFicha(a, volverDesFicha); };
