@@ -225,6 +225,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <div class="mfield"><label>Modalidad</label>
       <select id="mt-mod"><option value="Gi">Gi</option><option value="NoGi">NoGi</option></select>
     </div>
+    <div class="mfield"><label>División / Categoría</label>
+      <select id="mt-cat">
+        <option value="">Sin especificar</option>
+        <option value="Infantil">Infantil</option>
+        <option value="Juvenil">Juvenil</option>
+        <option value="Adulto">Adulto</option>
+        <option value="Master 1">Master 1</option>
+        <option value="Master 2">Master 2</option>
+        <option value="Master 3+">Master 3+</option>
+      </select>
+    </div>
     <div class="mfield"><label>Peso (kg)</label><input type="number" id="mt-peso" placeholder="70" step="0.5" /></div>
     <div class="mfield"><label>Puesto obtenido</label>
       <select id="mt-puesto">
@@ -275,7 +286,8 @@ tick();
 
 function toM(t) { var p=t.split(':'); return +p[0]*60+ +p[1]; }
 function mNow() { return ahora.getHours()*60+ahora.getMinutes(); }
-function dHoy() { return ahora.toISOString().slice(0,10); }
+function ymdLocal(d){ d=d||new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+function dHoy() { return ymdLocal(ahora); }
 function normDNI(v) { return v.replace(/[^0-9]/g,''); }
 
 async function cargarClases() {
@@ -754,9 +766,10 @@ function abrirModalTorneo(a, listaTorneos) {
     var mod = document.getElementById('mt-mod').value;
     var peso = parseFloat(document.getElementById('mt-peso').value) || null;
     var puesto = parseInt(document.getElementById('mt-puesto').value) || null;
+    var cat = document.getElementById('mt-cat') ? document.getElementById('mt-cat').value : '';
     var r = await sb.from('torneos_participantes').insert({
       torneo_id:torneoId, alumno_id:a.id, nombre:a.nombre, apellido:a.apellido,
-      modalidad:mod, peso:peso, cinturon:a.cinturon, puesto:puesto, cargado_por:'alumno'
+      modalidad:mod, peso:peso, cinturon:a.cinturon, puesto:puesto, categoria:cat||null, cargado_por:'alumno'
     });
     if(r.error) { alert('Error: '+r.error.message); return; }
     document.getElementById('modal-torneo').classList.remove('show');
