@@ -459,6 +459,7 @@ function mkSeleccionClase(a) {
 }
 
 function mkConfirm(a) {
+  cancelAutoConfirm();
   var ini=((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
   var belt=a.cinturon||'blanco';
   var bc=BELT_COLORS[belt]||'#e0e0e0';
@@ -468,13 +469,42 @@ function mkConfirm(a) {
   document.getElementById('cp').innerHTML=
     '<div class="acard"><div class="aav">'+avHTML+'</div><div><div class="aname">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="asub"><span style="display:inline-block;width:24px;height:8px;background:'+bc+';border-radius:2px;vertical-align:middle;margin-right:4px"></span>'+escHTML(belt)+(a.stripes?' - '+a.stripes+' grados':'')+'</div></div></div>'+
     warn+
-    (hayClase?'<button class="bok'+(esTarde?' org':'')+'" id="bcnf">Confirmar asistencia</button><button class="bsec" id="bni">No soy yo</button>':'')+
+    (hayClase?
+      '<button class="bok'+(esTarde?' org':'')+'" id="bcnf">Confirmar asistencia</button>'+
+      '<div style="margin-top:.75rem;padding:.6rem .8rem;background:var(--g1);border-radius:var(--rs)">'+
+        '<div style="height:3px;background:var(--g2);border-radius:3px;overflow:hidden"><div id="confirm-bar" style="height:100%;background:var(--red);border-radius:3px;width:100%;transition:width 3s linear"></div></div>'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">'+
+          '<span style="font-size:12px;color:var(--g5)">Confirmando en <strong id="confirm-count">3</strong>s...</span>'+
+          '<button id="btn-cancel-auto" style="font-size:12px;color:var(--g5);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Cancelar</button>'+
+        '</div>'+
+      '</div>'+
+      '<button class="bsec" id="bni" style="margin-top:8px">No soy yo</button>'
+    : '')+
     '<button class="'+(hayClase?'btn-ficha':'bok')+'" id="bvf" style="margin-top:8px">Ver / editar mi ficha</button>';
-  if(hayClase){
-    document.getElementById('bcnf').onclick = confirmarAsistencia;
-    document.getElementById('bni').onclick = init;
+
+  if(hayClase) {
+    document.getElementById('bcnf').onclick = function(){ cancelAutoConfirm(); confirmarAsistencia(); };
+    document.getElementById('bni').onclick = function(){ volverADNI(); };
+    document.getElementById('btn-cancel-auto').onclick = function(){ cancelAutoConfirm(); };
+
+    // Iniciar countdown de 3s
+    setTimeout(function(){
+      var bar = document.getElementById('confirm-bar');
+      if(bar) bar.style.width = '0%';
+    }, 40);
+
+    var secs = 3;
+    _autoConfirmTimer = setInterval(function(){
+      secs--;
+      var el = document.getElementById('confirm-count');
+      if(el) el.textContent = secs;
+      if(secs <= 0) {
+        cancelAutoConfirm();
+        confirmarAsistencia();
+      }
+    }, 1000);
   }
-  document.getElementById('bvf').onclick = function(){ mostrarFicha(a); };
+  document.getElementById('bvf').onclick = function(){ cancelAutoConfirm(); mostrarFicha(a); };
 }
 
 function mkFichaCompleta(a) {
@@ -531,6 +561,25 @@ async function regNuevo(dni) {
 }
 
 var _asistRegistrando = false;
+var _autoConfirmTimer = null;
+var _volverTimer = null;
+
+function cancelAutoConfirm() {
+  if(_autoConfirmTimer) { clearInterval(_autoConfirmTimer); _autoConfirmTimer = null; }
+}
+
+function volverADNI() {
+  cancelAutoConfirm();
+  alu=null; claseSeleccionada=null; esTarde=false; minTarde=0; _asistRegistrando=false;
+  if(clasesActivas && clasesActivas.length) {
+    document.getElementById('cp').innerHTML = mkDNI(clasesActivas);
+    bindDNI();
+    var di = document.getElementById('di');
+    if(di){ di.value=''; setTimeout(function(){ di.focus(); }, 60); }
+  } else {
+    init();
+  }
+}
 async function confirmarAsistencia() {
   if(!alu||!claseSeleccionada) return;
   if(_asistRegistrando) return;
@@ -600,6 +649,22 @@ function mostrarOk(est,mot,cf,hs) {
     '</div>';
   var otm=document.getElementById('otm'); otm.textContent=est&&mot?'Motivo: '+mot:''; otm.style.display=(est&&mot)?'block':'none';
   document.getElementById('ofi').style.display=cf?'block':'none';
+
+  // Auto-reset en 5s
+  if(_volverTimer) clearInterval(_volverTimer);
+  var vsecs = 5;
+  var vBtn = document.getElementById('bvlv');
+  if(vBtn) {
+    vBtn.textContent = 'Volver ('+vsecs+'s)';
+    vBtn.onclick = function(){ if(_volverTimer){clearInterval(_volverTimer);_volverTimer=null;} volver(); };
+  }
+  _volverTimer = setInterval(function(){
+    vsecs--;
+    var b = document.getElementById('bvlv');
+    if(b) b.textContent = vsecs>0 ? 'Volver ('+vsecs+'s)' : 'Volviendo...';
+    if(vsecs <= 0){ clearInterval(_volverTimer); _volverTimer=null; volver(); }
+  }, 1000);
+
   // Cumpleaños — Jackrabbit style
   if(alu && alu.fecha_nac && esCumple(alu.fecha_nac)) {
     document.getElementById('ot').textContent = '&#127874; &#161;Feliz cumplea&#241;os!';
@@ -622,6 +687,8 @@ function esCumple(fecha_nac) {
 }
 
 function volver() {
+  cancelAutoConfirm();
+  if(_volverTimer){ clearInterval(_volverTimer); _volverTimer=null; }
   alu=null;motivoSel=null;sexoSel=null;esTarde=false;minTarde=0;claseSeleccionada=null;_asistRegistrando=false;
   var det=document.getElementById('odet'); if(det){det.style.display='none';det.innerHTML='';}
   document.getElementById('mc').classList.remove('hide');
