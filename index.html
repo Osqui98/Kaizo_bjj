@@ -268,6 +268,12 @@ const SB_URL = 'https://whaqfschfxztiuhvqwam.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoYXFmc2NoZnh6dGl1aHZxd2FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTM0NjgsImV4cCI6MjA5NzYyOTQ2OH0.cKmCBX-BrvdveqSdFvbDH0dOyOB-cPPwYRvEiPpDpRs';
 const sb = supabase.createClient(SB_URL, SB_KEY);
 
+// Escape de HTML para prevenir XSS — aplica en TODOS los datos de usuario insertados en innerHTML
+function escHTML(s) {
+  if(s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+
 var CLASES = [];
 var BELT_COLORS = {blanco:'#e0e0e0',azul:'#2980b9',violeta:'#8e44ad',marron:'#7f5539',negro:'#1a1a1a'};
 var DN = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
@@ -428,10 +434,10 @@ async function buscarDNI() {
 
 function mkSeleccionClase(a) {
   var ini = ((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
-  var h = '<div class="acard"><div class="aav">'+ini+'</div><div><div class="aname">'+(a.nombre||'')+' '+(a.apellido||'')+'</div><div class="asub">Selecciona la clase</div></div></div>';
+  var h = '<div class="acard"><div class="aav">'+ini+'</div><div><div class="aname">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="asub">Selecciona la clase</div></div></div>';
   h += '<div class="clase-opts">';
   clasesActivas.forEach(function(c,i) {
-    h += '<div class="clase-opt" data-idx="'+i+'"><div class="clase-opt-info"><div class="clase-opt-nom">'+c.nom+'</div><div class="clase-opt-sub">'+c.pro+' - '+c.hi+' a '+c.hf+'</div></div><svg class="clase-opt-chk" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>';
+    h += '<div class="clase-opt" data-idx="'+i+'"><div class="clase-opt-info"><div class="clase-opt-nom">'+escHTML(c.nom)+'</div><div class="clase-opt-sub">'+escHTML(c.pro)+' - '+escHTML(c.hi)+' a '+escHTML(c.hf)+'</div></div><svg class="clase-opt-chk" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>';
   });
   h += '</div><button class="bok" id="bcnf-clase" style="display:none">Confirmar asistencia</button>';
   document.getElementById('cp').innerHTML = h;
@@ -456,10 +462,10 @@ function mkConfirm(a) {
   var belt=a.cinturon||'blanco';
   var bc=BELT_COLORS[belt]||'#e0e0e0';
   var warn=esTarde?'<div style="background:#fff5e6;border-radius:8px;padding:8px 12px;font-size:13px;color:#854F0B;margin-bottom:12px">Llegaste +'+minTarde+' min tarde</div>':'';
-  var avHTML = a.foto_url ? '<img src="'+a.foto_url+'" />' : ini;
+  var avHTML = a.foto_url ? '<img src="'+escHTML(a.foto_url)+'" />' : ini;
   var hayClase = !!claseSeleccionada;
   document.getElementById('cp').innerHTML=
-    '<div class="acard"><div class="aav">'+avHTML+'</div><div><div class="aname">'+(a.nombre||'')+' '+(a.apellido||'')+'</div><div class="asub"><span style="display:inline-block;width:24px;height:8px;background:'+bc+';border-radius:2px;vertical-align:middle;margin-right:4px"></span>'+belt+(a.stripes?' - '+a.stripes+' grados':'')+'</div></div></div>'+
+    '<div class="acard"><div class="aav">'+avHTML+'</div><div><div class="aname">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="asub"><span style="display:inline-block;width:24px;height:8px;background:'+bc+';border-radius:2px;vertical-align:middle;margin-right:4px"></span>'+escHTML(belt)+(a.stripes?' - '+a.stripes+' grados':'')+'</div></div></div>'+
     warn+
     (hayClase?'<button class="bok'+(esTarde?' org':'')+'" id="bcnf">Confirmar asistencia</button><button class="bsec" id="bni">No soy yo</button>':'')+
     '<button class="'+(hayClase?'btn-ficha':'bok')+'" id="bvf" style="margin-top:8px">Ver / editar mi ficha</button>';
@@ -475,7 +481,7 @@ function mkFichaCompleta(a) {
   var fN=!a.nombre||!a.apellido, fF=!a.fecha_nac, fS=!a.sexo;
   var h='<h2>Completa tu ficha</h2><p class="sub">Faltan algunos datos obligatorios</p>';
   h+='<div class="emsg" id="ef"></div>';
-  if(fN) h+='<div class="frow"><div class="ff"><label class="fl">Nombre *</label><input type="text" class="fi" id="fn" placeholder="Matias" value="'+(a.nombre||'')+'" /></div><div class="ff"><label class="fl">Apellido *</label><input type="text" class="fi" id="fa" placeholder="Garcia" value="'+(a.apellido||'')+'" /></div></div>';
+  if(fN) h+='<div class="frow"><div class="ff"><label class="fl">Nombre *</label><input type="text" class="fi" id="fn" placeholder="Matias" value="'+escHTML(a.nombre||'')+'" /></div><div class="ff"><label class="fl">Apellido *</label><input type="text" class="fi" id="fa" placeholder="Garcia" value="'+escHTML(a.apellido||'')+'" /></div></div>';
   if(fF) h+='<div class="ff"><label class="fl">Fecha de nacimiento *</label><input type="date" class="fi" id="ff" /></div>';
   if(fS) h+='<div class="ff"><label class="fl">Sexo *</label><div class="sxo"><button class="sxb" data-sx="masculino">Masculino</button><button class="sxb" data-sx="femenino">Femenino</button><button class="sxb" data-sx="otro">Otro</button></div></div>';
   h+='<button class="bok" id="bgf">Guardar y continuar</button>';
@@ -523,8 +529,11 @@ async function regNuevo(dni) {
   mkConfirm(r.data);
 }
 
+var _asistRegistrando = false;
 async function confirmarAsistencia() {
   if(!alu||!claseSeleccionada) return;
+  if(_asistRegistrando) return;
+  _asistRegistrando = true;
   var btn=document.getElementById('bcnf'); if(btn){btn.disabled=true;btn.textContent='Registrando...';}
   if(esTarde) {
     document.getElementById('mc').classList.add('hide');
@@ -563,7 +572,7 @@ async function registrar(est,mot) {
     var r=await sb.from('asistencia').insert({alumno_id:alu.id,nombre:alu.nombre,apellido:alu.apellido,fecha:dHoy(),turno:claseSeleccionada.tur,horario:claseSeleccionada.hi+' - '+claseSeleccionada.hf,tarde:est,motivo_tarde:mot,con_fisico:cf,timestamp:ahora.toISOString()});
     if(r.error) throw r.error;
     mostrarOk(est,mot,cf,hs);
-  } catch(e) { console.error(e); var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} alert('Error al registrar. Intenta de nuevo.'); }
+  } catch(e) { console.error(e); _asistRegistrando=false; var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} alert('Error al registrar. Intenta de nuevo.'); }
 }
 
 function mostrarOk(est,mot,cf,hs) {
@@ -580,20 +589,20 @@ function mostrarOk(est,mot,cf,hs) {
   det.innerHTML=
     '<div style="margin-bottom:8px">'+
       '<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em">Clase</div>'+
-      '<div style="font-size:14px;font-weight:600;margin-top:2px">'+(claseSeleccionada.nom||'')+'</div>'+
+      '<div style="font-size:14px;font-weight:600;margin-top:2px">'+escHTML(claseSeleccionada.nom||'')+'</div>'+
     '</div>'+
     '<div style="display:flex;gap:16px">'+
       '<div><div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em">Horario</div>'+
-      '<div style="font-size:13px;font-weight:600;margin-top:2px">'+(claseSeleccionada.hi||'')+' - '+(claseSeleccionada.hf||'')+'</div></div>'+
+      '<div style="font-size:13px;font-weight:600;margin-top:2px">'+escHTML(claseSeleccionada.hi||'')+' - '+escHTML(claseSeleccionada.hf||'')+'</div></div>'+
       '<div><div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em">Llegada</div>'+
-      '<div style="font-size:13px;font-weight:600;margin-top:2px;color:'+(est?'var(--orange)':'var(--green)')+'">'+hs+(est?' (+'+minTarde+' min)':' ✓')+'</div></div>'+
+      '<div style="font-size:13px;font-weight:600;margin-top:2px;color:'+(est?'var(--orange)':'var(--green)')+'">'+escHTML(hs)+(est?' (+'+minTarde+' min)':' ✓')+'</div></div>'+
     '</div>';
   var otm=document.getElementById('otm'); otm.textContent=est&&mot?'Motivo: '+mot:''; otm.style.display=(est&&mot)?'block':'none';
   document.getElementById('ofi').style.display=cf?'block':'none';
 }
 
 function volver() {
-  alu=null;motivoSel=null;sexoSel=null;esTarde=false;minTarde=0;claseSeleccionada=null;
+  alu=null;motivoSel=null;sexoSel=null;esTarde=false;minTarde=0;claseSeleccionada=null;_asistRegistrando=false;
   var det=document.getElementById('odet'); if(det){det.style.display='none';det.innerHTML='';}
   document.getElementById('mc').classList.remove('hide');
   document.getElementById('ts').classList.remove('show');
@@ -635,7 +644,7 @@ async function mostrarFicha(a) {
   document.getElementById('f-belt').textContent = gradosStr;
   var fav = document.getElementById('fav');
   if(a.foto_url) {
-    fav.innerHTML = '<img src="'+a.foto_url+'" />';
+    fav.innerHTML = '<img src="'+escHTML(a.foto_url)+'" />';
   } else {
     fav.innerHTML = '<span>'+ini+'</span>';
   }
@@ -664,7 +673,7 @@ async function mostrarFicha(a) {
       };
       document.getElementById('btn-cancelar-foto').onclick = function() {
         bar.remove();
-        fav.innerHTML = a.foto_url ? '<img src="'+a.foto_url+'" />' : '<span>'+ini+'</span>';
+        fav.innerHTML = a.foto_url ? '<img src="'+escHTML(a.foto_url)+'" />' : '<span>'+ini+'</span>';
       };
     };
     reader.readAsDataURL(file);
@@ -695,7 +704,7 @@ async function mostrarFicha(a) {
     torneos.forEach(function(t) {
       var pClass = t.puesto===1?'puesto-1':t.puesto===2?'puesto-2':t.puesto===3?'puesto-3':'';
       var pText = t.puesto?t.puesto+'° puesto':'Participé';
-      torneosHTML += '<div class="torneo-item"><div class="torneo-nom">'+(t.torneos?t.torneos.nombre:'Torneo')+'</div><div class="torneo-sub">'+(t.torneos?t.torneos.fecha:'')+' - '+t.modalidad+' - '+t.peso+'kg</div>'+(pClass?'<span class="puesto-badge '+pClass+'">'+pText+'</span>':'')+'</div>';
+      torneosHTML += '<div class="torneo-item"><div class="torneo-nom">'+escHTML(t.torneos?t.torneos.nombre:'Torneo')+'</div><div class="torneo-sub">'+escHTML(t.torneos?t.torneos.fecha:'')+' - '+escHTML(t.modalidad)+' - '+escHTML(String(t.peso||''))+'kg</div>'+(pClass?'<span class="puesto-badge '+pClass+'">'+pText+'</span>':'')+'</div>';
     });
   } else {
     torneosHTML += '<div style="font-size:13px;color:var(--g5);padding:8px 0">Sin participaciones registradas</div>';
@@ -708,12 +717,12 @@ async function mostrarFicha(a) {
   if(esMenor) {
     tutorHTML = '<div class="fsec"><div class="fsec-title">Datos del tutor</div>'+
       '<div class="frow2">'+
-      '<div class="fitem"><label>Nombre</label><input type="text" class="fi" id="f-tn" value="'+(a.tutor_nombre||'')+'" placeholder="Nombre" /></div>'+
+      '<div class="fitem"><label>Nombre</label><input type="text" class="fi" id="f-tn" value="'+escHTML(a.tutor_nombre||'')+'" placeholder="Nombre" /></div>'+
       '<div class="fitem"><label>Relacion</label><select class="fi" id="f-tr"><option value="">-</option><option '+(a.tutor_relacion==='padre'?'selected':'')+'>padre</option><option '+(a.tutor_relacion==='madre'?'selected':'')+'>madre</option><option '+(a.tutor_relacion==='tutor'?'selected':'')+'>tutor</option></select></div>'+
       '</div>'+
       '<div class="frow2">'+
-      '<div class="fitem"><label>Telefono</label><input type="tel" class="fi" id="f-ttel" value="'+(a.tutor_telefono||'')+'" placeholder="+54..." /></div>'+
-      '<div class="fitem"><label>Email</label><input type="email" class="fi" id="f-tem" value="'+(a.tutor_email||'')+'" placeholder="email@..." /></div>'+
+      '<div class="fitem"><label>Telefono</label><input type="tel" class="fi" id="f-ttel" value="'+escHTML(a.tutor_telefono||'')+'" placeholder="+54..." /></div>'+
+      '<div class="fitem"><label>Email</label><input type="email" class="fi" id="f-tem" value="'+escHTML(a.tutor_email||'')+'" placeholder="email@..." /></div>'+
       '</div></div>';
   }
 
@@ -721,19 +730,19 @@ async function mostrarFicha(a) {
     ? torneos.map(function(t){
         var pC=t.puesto===1?'puesto-1':t.puesto===2?'puesto-2':t.puesto===3?'puesto-3':'';
         var pT=t.puesto?t.puesto+'° puesto':'Participe';
-        return '<div class="torneo-item"><div class="torneo-nom">'+(t.torneos?t.torneos.nombre:'Torneo')+'</div><div class="torneo-sub">'+(t.torneos?t.torneos.fecha:'')+' - '+t.modalidad+(t.peso?' - '+t.peso+'kg':'')+'</div>'+(pC?'<span class="puesto-badge '+pC+'">'+pT+'</span>':'')+'</div>';
+        return '<div class="torneo-item"><div class="torneo-nom">'+escHTML(t.torneos?t.torneos.nombre:'Torneo')+'</div><div class="torneo-sub">'+escHTML(t.torneos?t.torneos.fecha:'')+' - '+escHTML(t.modalidad)+(t.peso?' - '+escHTML(String(t.peso))+'kg':'')+'</div>'+(pC?'<span class="puesto-badge '+pC+'">'+pT+'</span>':'')+'</div>';
       }).join('')
     : '<div style="font-size:13px;color:var(--g5);padding:8px 0">Sin participaciones registradas</div>';
 
   var tutorContent = esMenor
     ? '<div style="margin-top:1rem"><div class="fsec-title" style="margin-bottom:10px">Datos del tutor</div>'+
       '<div class="frow2">'+
-      '<div class="fitem"><label>Nombre</label><input type="text" class="fi" id="f-tn" value="'+(a.tutor_nombre||'')+'" placeholder="Nombre" /></div>'+
+      '<div class="fitem"><label>Nombre</label><input type="text" class="fi" id="f-tn" value="'+escHTML(a.tutor_nombre||'')+'" placeholder="Nombre" /></div>'+
       '<div class="fitem"><label>Relacion</label><select class="fi" id="f-tr"><option value="">-</option><option '+(a.tutor_relacion==='padre'?'selected':'')+' value="padre">Padre</option><option '+(a.tutor_relacion==='madre'?'selected':'')+' value="madre">Madre</option><option '+(a.tutor_relacion==='tutor'?'selected':'')+' value="tutor">Tutor</option></select></div>'+
       '</div>'+
       '<div class="frow2">'+
-      '<div class="fitem"><label>Telefono</label><input type="tel" class="fi" id="f-ttel" value="'+(a.tutor_telefono||'')+'" placeholder="+54..." /></div>'+
-      '<div class="fitem"><label>Email</label><input type="email" class="fi" id="f-tem" value="'+(a.tutor_email||'')+'" placeholder="email@..." /></div>'+
+      '<div class="fitem"><label>Telefono</label><input type="tel" class="fi" id="f-ttel" value="'+escHTML(a.tutor_telefono||'')+'" placeholder="+54..." /></div>'+
+      '<div class="fitem"><label>Email</label><input type="email" class="fi" id="f-tem" value="'+escHTML(a.tutor_email||'')+'" placeholder="email@..." /></div>'+
       '</div></div>'
     : '';
 
@@ -748,34 +757,34 @@ async function mostrarFicha(a) {
     // ── Tab 1: Mi info
     '<div id="ftab-info" class="ftab-panel on">'+
     '<div class="frow2">'+
-    '<div class="fitem"><label>Telefono</label><input type="tel" class="fi" id="f-tel" value="'+(a.telefono||'')+'" placeholder="+54..." /></div>'+
-    '<div class="fitem"><label>Email</label><input type="email" class="fi" id="f-email" value="'+(a.email||'')+'" placeholder="email@..." /></div>'+
+    '<div class="fitem"><label>Telefono</label><input type="tel" class="fi" id="f-tel" value="'+escHTML(a.telefono||'')+'" placeholder="+54..." /></div>'+
+    '<div class="fitem"><label>Email</label><input type="email" class="fi" id="f-email" value="'+escHTML(a.email||'')+'" placeholder="email@..." /></div>'+
     '</div>'+
-    '<div class="fitem"><label>Domicilio</label><input type="text" class="fi" id="f-dom" value="'+(a.domicilio||'')+'" placeholder="Calle, numero, piso" /></div>'+
-    '<div class="fitem"><label>Instagram</label><input type="text" class="fi" id="f-ig" value="'+(a.instagram||'')+'" placeholder="@usuario" /></div>'+
+    '<div class="fitem"><label>Domicilio</label><input type="text" class="fi" id="f-dom" value="'+escHTML(a.domicilio||'')+'" placeholder="Calle, numero, piso" /></div>'+
+    '<div class="fitem"><label>Instagram</label><input type="text" class="fi" id="f-ig" value="'+escHTML(a.instagram||'')+'" placeholder="@usuario" /></div>'+
     '<div class="frow2" style="margin-top:4px">'+
-    '<div class="fitem"><label>Peso (kg)</label><input type="number" class="fi" id="f-peso" value="'+(a.peso||'')+'" placeholder="70" step="0.5" /></div>'+
-    '<div class="fitem"><label>Altura (cm)</label><input type="number" class="fi" id="f-alt" value="'+(a.altura||'')+'" placeholder="175" /></div>'+
+    '<div class="fitem"><label>Peso (kg)</label><input type="number" class="fi" id="f-peso" value="'+escHTML(String(a.peso||''))+'" placeholder="70" step="0.5" /></div>'+
+    '<div class="fitem"><label>Altura (cm)</label><input type="number" class="fi" id="f-alt" value="'+escHTML(String(a.altura||''))+'" placeholder="175" /></div>'+
     '</div>'+
     '<div class="chk-row"><input type="checkbox" id="f-apto" '+(a.apto_fisico?'checked':'')+' /><label for="f-apto">Tengo apto fisico vigente</label></div>'+
-    '<div class="fitem"><label>Vencimiento apto</label><input type="date" class="fi" id="f-aptov" value="'+(a.apto_vencimiento||'')+'" /></div>'+
+    '<div class="fitem"><label>Vencimiento apto</label><input type="date" class="fi" id="f-aptov" value="'+escHTML(a.apto_vencimiento||'')+'" /></div>'+
     '<div class="chk-row"><input type="checkbox" id="f-comp" '+(a.es_competidor?'checked':'')+' /><label for="f-comp">Soy competidor / quiero competir</label></div>'+
     '</div>'+
 
     // ── Tab 2: Emergencia
     '<div id="ftab-emerg" class="ftab-panel">'+
     '<div class="frow2">'+
-    '<div class="fitem"><label>Nombre</label><input type="text" class="fi" id="f-en" value="'+(a.emerg_nombre||'')+'" placeholder="Nombre" /></div>'+
-    '<div class="fitem"><label>Relacion</label><input type="text" class="fi" id="f-er" value="'+(a.emerg_relacion||'')+'" placeholder="Esposa, padre..." /></div>'+
+    '<div class="fitem"><label>Nombre</label><input type="text" class="fi" id="f-en" value="'+escHTML(a.emerg_nombre||'')+'" placeholder="Nombre" /></div>'+
+    '<div class="fitem"><label>Relacion</label><input type="text" class="fi" id="f-er" value="'+escHTML(a.emerg_relacion||'')+'" placeholder="Esposa, padre..." /></div>'+
     '</div>'+
-    '<div class="fitem"><label>Telefono de emergencia</label><input type="tel" class="fi" id="f-etel" value="'+(a.emerg_telefono||'')+'" placeholder="+54..." /></div>'+
+    '<div class="fitem"><label>Telefono de emergencia</label><input type="tel" class="fi" id="f-etel" value="'+escHTML(a.emerg_telefono||'')+'" placeholder="+54..." /></div>'+
     tutorContent+
     '</div>'+
 
     // ── Tab 3: Competencias
     '<div id="ftab-comp" class="ftab-panel">'+
     '<div class="fsec-title" style="margin-bottom:8px">Cinturon</div>'+
-    '<div class="belt-vis" style="margin-bottom:1.25rem"><div class="belt-bar" style="background:'+(BELT_COLORS[a.cinturon||'blanco']||'#e0e0e0')+';width:50px"></div><span style="font-size:14px">'+(a.cinturon||'blanco')+(a.stripes?' - '+a.stripes+' grado'+(a.stripes>1?'s':''): '')+'</span></div>'+
+    '<div class="belt-vis" style="margin-bottom:1.25rem"><div class="belt-bar" style="background:'+(BELT_COLORS[a.cinturon||'blanco']||'#e0e0e0')+';width:50px"></div><span style="font-size:14px">'+escHTML(a.cinturon||'blanco')+(a.stripes?' - '+a.stripes+' grado'+(a.stripes>1?'s':''): '')+'</span></div>'+
     '<div class="fsec-title" style="margin-bottom:8px">Torneos</div>'+
     torneosContent+
     (listaTorneos.length?'<button class="btn-add-torneo" id="badd-torneo">+ Registrar participacion</button>':'')+
@@ -853,7 +862,7 @@ async function guardarFicha(a, onDone) {
 
 function abrirModalTorneo(a, listaTorneos) {
   var sel = document.getElementById('mt-torneo');
-  sel.innerHTML = listaTorneos.map(function(t){ return '<option value="'+t.id+'">'+t.nombre+' ('+t.fecha+')</option>'; }).join('');
+  sel.innerHTML = listaTorneos.map(function(t){ return '<option value="'+escHTML(String(t.id))+'">'+escHTML(t.nombre)+' ('+escHTML(t.fecha)+')</option>'; }).join('');
   document.getElementById('mt-peso').value = a.peso || '';
   document.getElementById('modal-torneo').classList.add('show');
   document.getElementById('mt-cancel').onclick = function() { document.getElementById('modal-torneo').classList.remove('show'); };
