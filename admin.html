@@ -150,6 +150,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--green);color:var(--white);padding:10px 20px;border-radius:99px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
 .toast.show{opacity:1}
 @media(max-width:600px){.main{padding:.75rem}.stats-grid{grid-template-columns:1fr 1fr}.topbar h1{font-size:13px}}
+/* ── CUMPLEAÑOS ── */
+.cumple-widget{background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #f0c040;border-radius:var(--r);padding:.85rem 1.25rem;margin-bottom:1.25rem;display:none}
+.cumple-widget.show{display:block}
+[data-theme="dark"] .cumple-widget{background:linear-gradient(135deg,#2d2200,#261c00);border-color:#6b4e00}
+.cumple-title{font-size:13px;font-weight:700;color:#92640a;margin-bottom:.55rem;display:flex;align-items:center;gap:6px}
+[data-theme="dark"] .cumple-title{color:#d4a50d}
+.cumple-item{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid rgba(240,192,64,.25)}
+.cumple-item:last-child{border-bottom:none}
+.cumple-nom{font-size:13px;font-weight:600;color:var(--black);flex:1}
+.cumple-dias{font-size:12px;font-weight:700;color:#92640a;white-space:nowrap}
+[data-theme="dark"] .cumple-dias{color:#d4a50d}
+.cumple-hoy{background:#f0c040;color:#5c3d00;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
 /* ── FICHA EDITAR (modal premium) ───────────────────────────── */
 .fe-bg{display:none;position:fixed;inset:0;background:rgba(8,8,10,.66);backdrop-filter:blur(4px);z-index:300;align-items:flex-end;justify-content:center}
 .fe-bg.show{display:flex}
@@ -586,6 +598,43 @@ function punctBadge(n) {
   return '<span class="punct-badge punct-prob">Problematico ('+n+')</span>';
 }
 
+// ── CUMPLEAÑOS ───────────────────────────────────────────────
+function esCumpleHoy(fecha_nac) {
+  if(!fecha_nac) return false;
+  var h=new Date(), d=new Date(fecha_nac+'T00:00:00');
+  return d.getMonth()===h.getMonth() && d.getDate()===h.getDate();
+}
+
+function diasParaCumple(fecha_nac) {
+  if(!fecha_nac) return 999;
+  var h=new Date(); h.setHours(0,0,0,0);
+  var d=new Date(fecha_nac+'T00:00:00');
+  var ty=new Date(h.getFullYear(),d.getMonth(),d.getDate());
+  var diff=Math.round((ty-h)/86400000);
+  if(diff<0){ var ny=new Date(h.getFullYear()+1,d.getMonth(),d.getDate()); diff=Math.round((ny-h)/86400000); }
+  return diff;
+}
+
+async function cargarCumples() {
+  var r=await sb.from('alumnos').select('id,nombre,apellido,foto_url,fecha_nac').eq('activo',true);
+  var lista=(r.data||[]).map(function(a){ return Object.assign({},a,{_dias:diasParaCumple(a.fecha_nac)}); })
+    .filter(function(a){ return a.fecha_nac && a._dias<=6; })
+    .sort(function(a,b){ return a._dias-b._dias; });
+  var w=document.getElementById('cumples-widget');
+  if(!w||!lista.length) return;
+  w.classList.add('show');
+  w.innerHTML='<div class="cumple-title">&#127874; Cumpleaños esta semana ('+lista.length+')</div>'+
+    lista.map(function(a){
+      var av=a.foto_url
+        ?'<img src="'+escHTML(a.foto_url)+'" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0">'
+        :'<div style="width:28px;height:28px;border-radius:50%;background:#f0c040;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#92640a;flex-shrink:0">'+escHTML((a.nombre||'?')[0].toUpperCase())+'</div>';
+      var dias=a._dias===0
+        ?'<span class="cumple-hoy">&#127881; Hoy!</span>'
+        :'<span class="cumple-dias">en '+a._dias+' d&#237;a'+(a._dias>1?'s':'')+'</span>';
+      return '<div class="cumple-item">'+av+'<span class="cumple-nom">'+escHTML(a.nombre||'')+' '+escHTML(a.apellido||'')+'</span>'+dias+'</div>';
+    }).join('');
+}
+
 // ── HOY ──────────────────────────────────────────────────────
 async function renderHoy() {
   var turnoFiltro = '';
@@ -595,6 +644,7 @@ async function renderHoy() {
   (rclHoy.data||[]).forEach(function(c){ if(c.dia===diaHoy && c.turno_id && turnosHoy.indexOf(c.turno_id)<0) turnosHoy.push(c.turno_id); });
   var optsTurno = '<option value="">Todos los turnos</option>'+turnosHoy.map(function(t){ var l=String(t).replace(/-/g,' '); return '<option value="'+t+'">'+l.charAt(0).toUpperCase()+l.slice(1)+'</option>'; }).join('');
   getMain().innerHTML =
+    '<div id="cumples-widget" class="cumple-widget"></div>'+
     '<div class="stats-grid">'+
     '<div class="stat-card"><div class="stat-label">Presentes hoy</div><div class="stat-num red" id="s-total">-</div></div>'+
     '<div class="stat-card"><div class="stat-label">A tiempo</div><div class="stat-num green" id="s-tiempo">-</div></div>'+
@@ -612,6 +662,7 @@ async function renderHoy() {
     cargarHoy(turnoFiltro);
   };
   cargarHoy('');
+  cargarCumples();
 }
 
 async function cargarHoy(filtro) {
@@ -1045,9 +1096,10 @@ function renderAlumnosPaginado() {
   if(sub) sub.textContent = total+' alumno'+(total!==1?'s':'')+(total!==alumnosAll.length?' (filtrado de '+alumnosAll.length+')':'');
   el.innerHTML = pagina.map(function(a){
     var badge = estadoBadge(a.estado);
+    var cumpleBadge = esCumpleHoy(a.fecha_nac) ? ' <span title="Cumpleaños hoy!" style="font-size:15px">&#127874;</span>' : '';
     return '<div class="row-item" style="cursor:pointer" data-edit-id="'+escHTML(String(a.id))+'">'+
       avHTML(a)+
-      '<div style="flex:1;min-width:0"><div class="row-name">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+(badge?' '+badge:'')+'</div>'+
+      '<div style="flex:1;min-width:0"><div class="row-name">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+cumpleBadge+(badge?' '+badge:'')+'</div>'+
       '<div class="row-sub">'+escHTML(a.turno)+' - '+escHTML(a.sexo)+'</div></div>'+
       beltHTML(a.cinturon,a.stripes)+
       '<div style="margin-left:8px">'+punctBadge(a._tard)+'</div>'+

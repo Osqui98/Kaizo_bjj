@@ -7,6 +7,7 @@
 <link rel="manifest" href="/manifest.json">
 <title>Kaizo BJJ</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -599,6 +600,25 @@ function mostrarOk(est,mot,cf,hs) {
     '</div>';
   var otm=document.getElementById('otm'); otm.textContent=est&&mot?'Motivo: '+mot:''; otm.style.display=(est&&mot)?'block':'none';
   document.getElementById('ofi').style.display=cf?'block':'none';
+  // Cumpleaños — Jackrabbit style
+  if(alu && alu.fecha_nac && esCumple(alu.fecha_nac)) {
+    document.getElementById('ot').textContent = '&#127874; &#161;Feliz cumplea&#241;os!';
+    document.getElementById('on').textContent = (alu.nombre||'')+' '+(alu.apellido||'') + ' &#127881;';
+    oc.className='ocirc green';
+    oc.querySelector('svg').style.color='#27ae60';
+    if(typeof confetti!=='undefined') {
+      var c=['#d61f26','#ffffff','#ff6b6b','#ffcc00'];
+      confetti({particleCount:90,spread:75,origin:{y:0.5},colors:c});
+      setTimeout(function(){confetti({angle:60,particleCount:55,spread:55,origin:{x:0},colors:c});},280);
+      setTimeout(function(){confetti({angle:120,particleCount:55,spread:55,origin:{x:1},colors:c});},420);
+    }
+  }
+}
+
+function esCumple(fecha_nac) {
+  if(!fecha_nac) return false;
+  var h=new Date(), d=new Date(fecha_nac+'T00:00:00');
+  return d.getMonth()===h.getMonth() && d.getDate()===h.getDate();
 }
 
 function volver() {
