@@ -240,6 +240,7 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto'
 const hoy = new Date();
 const fechaHoy = hoy.toISOString().slice(0,10);
 const mesActual = hoy.toISOString().slice(0,7);
+function finMes(){var p=mesActual.split('-'),y=+p[0],m=+p[1];if(m===12){y++;m=1;}else{m++;}return y+'-'+(m<10?'0'+m:m)+'-01';}
 var chartMes = null;
 
 document.getElementById('fecha-hoy').textContent = hoy.getDate()+' de '+MESES[hoy.getMonth()]+' '+hoy.getFullYear();
@@ -366,7 +367,7 @@ async function renderMes() {
 }
 
 async function cargarMes(filtro) {
-  var q = sb.from('asistencia').select('nombre').gte('fecha',mesActual+'-01').lte('fecha',mesActual+'-31');
+  var q = sb.from('asistencia').select('nombre').gte('fecha',mesActual+'-01').lt('fecha',finMes());
   if(filtro) q = q.eq('turno', filtro);
   var [ra, ral] = await Promise.all([q, sb.from('alumnos').select('nombre').eq('activo',true)]);
   var conteo = {};
@@ -539,7 +540,7 @@ async function renderAlumnos() {
     '</div>';
   var [ral, ras] = await Promise.all([
     sb.from('alumnos').select('*').eq('activo',true).order('apellido'),
-    sb.from('asistencia').select('nombre,tarde').gte('fecha',mesActual+'-01').lte('fecha',mesActual+'-31')
+    sb.from('asistencia').select('nombre,tarde').gte('fecha',mesActual+'-01').lt('fecha',finMes())
   ]);
   var tard = {};
   (ras.data||[]).filter(function(x){return x.tarde;}).forEach(function(x){tard[x.nombre]=(tard[x.nombre]||0)+1;});
@@ -807,7 +808,7 @@ async function discontinuarClase(id) {
 
 // ── EXPORT ───────────────────────────────────────────────────
 async function exportarCSV() {
-  var r = await sb.from('asistencia').select('*').gte('fecha',mesActual+'-01').order('fecha');
+  var r = await sb.from('asistencia').select('*').gte('fecha',mesActual+'-01').lt('fecha',finMes()).order('fecha');
   if(!r.data||!r.data.length) { showToast('Sin datos este mes'); return; }
   var rows = [['Fecha','Nombre','Apellido','Turno','Horario','Tarde','Motivo','Con Fisico']];
   r.data.forEach(function(x){ rows.push([x.fecha,x.nombre||'',x.apellido||'',x.turno||'',x.horario||'',x.tarde?'Si':'No',x.motivo_tarde||'',x.con_fisico?'Si':'No']); });
