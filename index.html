@@ -175,6 +175,62 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .mbts .bconf{background:linear-gradient(180deg,#e2262d,#bb171d);color:#fff;box-shadow:0 4px 12px var(--red-glow)}
 .mbts .bcanc{background:var(--g1);color:#444}
 @media(min-width:600px){body{background:radial-gradient(120% 80% at 50% 0%,#1c1c1c 0%,#0a0a0a 70%);align-items:center}.hdr{max-width:480px;width:100%;border-radius:var(--r) var(--r) 0 0;margin-top:2rem;border-bottom:none}.card,.tscr,.oscr,.ficha-scr{max-width:480px;width:100%;border-radius:0 0 var(--r) var(--r);flex:none;box-shadow:var(--shadow)}.card{border-radius:0 0 var(--r) var(--r)}}
+
+/* ── MODERNIZACION INDEX ────────────────────────────── */
+
+/* Header glow */
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--red) 40%,var(--red) 60%,transparent);opacity:.5}
+.hdr{position:relative}
+
+/* Card area */
+.card{border-radius:28px 28px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.9)}
+
+/* Entrada suave de cada pantalla */
+@keyframes scrIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card-anim{animation:scrIn .24s cubic-bezier(.4,0,.2,1)}
+
+/* DNI input más grande (kiosko) */
+.dnii{font-size:26px;border-radius:14px;letter-spacing:4px;padding:16px 18px;border-width:2px}
+.bbsc{border-radius:14px;padding:16px 24px;font-size:15px}
+
+/* Botones más modernos */
+.bok{border-radius:14px;font-size:16px;letter-spacing:.02em;padding:15px}
+.btn-ficha{border-radius:14px}
+.bsec{border-radius:14px}
+
+/* Confirm card más visual */
+.acard{background:linear-gradient(135deg,var(--g1) 0%,var(--white) 100%);border-radius:18px;border:1px solid var(--g2);box-shadow:0 4px 20px rgba(0,0,0,.07);padding:18px}
+.aav{width:56px;height:56px;border-radius:50%}
+.aname{font-size:18px}
+
+/* Success circle pop-in */
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.ocirc{width:90px;height:90px;animation:popIn .35s cubic-bezier(.34,1.56,.64,1)}
+.oscr h2{font-family:'Oswald',sans-serif;font-size:26px;letter-spacing:.02em}
+
+/* Barra de countdown más estilizada */
+#confirm-bar{box-shadow:0 0 8px var(--red-glow)}
+
+/* Shimmer loader (reemplaza dots) */
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.ld-shimmer{height:80px;border-radius:14px;background:linear-gradient(90deg,var(--g2) 25%,var(--g1) 50%,var(--g2) 75%);background-size:200% 100%;animation:shimmer 1.4s ease infinite;margin-bottom:12px}
+
+/* Class items más modernos */
+.chi{border-radius:14px;border:1px solid var(--g2)}
+.chi:active{transform:scale(.99)}
+
+/* Opciones de clase más modernas */
+.clase-opt{border-radius:14px}
+.mi{border-radius:14px}
+
+/* Motivos de tardanza más modernos */
+.mlist{gap:10px}
+
+/* Banner más prominente */
+.bnr{border-radius:16px;padding:15px 18px}
+
+/* Separador visual entre asistencia y ficha */
+.card > hr{border:none;border-top:1px solid var(--g2);margin:.8rem 0}
 </style>
 </head>
 <body>
@@ -185,7 +241,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 </div>
 
 <div class="card" id="mc">
-  <div id="cp"><div class="ld"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  <div id="cp"><div class="ld-shimmer"></div><div class="ld-shimmer" style="height:56px;opacity:.6"></div></div>
 </div>
 
 <div class="tscr" id="ts">
@@ -394,6 +450,7 @@ async function init() {
     return;
   }
   cp.innerHTML = mkDNI(clasesActivas);
+  cp.classList.add('card-anim'); setTimeout(function(){cp.classList.remove('card-anim');},300);
   bindDNI();
   if(clasesActivas.length === 1) {
     claseSeleccionada = clasesActivas[0];
@@ -558,10 +615,12 @@ async function regNuevo(dni) {
   var r=await sb.from('alumnos').insert({nombre:n,apellido:a,dni:normDNI(dni),fecha_nac:f,sexo:sexoSel,cinturon:'blanco',stripes:0,activo:true,estado:'activo'}).select().single();
   if(r.error){if(r.error.code==='23505')setErr('er','Ese DNI ya esta registrado.');else setErr('er','Error al registrar.');return;}
   alu=r.data;
-  mkConfirm(r.data);
+  if(_postRegFicha){ _postRegFicha=false; mostrarFicha(r.data); }
+  else mkConfirm(r.data);
 }
 
 var _asistRegistrando = false;
+var _postRegFicha = false;
 var _autoConfirmTimer = null;
 var _volverTimer = null;
 
@@ -605,7 +664,7 @@ async function confirmarAsistencia() {
   if(btn) btn.textContent='Registrando...';
   if(esTarde) {
     document.getElementById('mc').classList.add('hide');
-    document.getElementById('ts').classList.add('show');
+    var tsEl=document.getElementById('ts'); tsEl.classList.add('show'); tsEl.classList.add('card-anim'); setTimeout(function(){tsEl.classList.remove('card-anim');},300);
     document.getElementById('tns').textContent=(alu.nombre||'')+' '+(alu.apellido||'');
     document.getElementById('tmin').textContent='+'+minTarde+' min sobre el horario';
   } else { await registrar(false,null); }
@@ -649,7 +708,7 @@ async function registrar(est,mot) {
 function mostrarOk(est,mot,cf,hs) {
   document.getElementById('mc').classList.add('hide');
   document.getElementById('ts').classList.add('hide');
-  document.getElementById('os').classList.add('show');
+  var osEl=document.getElementById('os'); osEl.classList.add('show'); osEl.classList.add('card-anim'); setTimeout(function(){osEl.classList.remove('card-anim');},300);
   var oc=document.getElementById('oc');
   oc.className='ocirc '+(est?'org':'green');
   oc.querySelector('svg').style.color=est?'#e67e22':'#27ae60';
@@ -735,7 +794,13 @@ function mkFichaFlow() {
     if(dni.length < 6) { setErr('em-f','Ingresa un DNI valido'); return; }
     var r = await sb.from('alumnos').select('*').eq('dni',dni).eq('activo',true).maybeSingle();
     if(r.data) { alu = r.data; mostrarFicha(r.data); }
-    else setErr('em-f','DNI no encontrado. Si sos nuevo registrate primero.');
+    else {
+      var dniVal = dni;
+      document.getElementById('em-f').innerHTML =
+        '<strong>DNI no registrado.</strong><br>'+
+        '<button class="bok" style="margin-top:10px;font-size:14px;padding:12px" onclick="_postRegFicha=true;mkNuevo(\''+dniVal+'\')">Registrarme &#8250;</button>';
+      document.getElementById('em-f').style.display='block';
+    }
   };
   document.getElementById('bat-f').onclick = init;
 }
