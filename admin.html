@@ -640,9 +640,9 @@ async function renderHoy() {
   getMain().innerHTML =
     '<div id="cumples-widget" class="cumple-widget"></div>'+
     '<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem">'+
-    '<div class="stat-card" style="padding:.7rem;text-align:center"><div class="stat-label" style="font-size:10px">Total</div><div class="stat-num red" style="font-size:22px" id="s-total">-</div></div>'+
-    '<div class="stat-card" style="padding:.7rem;text-align:center"><div class="stat-label" style="font-size:10px">A tiempo</div><div class="stat-num green" style="font-size:22px" id="s-tiempo">-</div></div>'+
-    '<div class="stat-card" style="padding:.7rem;text-align:center"><div class="stat-label" style="font-size:10px">Tarde</div><div class="stat-num orange" style="font-size:22px" id="s-tarde">-</div></div>'+
+    '<div class="stat-card" style="padding:.75rem;text-align:center"><div class="stat-label" style="font-size:10px">Total</div><div class="stat-num red" style="font-size:22px" id="s-total">-</div></div>'+
+    '<div class="stat-card" style="padding:.75rem;text-align:center"><div class="stat-label" style="font-size:10px">A tiempo</div><div class="stat-num green" style="font-size:22px" id="s-tiempo">-</div></div>'+
+    '<div class="stat-card" style="padding:.75rem;text-align:center"><div class="stat-label" style="font-size:10px">Tarde</div><div class="stat-num orange" style="font-size:22px" id="s-tarde">-</div></div>'+
     '</div>'+
     '<div id="lista-hoy"><div class="empty-state">Cargando...</div></div>';
   cargarHoy();
@@ -683,6 +683,7 @@ async function cargarHoy() {
           '<span class="badge-ok" style="font-size:10px">'+aTiempo+' &#10003;</span>'+
           (tarde?'<span class="badge-tarde" style="font-size:10px">'+tarde+' &#8987;</span>':'')+
         '</div>'+
+        '<div style="font-size:10px;color:var(--g5);margin-top:5px">ver lista &#9660;</div>'+
       '</div>';
     }).join('')+'</div>';
 
