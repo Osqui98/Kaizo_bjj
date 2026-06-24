@@ -625,9 +625,12 @@ function selMotivo(el,v) {
 }
 
 async function confirmarTarde() {
+  var btnT=document.getElementById('btn-tarde');
+  if(btnT&&btnT.disabled) return;
   var m=motivoSel;
   if(!m){var t=document.getElementById('otro').value.trim();if(!t){var e=document.getElementById('err-tarde');if(e){e.textContent='Escribi el motivo para continuar';e.style.display='block';}return;}m=t;}
   var e=document.getElementById('err-tarde');if(e)e.style.display='none';
+  if(btnT){btnT.disabled=true;btnT.textContent='Registrando...';}
   await registrar(true,m);
 }
 
@@ -639,7 +642,7 @@ async function registrar(est,mot) {
     var r=await sb.from('asistencia').insert({alumno_id:alu.id,nombre:alu.nombre,apellido:alu.apellido,fecha:dHoy(),turno:claseSeleccionada.tur,horario:claseSeleccionada.hi+' - '+claseSeleccionada.hf,tarde:est,motivo_tarde:mot,con_fisico:cf,timestamp:ahora.toISOString()});
     if(r.error) throw r.error;
     mostrarOk(est,mot,cf,hs);
-  } catch(e) { console.error(e); _asistRegistrando=false; var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} alert('Error al registrar. Intenta de nuevo.'); }
+  } catch(e) { console.error(e); _asistRegistrando=false; var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} var btnT2=document.getElementById('btn-tarde');if(btnT2){btnT2.disabled=false;btnT2.textContent='Registrar asistencia';} alert('Error al registrar. Intenta de nuevo.'); }
 }
 
 function mostrarOk(est,mot,cf,hs) {
