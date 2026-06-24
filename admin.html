@@ -16,6 +16,25 @@
 [data-theme="dark"]{--g1:#111113;--g2:#28282d;--g5:#62656d;--g7:#b2b5bc;--black:#eeeef0;--white:#1c1c20;--shadow:0 2px 12px rgba(0,0,0,.5);--red-light:#2d1416;--ink:#0a0a0c;--silver-3:#5a5d65;--red-glow:rgba(214,31,38,.45)}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--g1);color:var(--black);min-height:100vh;-webkit-font-smoothing:antialiased;transition:background-color .25s,color .15s}
 .section,.stat-card,.modal,.fe-modal,.fe-body,.row-item,.bottom-nav,.sidebar,.tabs,.filter-bar,.config-row,.fe-f input,.fe-f select,.fe-f textarea,.auth-card{transition:background-color .25s,border-color .2s,color .15s}
+/* ── GLASSMORPHISM (dark mode) ── */
+[data-theme="dark"] .stat-card{background:rgba(255,255,255,.04);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 32px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05)}
+[data-theme="dark"] .section{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.07)}
+[data-theme="dark"] .topbar{border-bottom:none;box-shadow:0 1px 0 rgba(214,31,38,.7),0 2px 24px rgba(0,0,0,.5)}
+[data-theme="dark"] .fe-modal{background:rgba(28,28,32,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+[data-theme="dark"] .modal{background:rgba(28,28,32,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+/* ── TAB TRANSITION ── */
+#main-content{transition:opacity .18s ease,transform .18s ease}
+#main-content.mc-out{opacity:0;transform:translateY(5px);pointer-events:none}
+/* ── ROW ENTRANCE ── */
+@keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.row-item{animation:rowIn .22s ease backwards}
+/* ── SKELETON ── */
+@keyframes skWave{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.sk-line,.sk-av{background:linear-gradient(90deg,var(--g2) 25%,var(--g1) 50%,var(--g2) 75%);background-size:200% 100%;animation:skWave 1.4s ease infinite;border-radius:4px}
+.sk-av{border-radius:50%}
+/* ── TOPBAR ACCENT ── */
+.topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,var(--red) 40%,var(--red) 60%,transparent 100%);opacity:.6}
+.topbar{position:relative}
 /* Theme toggle */
 .theme-toggle{width:34px;height:34px;border-radius:9px;border:none;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,color .2s,transform .3s}
 .theme-toggle:hover{background:rgba(255,255,255,.2);color:#fff;transform:rotate(22deg)}
@@ -564,18 +583,34 @@ function closeDrawer() {
   document.body.style.overflow='';
 }
 
+function skeletonPage() {
+  var row='<div class="row-item" style="pointer-events:none"><div class="sk-av" style="width:34px;height:34px;flex-shrink:0"></div><div style="flex:1;margin-left:12px"><div class="sk-line" style="width:55%;height:13px;margin-bottom:7px"></div><div class="sk-line" style="width:35%;height:11px"></div></div></div>';
+  return '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="sk-line" style="width:32%;height:16px"></div></div>'+row.repeat(5)+'</div>'+
+    '<div class="stats-grid">'+['1fr','1fr','1fr'].map(function(){return '<div class="stat-card" style="height:78px"></div>';}).join('')+'</div>';
+}
+
+function countUp(el, target, ms) {
+  if(!el||isNaN(target)||target<=0){if(el)el.textContent=target||0;return;}
+  ms=ms||500; var start=0, step=Math.max(1,Math.round(target/30));
+  var t=setInterval(function(){start+=step;if(start>=target){el.textContent=target;clearInterval(t);}else el.textContent=start;},Math.round(ms/30));
+}
+
 function showTab(id) {
   tabActual = id;
   buildNav();
   var mc = document.getElementById('main-content');
-  mc.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--g5)">Cargando...</div>';
   var fn = {
     hoy: renderHoy, mes: renderMes, ausentes: renderAusentes,
     graduaciones: renderGraduaciones, alumnos: renderAlumnos,
     emergencia: renderEmergencia,
     qr: renderQR, torneos: renderTorneos, config: renderConfig
   }[id];
-  if(fn) fn();
+  mc.classList.add('mc-out');
+  setTimeout(function(){
+    mc.innerHTML = skeletonPage();
+    mc.classList.remove('mc-out');
+    if(fn) fn();
+  }, 100);
 }
 
 function getMain() { return document.getElementById('main-content'); }
@@ -645,7 +680,7 @@ async function renderHoy() {
     '<div class="stat-card" style="padding:.75rem;text-align:center"><div class="stat-label" style="font-size:10px">Tarde</div><div class="stat-num orange" style="font-size:22px" id="s-tarde">-</div></div>'+
     '</div>'+
     '<div id="lista-hoy"><div class="empty-state">Cargando...</div></div>';
-  cargarHoy();
+  cargarHoy().then(function(){ staggerRows('lista-hoy'); });
   cargarCumples();
 }
 
@@ -653,9 +688,9 @@ async function cargarHoy() {
   var r = await sb.from('asistencia').select('*').eq('fecha', fechaHoy).order('timestamp');
   var data = r.data || [];
   var totalTarde = data.filter(function(x){return x.tarde;}).length;
-  var sTotal = document.getElementById('s-total'); if(sTotal) sTotal.textContent = data.length;
-  var sTiempo = document.getElementById('s-tiempo'); if(sTiempo) sTiempo.textContent = data.length - totalTarde;
-  var sTarde = document.getElementById('s-tarde'); if(sTarde) sTarde.textContent = totalTarde;
+  countUp(document.getElementById('s-total'), data.length);
+  countUp(document.getElementById('s-tiempo'), data.length - totalTarde);
+  countUp(document.getElementById('s-tarde'), totalTarde);
   var el = document.getElementById('lista-hoy');
   if(!el) return;
   if(!data.length) { el.innerHTML='<div class="empty-state">Sin registros hoy</div>'; return; }
@@ -1109,6 +1144,7 @@ function filtrarAlumnos() {
   });
   alumnoPagina = 0;
   renderAlumnosPaginado();
+  staggerRows('lista-alumnos');
 }
 
 function renderAlumnosPaginado() {
@@ -1225,6 +1261,11 @@ var alumnosAll = []; var alumnosFiltrados = []; var alumnoPagina = 0; var ALUMNO
 var gradAllData = []; var ausAllData = [];
 var candAllData = []; var candFiltrados = []; var candPagina = 0; var CAND_PP = 10;
 var feHistId = null;
+
+function staggerRows(containerId) {
+  var el=document.getElementById(containerId); if(!el) return;
+  el.querySelectorAll('.row-item').forEach(function(row,i){ row.style.animationDelay=(i*22)+'ms'; });
+}
 
 function feTabSwitch(tab) {
   ['datos','bjj','cont'].forEach(function(t){
