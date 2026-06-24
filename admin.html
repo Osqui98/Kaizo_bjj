@@ -668,13 +668,28 @@ async function cargarHoy() {
     grupos[key].registros.push(reg);
   });
 
-  el.innerHTML = ordenGrupos.map(function(key, idx) {
-    var g = grupos[key];
-    var aTiempo = g.registros.filter(function(x){return !x.tarde;}).length;
-    var tarde   = g.registros.filter(function(x){return x.tarde;}).length;
-    var secId   = 'clase-hoy-'+idx;
-    var label   = capTxt(g.turno);
+  // Cards de clase (estilo KPI, misma línea)
+  var cards = '<div class="stats-grid" style="gap:8px;margin-bottom:1rem">'+
+    ordenGrupos.map(function(key, idx) {
+      var g = grupos[key];
+      var aTiempo = g.registros.filter(function(x){return !x.tarde;}).length;
+      var tarde   = g.registros.filter(function(x){return x.tarde;}).length;
+      var secId   = 'clase-hoy-'+idx;
+      return '<div class="stat-card" style="cursor:pointer;padding:.75rem;text-align:center" onclick="toggleClaseHoy(\''+secId+'\')">'+
+        '<div class="stat-label" style="font-size:10px">'+escHTML(capTxt(g.turno))+'</div>'+
+        '<div class="stat-num red" style="font-size:22px">'+g.registros.length+'</div>'+
+        '<div style="font-size:10px;color:var(--g5);margin:2px 0 6px">'+escHTML(g.horario)+'</div>'+
+        '<div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap">'+
+          '<span class="badge-ok" style="font-size:10px">'+aTiempo+' &#10003;</span>'+
+          (tarde?'<span class="badge-tarde" style="font-size:10px">'+tarde+' &#8987;</span>':'')+
+        '</div>'+
+      '</div>';
+    }).join('')+'</div>';
 
+  // Listas colapsables (ancho completo, debajo de los cards)
+  var listas = ordenGrupos.map(function(key, idx) {
+    var g = grupos[key];
+    var secId = 'clase-hoy-'+idx;
     var filas = g.registros.map(function(reg) {
       var hora = '';
       try{ hora=new Date(reg.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}); }catch(e){}
@@ -689,22 +704,19 @@ async function cargarHoy() {
         (hora?'<span class="badge-hora" style="margin-left:6px">'+hora+'</span>':'')+
       '</div>';
     }).join('');
-
-    return '<div class="section" style="margin-bottom:1.25rem">'+
-      '<div class="section-header section-collapsible" data-sec="'+secId+'">'+
-        '<div>'+
-          '<div class="section-title">'+escHTML(label)+'</div>'+
-          '<div class="section-sub">'+escHTML(g.horario)+' &nbsp;&middot;&nbsp; '+g.registros.length+' asistente'+(g.registros.length!==1?'s':'')+'</div>'+
-        '</div>'+
-        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
-          '<span class="badge-ok">&#10003; '+aTiempo+' a tiempo</span>'+
-          (tarde?'<span class="badge-tarde">&#8987; '+tarde+' tarde</span>':'')+
-          '<span id="arr-'+secId+'" style="color:var(--g5)">&#9660;</span>'+
-        '</div>'+
-      '</div>'+
-      '<div id="'+secId+'" style="display:none">'+filas+'</div>'+
-    '</div>';
+    return '<div id="'+secId+'" class="section" style="display:none;margin-bottom:1rem">'+
+      '<div class="section-header"><div class="section-title">'+escHTML(capTxt(g.turno))+'</div>'+
+      '<div class="section-sub">'+escHTML(g.horario)+'</div></div>'+filas+'</div>';
   }).join('');
+
+  el.innerHTML = cards + listas;
+}
+
+function toggleClaseHoy(id) {
+  var el=document.getElementById(id); if(!el) return;
+  var hidden=el.style.display==='none';
+  document.querySelectorAll('[id^="clase-hoy-"]').forEach(function(e){ e.style.display='none'; });
+  el.style.display=hidden?'block':'none';
 }
 
 // ── INFORMES ─────────────────────────────────────────────────
