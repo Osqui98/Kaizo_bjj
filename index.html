@@ -337,7 +337,8 @@ function estadoClase(c) {
 
 function mkCron() {
   var d=ahora.getDay();
-  var ch=CLASES.filter(function(c){return c.dias.indexOf(d)>=0;});
+  var sortHora=function(a,b){return a.hi.localeCompare(b.hi);};
+  var ch=CLASES.filter(function(c){return c.dias.indexOf(d)>=0;}).sort(sortHora);
   var h='<div class="noc-hdr"><h2>Sin clase activa ahora</h2><p>Clases de hoy:</p></div>';
   ch.forEach(function(c) {
     var e=estadoClase(c);
@@ -347,7 +348,7 @@ function mkCron() {
   if(!ch.length) h+='<div style="text-align:center;padding:1.5rem 0;color:var(--g5)">No hay clases BJJ hoy</div>';
   h+='<div class="slbl" style="margin-top:1.5rem">Cronograma semanal</div><div class="sgrid">';
   [1,2,3,4,5,6].forEach(function(dia) {
-    var cs=CLASES.filter(function(c){return c.dias.indexOf(dia)>=0;});
+    var cs=CLASES.filter(function(c){return c.dias.indexOf(dia)>=0;}).sort(sortHora);
     h+='<div class="sdia"><div class="sdia-n">'+DN[dia]+'</div>';
     if(cs.length) cs.forEach(function(c){h+='<div class="scl"><span class="sh">'+c.hi+'</span> '+c.tur+'</div>';});
     else h+='<div class="scl" style="color:var(--g5)">Sin clase</div>';
