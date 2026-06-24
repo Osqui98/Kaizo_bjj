@@ -637,59 +637,75 @@ async function cargarCumples() {
 
 // ── HOY ──────────────────────────────────────────────────────
 async function renderHoy() {
-  var turnoFiltro = '';
-  var rclHoy = await sb.from('config_clases').select('turno_id,dia').eq('activo',true);
-  var diaHoy = hoy.getDay();
-  var turnosHoy = [];
-  (rclHoy.data||[]).forEach(function(c){ if(c.dia===diaHoy && c.turno_id && turnosHoy.indexOf(c.turno_id)<0) turnosHoy.push(c.turno_id); });
-  var optsTurno = '<option value="">Todos los turnos</option>'+turnosHoy.map(function(t){ var l=String(t).replace(/-/g,' '); return '<option value="'+t+'">'+l.charAt(0).toUpperCase()+l.slice(1)+'</option>'; }).join('');
   getMain().innerHTML =
     '<div id="cumples-widget" class="cumple-widget"></div>'+
-    '<div class="stats-grid">'+
-    '<div class="stat-card"><div class="stat-label">Presentes hoy</div><div class="stat-num red" id="s-total">-</div></div>'+
-    '<div class="stat-card"><div class="stat-label">A tiempo</div><div class="stat-num green" id="s-tiempo">-</div></div>'+
-    '<div class="stat-card"><div class="stat-label">Llegadas tarde</div><div class="stat-num orange" id="s-tarde">-</div></div>'+
-    '</div>'+
-    '<div class="section">'+
-    '<div class="section-header"><div class="section-title">Asistencia de hoy</div><div class="section-sub" id="fecha-sub">'+
-    hoy.toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"})+'</div></div>'+
-    '<div class="filter-bar"><select class="filter-select" id="fil-turno">'+optsTurno+'</select></div>'+
-    '<div id="lista-hoy"><div class="empty-state">Cargando...</div></div>'+
-    '</div>';
-
-  document.getElementById('fil-turno').onchange = function() {
-    turnoFiltro = this.value;
-    cargarHoy(turnoFiltro);
-  };
-  cargarHoy('');
+    '<div class="stats-grid" style="grid-template-columns:1fr;margin-bottom:1.25rem">'+
+    '<div class="stat-card" style="text-align:center">'+
+      '<div class="stat-label">Total presentes hoy</div>'+
+      '<div class="stat-num red" id="s-total">-</div>'+
+      '<div style="font-size:12px;color:var(--g5);margin-top:4px">'+
+      hoy.toLocaleDateString("es-AR",{weekday:"long",day:"numeric",month:"long"})+
+      '</div>'+
+    '</div></div>'+
+    '<div id="lista-hoy"><div class="empty-state">Cargando...</div></div>';
+  cargarHoy();
   cargarCumples();
 }
 
-async function cargarHoy(filtro) {
-  var q = sb.from('asistencia').select('*').eq('fecha', fechaHoy).order('timestamp');
-  if(filtro) q = q.eq('turno', filtro);
-  var r = await q;
+async function cargarHoy() {
+  var r = await sb.from('asistencia').select('*').eq('fecha', fechaHoy).order('timestamp');
   var data = r.data || [];
-  var tard = data.filter(function(x){return x.tarde;});
   var sTotal = document.getElementById('s-total');
-  var sTiempo = document.getElementById('s-tiempo');
-  var sTarde = document.getElementById('s-tarde');
   if(sTotal) sTotal.textContent = data.length;
-  if(sTiempo) sTiempo.textContent = data.length - tard.length;
-  if(sTarde) sTarde.textContent = tard.length;
   var el = document.getElementById('lista-hoy');
   if(!el) return;
-  el.innerHTML = data.length ? data.map(function(r) {
-    var hora = new Date(r.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-    return '<div class="row-item">'+
-      '<div class="avatar">'+ini(r.nombre)+'</div>'+
-      '<div style="flex:1"><div class="row-name">'+escHTML(r.nombre)+' '+escHTML(r.apellido)+'</div>'+
-      '<div class="row-sub">'+escHTML(r.turno)+' - '+escHTML(r.horario)+(r.tarde&&r.motivo_tarde?' - '+escHTML(r.motivo_tarde):'')+'</div></div>'+
-      (r.tarde?'<span class="badge-tarde">tarde</span>':'<span class="badge-ok">a tiempo</span>')+
-      (r.con_fisico?'<span style="margin-left:4px;color:var(--orange);font-size:14px">&#9889;</span>':'')+
-      '<span class="badge-hora" style="margin-left:6px">'+hora+'</span>'+
+  if(!data.length) { el.innerHTML='<div class="empty-state">Sin registros hoy</div>'; return; }
+
+  // Agrupar por turno + horario
+  var grupos = {}, ordenGrupos = [];
+  data.forEach(function(reg) {
+    var key = (reg.turno||'')+'||'+(reg.horario||'');
+    if(!grupos[key]) { grupos[key]={turno:reg.turno||'',horario:reg.horario||'',registros:[]}; ordenGrupos.push(key); }
+    grupos[key].registros.push(reg);
+  });
+
+  el.innerHTML = ordenGrupos.map(function(key, idx) {
+    var g = grupos[key];
+    var aTiempo = g.registros.filter(function(x){return !x.tarde;}).length;
+    var tarde   = g.registros.filter(function(x){return x.tarde;}).length;
+    var secId   = 'clase-hoy-'+idx;
+    var label   = capTxt(g.turno);
+
+    var filas = g.registros.map(function(reg) {
+      var hora = '';
+      try{ hora=new Date(reg.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}); }catch(e){}
+      return '<div class="row-item">'+
+        '<div class="avatar">'+ini(reg.nombre)+'</div>'+
+        '<div style="flex:1">'+
+          '<div class="row-name">'+escHTML(reg.nombre)+' '+escHTML(reg.apellido)+'</div>'+
+          (reg.tarde&&reg.motivo_tarde?'<div class="row-sub">'+escHTML(reg.motivo_tarde)+'</div>':'')+
+        '</div>'+
+        (reg.tarde?'<span class="badge-tarde">tarde</span>':'<span class="badge-ok">a tiempo</span>')+
+        (reg.con_fisico?'<span style="margin-left:4px;color:var(--orange);font-size:14px">&#9889;</span>':'')+
+        (hora?'<span class="badge-hora" style="margin-left:6px">'+hora+'</span>':'')+
+      '</div>';
+    }).join('');
+
+    return '<div class="section" style="margin-bottom:1.25rem">'+
+      '<div class="section-header section-collapsible" data-sec="'+secId+'">'+
+        '<div>'+
+          '<div class="section-title">'+escHTML(label)+'</div>'+
+          '<div class="section-sub">'+escHTML(g.horario)+' &nbsp;&middot;&nbsp; '+g.registros.length+' asistente'+(g.registros.length!==1?'s':'')+'</div>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
+          '<span class="badge-ok">&#10003; '+aTiempo+' a tiempo</span>'+
+          (tarde?'<span class="badge-tarde">&#8987; '+tarde+' tarde</span>':'')+
+          '<span id="arr-'+secId+'" style="color:var(--g5)">&#9660;</span>'+
+        '</div>'+
+      '</div>'+
+      '<div id="'+secId+'" style="display:none">'+filas+'</div>'+
     '</div>';
-  }).join('') : '<div class="empty-state">Sin registros'+(filtro?' en este turno':'')+' hoy</div>';
+  }).join('');
 }
 
 // ── INFORMES ─────────────────────────────────────────────────
