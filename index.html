@@ -581,10 +581,27 @@ function volverADNI() {
   }
 }
 async function confirmarAsistencia() {
-  if(!alu||!claseSeleccionada) return;
-  if(_asistRegistrando) return;
+  if(!alu||!claseSeleccionada||_asistRegistrando) return;
   _asistRegistrando = true;
-  var btn=document.getElementById('bcnf'); if(btn){btn.disabled=true;btn.textContent='Registrando...';}
+  cancelAutoConfirm();
+  var btn=document.getElementById('bcnf'); if(btn){btn.disabled=true;btn.textContent='Verificando...';}
+
+  // Chequeo de duplicado — cubre TODOS los caminos (incluso multi-clase)
+  try {
+    var ya=await sb.from('asistencia').select('id').eq('alumno_id',alu.id).eq('fecha',dHoy()).eq('turno',claseSeleccionada.tur).maybeSingle();
+    if(ya.data) {
+      _asistRegistrando=false;
+      if(btn){btn.disabled=false;btn.textContent='Confirmar asistencia';}
+      var msg=document.createElement('div');
+      msg.style.cssText='background:var(--red-light);border:1px solid #f09595;border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--red);margin-top:10px;text-align:center;font-weight:600';
+      msg.textContent='Ya registraste asistencia en esta clase hoy.';
+      if(btn) btn.insertAdjacentElement('afterend',msg);
+      setTimeout(function(){ volverADNI(); },2500);
+      return;
+    }
+  } catch(e) { console.error(e); _asistRegistrando=false; if(btn){btn.disabled=false;btn.textContent='Confirmar asistencia';} return; }
+
+  if(btn) btn.textContent='Registrando...';
   if(esTarde) {
     document.getElementById('mc').classList.add('hide');
     document.getElementById('ts').classList.add('show');
@@ -959,6 +976,18 @@ function abrirModalTorneo(a, listaTorneos) {
     var peso = parseFloat(document.getElementById('mt-peso').value) || null;
     var puesto = parseInt(document.getElementById('mt-puesto').value) || null;
     var cat = document.getElementById('mt-cat') ? document.getElementById('mt-cat').value : '';
+
+    // Verificar duplicado de modalidad en el mismo torneo
+    var dup = await sb.from('torneos_participantes').select('id,modalidad').eq('torneo_id',torneoId).eq('alumno_id',a.id);
+    var existing = dup.data || [];
+    if(existing.some(function(x){ return x.modalidad===mod; })) {
+      alert('Ya estas inscripto en '+mod+' para este torneo.'); return;
+    }
+    // Máximo 3 categorías por torneo (Gi + NoGi + Absoluto)
+    if(existing.length >= 3) {
+      alert('Ya estas inscripto en 3 categorias para este torneo (maximo).'); return;
+    }
+
     var r = await sb.from('torneos_participantes').insert({
       torneo_id:torneoId, alumno_id:a.id, nombre:a.nombre, apellido:a.apellido,
       modalidad:mod, peso:peso, cinturon:a.cinturon, puesto:puesto, categoria:cat||null, cargado_por:'alumno'
