@@ -48,6 +48,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .topbar-right{margin-left:auto}
 .btn-red{background:linear-gradient(180deg,#e2262d,#bb171d);color:var(--white);border:none;border-radius:var(--rs);padding:9px 16px;font-size:13px;cursor:pointer;font-weight:600;box-shadow:0 4px 12px var(--red-glow);transition:transform .12s}
 .btn-red:hover{box-shadow:0 6px 16px var(--red-glow)}.btn-red:active{transform:translateY(1px)}
+/* ── ASISTENCIA + MENU DE CUENTA ── */
+.topbar{z-index:40}
+.btn-ghost{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:var(--rs);padding:8px 13px;font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap;transition:background .15s}
+.btn-ghost:hover{background:rgba(255,255,255,.16)}
+.btn-ghost svg,.acct-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.acct{position:relative}
+.acct-btn{display:inline-flex;align-items:center;gap:6px;padding:3px 8px 3px 3px;border-radius:99px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+.acct-btn>svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2}
+.acct-av{width:28px;height:28px;border-radius:50%;background:var(--red);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-transform:uppercase}
+.acct-menu{position:absolute;right:0;top:calc(100% + 8px);width:250px;background:var(--white);color:var(--black);border:1px solid var(--g2);border-radius:14px;box-shadow:0 18px 40px rgba(0,0,0,.2);padding:6px;display:none}
+.acct-menu.open{display:block}
+.acct-who{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--g2);margin-bottom:6px;min-width:0}
+.acct-who b{display:block;font-size:13px}
+.acct-who span{display:block;font-size:12px;color:var(--g5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:none;background:none;border-radius:9px;font-size:13px;font-weight:600;color:var(--g7);font-family:inherit;text-align:left;text-decoration:none;cursor:pointer}
+.acct-item:hover{background:var(--g1)}
+.acct-item.out{color:var(--red)}
+.acct-only-m{display:none}
+@media(max-width:700px){.topbar-right .theme-toggle,.topbar-right .btn-red,.topbar-right .btn-ghost{display:none}.acct-only-m{display:flex}}
+.auth-back{margin-top:1.25rem;display:inline-flex;align-items:center;gap:6px;color:var(--silver-3);font-size:13px;text-decoration:none;padding:6px 10px;border-radius:8px}
+.auth-back:hover{color:#fff;background:rgba(255,255,255,.06)}
+.auth-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 /* ── SIDEBAR ── */
 .sidebar{grid-area:sidebar;background:var(--ink);overflow:hidden;display:flex;flex-direction:column;align-items:stretch;padding:6px 0;gap:2px;border-right:1px solid rgba(255,255,255,.06)}
 .sidebar-btn{display:flex;align-items:center;justify-content:flex-start;padding:0 10px;height:40px;border-radius:10px;margin:0 4px;border:none;background:none;color:var(--silver-3);cursor:pointer;white-space:nowrap;overflow:hidden;transition:background .15s,color .15s}
@@ -238,6 +260,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       Iniciar sesión con Google
     </button>
     <button id="auth-signout" class="auth-signout-btn" style="display:none" onclick="authSignout()">Cerrar sesión</button>
+    <div><a class="auth-back" href="index.html"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Volver a Asistencia</a></div>
   </div>
 </div>
 
@@ -254,7 +277,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
       <svg id="theme-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
     </button>
+    <a class="btn-ghost" href="index.html" target="_blank" rel="noopener" title="Abrir la pantalla de asistencia de alumnos"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>Asistencia</a>
     <button class="btn-red" onclick="exportarCSV()">Exportar</button>
+    <div class="acct" id="acct">
+      <button class="acct-btn" id="acct-btn" aria-haspopup="true" aria-expanded="false" onclick="toggleAcct(event)"><span class="acct-av" id="acct-av">?</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="acct-menu" id="acct-menu">
+        <div class="acct-who"><span class="acct-av" id="acct-av2">?</span><div style="min-width:0"><b id="acct-name">Profe</b><span id="acct-email"></span></div></div>
+        <button class="acct-item acct-only-m" onclick="toggleTheme()"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Cambiar tema</button>
+        <button class="acct-item acct-only-m" onclick="exportarCSV()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Exportar CSV</button>
+        <a class="acct-item" href="index.html" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>Abrir Asistencia</a>
+        <button class="acct-item out" onclick="authSignout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Cerrar sesión</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1778,10 +1812,33 @@ async function gateCheck(){
     if(!user){ login(''); return; }
     var email = (user.email||'').toLowerCase();
     var chk = await sb.from('admins_autorizados').select('email').eq('email',email).maybeSingle();
-    if(chk.data){ if(ov) ov.style.display='none'; bootApp(); }
+    if(chk.data){ if(ov) ov.style.display='none'; setAcct(user); bootApp(); }
     else { login('La cuenta '+email+' no esta autorizada para el panel.'); }
   }catch(e){ login('Error de autenticacion: '+(e&&e.message?e.message:e)); }
 }
+
+// Menu de cuenta (avatar en la topbar)
+function setAcct(user){
+  var email = (user && user.email) || '';
+  var meta = (user && user.user_metadata) || {};
+  var name = meta.full_name || meta.name || email.split('@')[0] || 'Profe';
+  var ini = (name.trim()[0] || '?');
+  ['acct-av','acct-av2'].forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=ini; });
+  var n=document.getElementById('acct-name'); if(n) n.textContent=name;
+  var e=document.getElementById('acct-email'); if(e) e.textContent=email;
+}
+function toggleAcct(ev){
+  if(ev) ev.stopPropagation();
+  var m=document.getElementById('acct-menu'), b=document.getElementById('acct-btn');
+  var open=!m.classList.contains('open');
+  m.classList.toggle('open',open); if(b) b.setAttribute('aria-expanded',String(open));
+}
+document.addEventListener('click', function(e){
+  var m=document.getElementById('acct-menu');
+  if(m && m.classList.contains('open') && (!e.target.closest('#acct') || e.target.closest('.acct-item'))){
+    m.classList.remove('open'); var b=document.getElementById('acct-btn'); if(b) b.setAttribute('aria-expanded','false');
+  }
+});
 
 function iniciarConGate(){
   if(location.protocol === 'file:'){ bootApp(); return; }   // bypass para testing local

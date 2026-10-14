@@ -72,6 +72,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .dhnt{font-size:12px;color:var(--g5);text-align:center;margin-bottom:1rem}
 .btn-ficha{width:100%;padding:12px;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;transition:background .15s}
 .btn-ficha:hover{background:var(--red-light)}
+/* ACCESO PROFE */
+.profe-wrap{display:flex;justify-content:flex-end;margin-top:1.5rem}
+.profe-link{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:99px;color:var(--g5);font-size:12px;font-weight:600;text-decoration:none;opacity:.75;transition:opacity .15s,background .15s,color .15s}
+.profe-link:hover,.profe-link:focus-visible{opacity:1;background:var(--g1);color:#444}
+.profe-link svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 /* CONFIRM ALUMNO */
 .acard{background:var(--g1);border-radius:var(--rs);padding:16px;margin-bottom:1rem;display:flex;align-items:center;gap:14px}
 .aav{width:48px;height:48px;border-radius:50%;background:var(--red-light);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--red);flex-shrink:0;overflow:hidden}
@@ -413,6 +418,11 @@ function mkCron() {
   return h+'</div>';
 }
 
+// Acceso discreto al panel del profe (protegido con login Google en admin.html)
+function mkProfe() {
+  return '<div class="profe-wrap"><a class="profe-link" href="admin.html"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Profe</a></div>';
+}
+
 function mkDNI(clases) {
   var bnnrs = clases.map(function(c) {
     var f=c.fis?'<div class="fbdg">Fisico hasta '+c.hff+'</div>':'';
@@ -425,7 +435,8 @@ function mkDNI(clases) {
     '<div class="dniw"><input type="number" id="di" class="dnii" placeholder="12345678" inputmode="numeric" /><button class="bbsc" id="bbs">Buscar</button></div>'+
     '<p class="dhnt">Si es tu primera vez te pediremos que completes tu ficha</p>'+
     '<div style="border-top:1px solid var(--g2);margin:1rem 0"></div>'+
-    '<button class="btn-ficha" id="btn-ver-ficha">Ver / editar mi ficha</button>';
+    '<button class="btn-ficha" id="btn-ver-ficha">Ver / editar mi ficha</button>'+
+    mkProfe();
 }
 
 function bindDNI() {
@@ -444,6 +455,7 @@ async function init() {
       '<div style="padding:0 0 1.25rem">'+
       '<div style="border-top:1px solid var(--g2);margin-bottom:1.25rem"></div>'+
       '<button class="btn-ficha" id="btn-ver-ficha-cron">Ver / editar mi ficha</button>'+
+      mkProfe()+
       '</div>';
     var bfc=document.getElementById('btn-ver-ficha-cron');
     if(bfc) bfc.onclick=function(){ mkFichaFlow(); };
