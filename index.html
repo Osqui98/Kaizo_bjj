@@ -477,14 +477,14 @@ async function init() {
 }
 
 // ── FOTOS ────────────────────────────────────────────────────
-// Columnas del alumno SIN foto_url (base64 pesado): la foto se pide aparte
-// y no bloquea la pantalla.
-var ALU_COLS = 'id,nombre,apellido,dni,turno,activo,created_at,cinturon,stripes,fecha_grad,notas,fecha_nac,sexo,estado,telefono,email,domicilio,instagram,peso,altura,peso_actualizar,es_competidor,es_profe,fecha_inicio,apto_fisico,apto_vencimiento,turnos_ids,tutor_nombre,tutor_telefono,tutor_email,tutor_relacion,emerg_nombre,emerg_telefono,emerg_relacion';
-
+// Los datos de alumnos y asistencia no se leen directo de las tablas:
+// se usan las funciones kiosco_* de Supabase (sql/2026-10-14_fase3_A_funciones.sql),
+// que piden el DNI y nunca devuelven la foto junto con los datos.
+// La foto se pide aparte y no bloquea la pantalla.
 async function cargarFotoAlu(a, onFoto) {
   try {
-    var r = await sb.from('alumnos').select('foto_url').eq('id', a.id).maybeSingle();
-    var foto = r.data && r.data.foto_url;
+    var r = await sb.rpc('kiosco_foto', {p_id: a.id, p_dni: a.dni});
+    var foto = r.data;
     if(a.foto_url === undefined) a.foto_url = foto || null;
     if(foto && a.foto_url === foto) onFoto(foto);
   } catch(e) {}
@@ -520,7 +520,7 @@ async function buscarDNI() {
   var btn = document.getElementById('bbs');
   btn.textContent='...'; btn.disabled=true;
   try {
-    var r = await sb.from('alumnos').select(ALU_COLS).eq('dni',dni).eq('activo',true).maybeSingle();
+    var r = await sb.rpc('kiosco_buscar_alumno',{p_dni:dni});
     if(r.data) {
       alu = r.data;
       var aRef = r.data;
@@ -533,7 +533,7 @@ async function buscarDNI() {
         btn.textContent='Buscar'; btn.disabled=false;
         return;
       }
-      var ya = await sb.from('asistencia').select('id').eq('alumno_id',r.data.id).eq('fecha',dHoy()).eq('turno',claseSeleccionada.tur).maybeSingle();
+      var ya = await sb.rpc('kiosco_ya_registrado',{p_alumno_id:r.data.id,p_fecha:dHoy(),p_turno:claseSeleccionada.tur});
       if(ya.data) { document.getElementById('yr').style.display='block'; btn.textContent='Buscar'; btn.disabled=false; return; }
       var falta = !r.data.nombre||!r.data.apellido||!r.data.fecha_nac||!r.data.sexo;
       if(falta) mkFichaCompleta(r.data); else mkConfirm(r.data);
@@ -639,7 +639,7 @@ async function guardarFichaCompleta() {
   if(ff){ if(!ff.value){setErr('ef','La fecha de nacimiento es obligatoria');return;} u.fecha_nac=ff.value; }
   if(!alu.sexo&&!sexoSel){setErr('ef','Selecciona el sexo');return;}
   if(sexoSel) u.sexo=sexoSel;
-  var r=await sb.from('alumnos').update(u).eq('id',alu.id);
+  var r=await sb.rpc('kiosco_actualizar_alumno',{p_id:alu.id,p_dni:alu.dni,p_datos:u});
   if(r.error){setErr('ef','Error al guardar');return;}
   alu=Object.assign({},alu,u);
   mkConfirm(alu);
@@ -665,7 +665,7 @@ async function regNuevo(dni) {
   if(!n||!a){setErr('er','Nombre y apellido son obligatorios');return;}
   if(!f){setErr('er','La fecha de nacimiento es obligatoria');return;}
   if(!sexoSel){setErr('er','Selecciona el sexo');return;}
-  var r=await sb.from('alumnos').insert({nombre:n,apellido:a,dni:normDNI(dni),fecha_nac:f,sexo:sexoSel,cinturon:'blanco',stripes:0,activo:true,estado:'activo'}).select().single();
+  var r=await sb.rpc('kiosco_registrar_alumno',{p_datos:{nombre:n,apellido:a,dni:normDNI(dni),fecha_nac:f,sexo:sexoSel}});
   if(r.error){if(r.error.code==='23505')setErr('er','Ese DNI ya esta registrado.');else setErr('er','Error al registrar.');return;}
   alu=r.data;
   if(_postRegFicha){ _postRegFicha=false; mostrarFicha(r.data); }
@@ -701,7 +701,7 @@ async function confirmarAsistencia() {
 
   // Chequeo de duplicado — cubre TODOS los caminos (incluso multi-clase)
   try {
-    var ya=await sb.from('asistencia').select('id').eq('alumno_id',alu.id).eq('fecha',dHoy()).eq('turno',claseSeleccionada.tur).maybeSingle();
+    var ya=await sb.rpc('kiosco_ya_registrado',{p_alumno_id:alu.id,p_fecha:dHoy(),p_turno:claseSeleccionada.tur});
     if(ya.data) {
       _asistRegistrando=false;
       if(btn){btn.disabled=false;btn.textContent='Confirmar asistencia';}
@@ -752,7 +752,8 @@ async function registrar(est,mot) {
   var cf=claseSeleccionada.fis?ma<=toM(claseSeleccionada.hff):null;
   var hs=pad(ahora.getHours())+':'+pad(ahora.getMinutes());
   try {
-    var r=await sb.from('asistencia').insert({alumno_id:alu.id,nombre:alu.nombre,apellido:alu.apellido,fecha:dHoy(),turno:claseSeleccionada.tur,horario:claseSeleccionada.hi+' - '+claseSeleccionada.hf,tarde:est,motivo_tarde:mot,con_fisico:cf,timestamp:ahora.toISOString()});
+    var r=await sb.rpc('kiosco_marcar_asistencia',{p_alumno_id:alu.id,p_dni:alu.dni,p_datos:{fecha:dHoy(),turno:claseSeleccionada.tur,horario:claseSeleccionada.hi+' - '+claseSeleccionada.hf,tarde:est,motivo_tarde:mot,con_fisico:cf,timestamp:ahora.toISOString()}});
+    if(r.error && r.error.code==='23505') { _asistRegistrando=false; alert('Ya registraste asistencia en esta clase hoy.'); volverADNI(); return; }
     if(r.error) throw r.error;
     mostrarOk(est,mot,cf,hs);
   } catch(e) { console.error(e); _asistRegistrando=false; var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} var btnT2=document.getElementById('btn-tarde');if(btnT2){btnT2.disabled=false;btnT2.textContent='Registrar asistencia';} alert('Error al registrar. Intenta de nuevo.'); }
@@ -845,7 +846,7 @@ function mkFichaFlow() {
   document.getElementById('bbs-f').onclick = async function() {
     var dni = normDNI(document.getElementById('di-f').value);
     if(dni.length < 6) { setErr('em-f','Ingresa un DNI valido'); return; }
-    var r = await sb.from('alumnos').select(ALU_COLS).eq('dni',dni).eq('activo',true).maybeSingle();
+    var r = await sb.rpc('kiosco_buscar_alumno',{p_dni:dni});
     if(r.data) { alu = r.data; mostrarFicha(r.data); }
     else {
       var dniVal = dni;
@@ -895,7 +896,8 @@ async function mostrarFicha(a) {
       fav.closest('.ficha-hdr').insertAdjacentElement('afterend', bar);
       document.getElementById('btn-confirmar-foto').onclick = async function() {
         bar.remove();
-        await sb.from('alumnos').update({foto_url: base64}).eq('id',a.id);
+        var rf = await sb.rpc('kiosco_actualizar_alumno',{p_id:a.id,p_dni:a.dni,p_datos:{foto_url:base64}});
+        if(rf.error){ showToastF('No se pudo guardar la foto'); return; }
         a.foto_url = base64;
         showToastF('Foto actualizada');
       };
@@ -1073,7 +1075,7 @@ async function guardarFicha(a, onDone) {
       if(fte) updates.tutor_email=fte.value.trim();
     }
   }
-  var r = await sb.from('alumnos').update(updates).eq('id',a.id);
+  var r = await sb.rpc('kiosco_actualizar_alumno',{p_id:a.id,p_dni:a.dni,p_datos:updates});
   if(r.error){ if(btn){btn.disabled=false;btn.textContent='Guardar cambios';} alert('Error al guardar'); return; }
   alu = Object.assign({},a,updates);
   var body = document.getElementById('ficha-body');
