@@ -1368,21 +1368,38 @@ async function renderAlumnos() {
     '<select class="filter-select" id="fil-al-turno" onchange="filtrarAlumnos()"><option value="">Turno</option><option value="manana">Mañana</option><option value="noche">Noche</option><option value="sabado">Sábado</option></select>'+
     '<select class="filter-select" id="fil-al-cint" onchange="filtrarAlumnos()"><option value="">Cinturón</option><option value="blanco">Blanco</option><optgroup label="Infantiles"><option value="gris">Gris</option><option value="amarillo">Amarillo</option><option value="naranja">Naranja</option><option value="verde">Verde</option></optgroup><optgroup label="Adultos"><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marrón</option><option value="negro">Negro</option></optgroup></select>'+
     '<select class="filter-select" id="fil-al-est" onchange="filtrarAlumnos()"><option value="">Estado</option><option value="activo">Activo</option><option value="lesionado">Lesionado</option><option value="discontinuado">Discontinuado</option><option value="bloqueado">Bloqueado</option></select>'+
+    '<select class="filter-select" id="fil-al-act" onchange="filtrarAlumnos()" title="Según la asistencia de los últimos 3 meses"><option value="">Asistencia</option><option value="si">Vino en los últimos 3 meses</option><option value="no">Sin venir hace 3 meses</option></select>'+
     '</div>'+
     '<div class="section"><div id="lista-alumnos"><div class="empty-state">Cargando…</div></div>'+
     '<div id="pag-alumnos"></div>'+
     '</div>';
+  // Una sola consulta de 3 meses: sirve para el filtro de asistencia y para las tardanzas del mes
+  var d3 = new Date(hoy); d3.setMonth(d3.getMonth()-3);
   var [ral, ras] = await Promise.all([
     alumnosTodos(),
-    sb.from('asistencia').select('alumno_id,tarde').gte('fecha',mesActual+'-01').lt('fecha',finMes())
+    asistenciaDesde(ymdLocal(d3), 'alumno_id,fecha,tarde')
   ]);
-  var tard = {};
-  (ras.data||[]).filter(function(x){return x.tarde;}).forEach(function(x){tard[x.alumno_id]=(tard[x.alumno_id]||0)+1;});
-  alumnosAll = (ral.data||[]).map(function(a){ return Object.assign({},a,{_tard:tard[a.id]||0}); });
+  var tard = {}, vino3m = {}, iniMes = mesActual+'-01';
+  (ras.data||[]).forEach(function(x){
+    vino3m[x.alumno_id] = true;
+    if(x.tarde && x.fecha>=iniMes) tard[x.alumno_id]=(tard[x.alumno_id]||0)+1;
+  });
+  alumnosAll = (ral.data||[]).map(function(a){ return Object.assign({},a,{_tard:tard[a.id]||0,_vino3m:!!vino3m[a.id]}); });
   alumnosAll.sort(function(a,b){ return (a.estado==='discontinuado')-(b.estado==='discontinuado'); });
   alumnosFiltrados = alumnosAll.slice();
   alumnoPagina = 0;
   filtrarAlumnos();
+}
+
+// Supabase corta cada consulta en 1000 filas: pide la asistencia por tandas
+async function asistenciaDesde(desde, cols) {
+  var filas = [], PAG = 1000;
+  for(var i=0;;i+=PAG){
+    var r = await sb.from('asistencia').select(cols).gte('fecha',desde).order('id').range(i, i+PAG-1);
+    if(r.error) return { data: filas, error: r.error };
+    filas = filas.concat(r.data||[]);
+    if(!r.data || r.data.length < PAG) return { data: filas, error: null };
+  }
 }
 
 function estadoBadge(estado, bloqueado) {
@@ -1509,7 +1526,10 @@ function filtrarAlumnos() {
   var turno = (document.getElementById('fil-al-turno')||{}).value||'';
   var cint = (document.getElementById('fil-al-cint')||{}).value||'';
   var est = (document.getElementById('fil-al-est')||{}).value||'';
+  var act = (document.getElementById('fil-al-act')||{}).value||'';
   alumnosFiltrados = alumnosAll.filter(function(a){
+    if(act==='si' && !a._vino3m) return false;
+    if(act==='no' && a._vino3m) return false;
     if(srch && sinTildes((a.nombre||'')+' '+(a.apellido||'')+' '+(a.dni||'')).indexOf(srch)===-1) return false;
     if(turno && (a.turno||'')!==turno) return false;
     if(cint && (a.cinturon||'')!==cint) return false;
