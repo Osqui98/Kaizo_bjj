@@ -330,7 +330,7 @@ button,input,select,textarea{font-family:inherit}
 .stripe{height:7px;width:4px}
 .belt-name{font-size:12px}
 .filter-select{height:40px;border-radius:12px;padding:0 32px 0 12px;background:var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6b74' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center/16px;appearance:none;-webkit-appearance:none;font-size:14px;font-weight:600;color:var(--g7);border:1px solid var(--g2)}
-.srch{flex:1 1 100%;height:46px;border-radius:14px;border:1px solid var(--g2);background:var(--white);padding:0 14px 0 42px;font-size:15px;color:var(--black);outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6b74' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:14px center;background-size:18px}
+.srch{display:block;width:100%;height:46px;border-radius:14px;border:1px solid var(--g2);background:var(--white);padding:0 14px 0 42px;font-size:15px;color:var(--black);outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b6b74' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:14px center;background-size:18px}
 .srch:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(227,38,46,.12)}
 .cat-tab{border-width:1px;padding:8px 14px;font-size:14px;font-weight:700}
 .cat-tab.on{background:var(--black);border-color:var(--black);color:var(--white)}
@@ -406,6 +406,23 @@ button,input,select,textarea{font-family:inherit}
 
 .chev{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;color:var(--g5)}
 @media(max-width:600px){.row-item .belt-name{display:none}.topbar p{font-size:11px;white-space:nowrap}.topbar{gap:8px;padding:10px 12px}#alerta-badge{padding:5px 9px!important;font-size:11px!important}}
+/* Pills de categoría y estado (claro y oscuro) */
+.cat-pill .cat-dot{background:currentColor}
+.c-kinder{background:#e0f2fe;color:#0369a1}.c-infantil{background:#ede9fe;color:#6d28d9}.c-adulto{background:#eef1f5;color:#475569}
+.c-todas{background:#fef3c7;color:#b45309}.c-sin{background:#fdecec;color:#c0392b}
+.eb{display:inline-flex;align-items:center;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;vertical-align:middle}
+.eb-blq{background:#fdecec;color:#c0392b}.eb-les{background:#ffedd5;color:#c2410c}.eb-disc{background:#ececef;color:#52525b}
+[data-theme="dark"] .c-kinder{background:rgba(56,189,248,.15);color:#7dd3fc}
+[data-theme="dark"] .c-infantil{background:rgba(167,139,250,.16);color:#c4b5fd}
+[data-theme="dark"] .c-adulto{background:rgba(148,163,184,.16);color:#cbd5e1}
+[data-theme="dark"] .c-todas{background:rgba(245,158,11,.16);color:#fcd34d}
+[data-theme="dark"] .c-sin,[data-theme="dark"] .eb-blq{background:rgba(239,68,68,.16);color:#fca5a5}
+[data-theme="dark"] .eb-les{background:rgba(249,115,22,.16);color:#fdba74}
+[data-theme="dark"] .eb-disc{background:rgba(255,255,255,.08);color:#a1a1aa}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{color-scheme:dark}
+.btn-editar-clase{background:var(--g7)!important;color:var(--white)!important}
+.fe-foot button{font-size:15px;white-space:nowrap}
+.sidebar-btn{position:relative}
 /* Varios */
 .toast{background:var(--black);color:var(--white);font-weight:700;padding:12px 20px}
 .cumple-widget{border-radius:20px;background:#fffbeb}
@@ -440,7 +457,7 @@ button,input,select,textarea{font-family:inherit}
     <p id="fecha-hoy"></p>
   </div>
   <div class="topbar-right" style="display:flex;align-items:center;gap:10px">
-    <div id="alerta-badge" style="display:none;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;cursor:pointer;white-space:nowrap" onclick="showTab('graduaciones')" title="Ver candidatos a graduacion"></div>
+    <div id="alerta-badge" style="display:none;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;cursor:pointer;white-space:nowrap" onclick="showTab('graduaciones')" title="Ver candidatos a graduación"></div>
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
       <svg id="theme-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
     </button>
@@ -502,11 +519,11 @@ button,input,select,textarea{font-family:inherit}
     </select>
     <label>Turno habitual</label>
     <select id="ma-turno">
-      <option value="manana">Manana (07:00-09:00)</option>
+      <option value="manana">Mañana (07:00-09:00)</option>
       <option value="noche">Noche (19:00-22:00)</option>
-      <option value="sabado">Sabado (11:00-14:00)</option>
+      <option value="sabado">Sábado (11:00-14:00)</option>
     </select>
-    <label>Cinturon</label>
+    <label>Cinturón</label>
     <select id="ma-cinturon"><option value="blanco">Blanco</option><optgroup label="Infantiles"><option value="gris">Gris</option><option value="amarillo">Amarillo</option><option value="naranja">Naranja</option><option value="verde">Verde</option></optgroup><optgroup label="Adultos"><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marrón</option><option value="negro">Negro</option></optgroup></select>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="cerrarModal('alumno')">Cancelar</button>
@@ -517,17 +534,17 @@ button,input,select,textarea{font-family:inherit}
 
 <div class="modal-bg" id="modal-grad" onclick="if(event.target===this)cerrarModal('grad')">
   <div class="modal">
-    <h3 id="modal-grad-titulo">Registrar graduacion</h3>
+    <h3 id="modal-grad-titulo">Registrar graduación</h3>
     <input type="hidden" id="mg-alumno-id" />
     <input type="hidden" id="mg-cinturon-actual" />
     <input type="hidden" id="mg-stripes-actual" />
     <label>Tipo de evento</label>
     <select id="mg-tipo" onchange="toggleTipoGrad()">
-      <option value="stripe">Stripe (subgraduacion)</option>
-      <option value="cinturon">Cambio de cinturon</option>
+      <option value="stripe">Stripe (subgraduación)</option>
+      <option value="cinturon">Cambio de cinturón</option>
     </select>
     <div id="mg-cinturon-wrap" style="display:none">
-      <label>Nuevo cinturon</label>
+      <label>Nuevo cinturón</label>
       <select id="mg-cinturon-nuevo"><optgroup label="Infantiles"><option value="gris">Gris</option><option value="amarillo">Amarillo</option><option value="naranja">Naranja</option><option value="verde">Verde</option></optgroup><optgroup label="Adultos"><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marrón</option><option value="negro">Negro</option></optgroup></select>
     </div>
     <label>Fecha de la ceremonia *</label><input type="date" id="mg-fecha" />
@@ -548,8 +565,8 @@ button,input,select,textarea{font-family:inherit}
     <label>Dia *</label>
     <select id="mc-dia">
       <option value="1">Lunes</option><option value="2">Martes</option>
-      <option value="3">Miercoles</option><option value="4">Jueves</option>
-      <option value="5">Viernes</option><option value="6">Sabado</option>
+      <option value="3">Miércoles</option><option value="4">Jueves</option>
+      <option value="5">Viernes</option><option value="6">Sábado</option><option value="0">Domingo</option>
     </select>
     <div class="modal-grid">
       <div><label>Hora inicio *</label><input type="time" id="mc-hi" value="19:00" /></div>
@@ -559,10 +576,10 @@ button,input,select,textarea{font-family:inherit}
     <label>ID turno *</label><input type="text" id="mc-turno" placeholder="noche" />
     <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
       <input type="checkbox" id="mc-fis" style="width:auto" onchange="document.getElementById('mc-fis-wrap').style.display=this.checked?'block':'none'" />
-      <label for="mc-fis" style="margin:0">Tiene fisico</label>
+      <label for="mc-fis" style="margin:0">Tiene físico</label>
     </div>
     <div id="mc-fis-wrap" style="display:none;margin-top:8px">
-      <label>Hora fin del fisico</label><input type="time" id="mc-hff" value="20:00" />
+      <label>Hora fin del físico</label><input type="time" id="mc-hff" value="20:00" />
     </div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="cerrarModal('clase')">Cancelar</button>
@@ -649,7 +666,7 @@ button,input,select,textarea{font-family:inherit}
             <div class="fe-f"><label>Última graduación</label><input type="date" id="fe-fgrad" /></div>
             <div class="fe-f"><label>Turno</label><input id="fe-turno" /></div>
           </div>
-          <div class="fe-hint">Para registrar una graduacion con historial, usa la pestana Graduaciones.</div>
+          <div class="fe-hint">Para registrar una graduación con historial, usá la pestaña Grados.</div>
           <div class="fe-chk" onclick="var c=document.getElementById('fe-competidor');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-competidor" /><label>Es competidor</label></div>
           <div class="fe-chk" onclick="var c=document.getElementById('fe-profe');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-profe" /><label>Es profe / instructor</label></div>
         </div>
@@ -729,8 +746,8 @@ var CATS = {
 };
 function catPill(cat) {
   var k = CATS[cat];
-  if(!k) return '<span class="cat-pill" style="background:#fdecec;color:#c0392b">Sin categoría</span>';
-  return '<span class="cat-pill" style="background:'+k.b+';color:'+k.c+'"><span class="cat-dot" style="background:'+k.c+'"></span>'+k.l+'</span>';
+  if(!k) return '<span class="cat-pill c-sin">Sin categoría</span>';
+  return '<span class="cat-pill c-'+cat+'"><span class="cat-dot"></span>'+k.l+'</span>';
 }
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const hoy = new Date();
@@ -763,7 +780,7 @@ function buildNav() {
   // Sidebar (desktop)
   var sb = document.getElementById('sidebar');
   if(sb) sb.innerHTML = TABS.map(function(t){
-    return '<button class="sidebar-btn'+(t.id===tabActual?' active':'')+'" onclick="showTab(\''+t.id+'\')">'+
+    return '<button class="sidebar-btn'+(t.id===tabActual?' active':'')+'" title="'+t.label+'" aria-label="'+t.label+'" onclick="showTab(\''+t.id+'\')">'+
       '<svg viewBox="0 0 24 24">'+t.icon+'</svg>'+
       '<span>'+t.label+'</span>'+
     '</button>';
@@ -834,6 +851,15 @@ function showTab(id) {
 }
 
 function getMain() { return document.getElementById('main-content'); }
+// Vuelve a dibujar la pestaña actual (por ejemplo, después de guardar una ficha abierta desde Hoy)
+function refrescarTab() { showTab(tabActual); }
+// Evita que un doble toque en "Guardar" cree registros duplicados
+var _guardando = {};
+async function unaVez(clave, fn) {
+  if(_guardando[clave]) return;
+  _guardando[clave] = true;
+  try { await fn(); } finally { _guardando[clave] = false; }
+}
 
 function ini(nombre) {
   return (nombre||'').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
@@ -851,7 +877,7 @@ function beltHTML(cinturon, stripes) {
 function punctBadge(n) {
   if(n<=1) return '<span class="punct-badge punct-ok">Puntual</span>';
   if(n<=3) return '<span class="punct-badge punct-irr">Irregular ('+n+')</span>';
-  return '<span class="punct-badge punct-prob">Problematico ('+n+')</span>';
+  return '<span class="punct-badge punct-prob">Problemático ('+n+')</span>';
 }
 
 // ── CUMPLEAÑOS ───────────────────────────────────────────────
@@ -937,11 +963,12 @@ async function cargarHoy() {
   var toMin = function(t){ var p=String(t||'0:0').split(':'); return +p[0]*60 + +p[1]; };
   var enCurso = (rc.data||[]).filter(function(c){ return c.dia===new Date().getDay() && ahoraM>=toMin(c.hora_inicio)-30 && ahoraM<=toMin(c.hora_fin); })
     .sort(function(a,b){ return toMin(b.hora_inicio)-toMin(a.hora_inicio); })[0];
-  var regsClase = enCurso ? data.filter(function(x){ return String(x.horario||'').indexOf(enCurso.hora_inicio)===0; }) : data;
+  var regsClase = enCurso ? data.filter(function(x){ return x.turno===enCurso.turno_id && String(x.horario||'').indexOf(enCurso.hora_inicio)===0; }) : data;
   var ultimos = regsClase.slice(-3).reverse();
   var stack = ultimos.map(function(x){
     var a = porId[x.alumno_id]||{}, c = BELT_COLORS[a.cinturon]||'#3f3f46', f = fotoCache[x.alumno_id];
-    return '<span style="background:'+c+'">'+(f?'<img src="'+escHTML(f)+'">':ini(x.nombre))+'</span>';
+    var tc = ['blanco','amarillo','gris'].indexOf(a.cinturon)>=0 ? '#111' : '#fff';
+    return '<span style="background:'+c+';color:'+tc+'">'+(f?'<img src="'+escHTML(f)+'">':ini(x.nombre))+'</span>';
   }).join('') + (regsClase.length>3 ? '<span>+'+(regsClase.length-3)+'</span>' : '');
   var hero = document.getElementById('hoy-hero');
   if(hero) hero.innerHTML = '<div class="hero">'+
@@ -978,7 +1005,8 @@ async function cargarHoy() {
         '<span class="'+(reg.tarde?'badge-tarde':'badge-ok')+'">'+escHTML(hora||(reg.tarde?'tarde':'ok'))+(reg.tarde?' · tarde':'')+'</span>'+
       '</div>';
     }).join('');
-    return '<div class="section" style="margin-bottom:12px"><div class="section-header clase-h"><div><div class="section-title">'+escHTML(capTxt(g.turno))+'</div>'+
+    var cl = (rc.data||[]).filter(function(c){ return c.turno_id===g.turno && String(g.horario).indexOf(c.hora_inicio)===0; })[0];
+    return '<div class="section" style="margin-bottom:12px"><div class="section-header clase-h"><div><div class="section-title">'+escHTML(cl ? cl.nombre : capTxt(g.turno))+'</div>'+
       '<div class="section-sub">'+escHTML(g.horario)+'</div></div><div class="ct"><span class="badge-ok">'+(g.registros.length-nT)+' a tiempo</span>'+(nT?'<span class="badge-tarde">'+nT+' tarde</span>':'')+'</div></div>'+filas+'</div>';
   }).join('');
   el.querySelectorAll('[data-edit-id]').forEach(function(row){
@@ -1000,7 +1028,7 @@ function mesIni(ym){ return ym+'-01'; }
 function mesFinEx(ym){ return mesShift(ym,1)+'-01'; }
 function mesShift(ym,delta){ var p=ym.split('-'),y=+p[0],m0=(+p[1])-1+delta; y+=Math.floor(m0/12); m0=((m0%12)+12)%12; return y+'-'+(m0+1<10?'0'+(m0+1):(m0+1)); }
 function mesLabel(ym){ var p=ym.split('-'); return MESES[(+p[1])-1]+' '+p[0]; }
-function capTxt(s){ s=String(s||'').replace(/-/g,' '); return s.charAt(0).toUpperCase()+s.slice(1); }
+function capTxt(s){ var m={manana:'Mañana',sabado:'Sábado',miercoles:'Miércoles'}; s=String(s||''); if(m[s.toLowerCase()]) return m[s.toLowerCase()]; s=s.replace(/-/g,' '); return s.charAt(0).toUpperCase()+s.slice(1); }
 function toggleRanking(){ var b=document.getElementById('rank-body'); if(!b) return; var a=document.getElementById('arr-ranking'); var hid=b.style.display==='none'; b.style.display=hid?'block':'none'; if(a) a.innerHTML=hid?CH_U:CH_D; }
 
 async function renderMes(){
@@ -1026,10 +1054,10 @@ async function cargarInformes(){
   var desde6=mesShift(mesInforme,-5)+'-01';
   var corte14=ymdLocal(new Date(Date.now()-14*86400000));
   var [rAsis,rAlum,rGrad,rRec]=await Promise.all([
-    sb.from('asistencia').select('fecha,turno,nombre,tarde,categoria').gte('fecha',desde6).lt('fecha',fin),
+    sb.from('asistencia').select('alumno_id,fecha,turno,nombre,tarde,categoria').gte('fecha',desde6).lt('fecha',fin),
     alumnosActivos(),
     sb.from('graduaciones').select('nombre,tipo,cinturon_despues,stripes_despues,fecha').gte('fecha',iniMes).lt('fecha',fin).order('fecha',{ascending:false}),
-    sb.from('asistencia').select('nombre,fecha').gte('fecha',corte14)
+    sb.from('asistencia').select('alumno_id,fecha').gte('fecha',corte14)
   ]);
   var asis=rAsis.data||[], alum=rAlum.data||[], grad=rGrad.data||[], rec=rRec.data||[];
   var DIAS=['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
@@ -1050,12 +1078,12 @@ async function cargarInformes(){
   }).join('');
 
   // 2) Ranking de asistencia
-  var conteo={}; mesRows.forEach(function(r){ conteo[r.nombre]=(conteo[r.nombre]||0)+1; });
-  var ranking=alum.map(function(a){return {nombre:a.nombre,apellido:a.apellido,clases:conteo[a.nombre]||0};}).sort(function(a,b){return b.clases-a.clases;});
+  var conteo={}; mesRows.forEach(function(r){ conteo[r.alumno_id]=(conteo[r.alumno_id]||0)+1; });
+  var ranking=alum.map(function(a){return {nombre:a.nombre,apellido:a.apellido,clases:conteo[a.id]||0};}).sort(function(a,b){return b.clases-a.clases;});
   var maxR=(ranking[0]&&ranking[0].clases)||1;
   var rankRows=ranking.map(function(a,i){ var pct=Math.round(a.clases/maxR*100); var cls=pct>=75?'high':pct>=40?'mid':'low'; var med=i===0?'&#129351; ':i===1?'&#129352; ':i===2?'&#129353; ':'';
     return '<div class="row-item"><div class="avatar">'+ini(a.nombre)+'</div>'+
-      '<div style="flex:1"><div class="row-name">'+med+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="row-sub">'+a.clases+' clases</div></div>'+
+      '<div style="flex:1"><div class="row-name">'+med+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="row-sub">'+a.clases+(a.clases===1?' clase':' clases')+'</div></div>'+
       '<div class="progress-wrap"><div class="progress-bar"><div class="progress-fill '+cls+'" style="width:'+pct+'%"></div></div><div class="progress-pct pct-'+cls+'">'+a.clases+'</div></div></div>';
   }).join('') || '<div class="empty-state">Sin asistencias este mes</div>';
 
@@ -1075,10 +1103,10 @@ async function cargarInformes(){
   // 4) Retencion
   var activos=alum.length;
   var altas=alum.filter(function(a){ var c=(a.created_at||'').slice(0,10); return c>=iniMes&&c<fin; }).length;
-  var ultima={}; rec.forEach(function(x){ if(!ultima[x.nombre]||x.fecha>ultima[x.nombre]) ultima[x.nombre]=x.fecha; });
-  var enRiesgo=alum.filter(function(a){ var u=ultima[a.nombre]; if(!u) return true; return Math.floor((new Date(fechaHoy)-new Date(u))/86400000)>14; });
-  var riesgoRows=enRiesgo.map(function(a){ var u=ultima[a.nombre]; var d=u?Math.floor((new Date(fechaHoy)-new Date(u))/86400000):999;
-    return '<div class="row-item"><div class="avatar">'+ini(a.nombre)+'</div><div style="flex:1"><div class="row-name">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div></div><span class="dias-badge alerta">'+(d>=999?'Sin registros':d+' dias')+'</span></div>';
+  var ultima={}; rec.forEach(function(x){ if(!ultima[x.alumno_id]||x.fecha>ultima[x.alumno_id]) ultima[x.alumno_id]=x.fecha; });
+  var enRiesgo=alum.filter(function(a){ var u=ultima[a.id]; if(!u) return true; return Math.floor((new Date(fechaHoy)-new Date(u))/86400000)>14; });
+  var riesgoRows=enRiesgo.map(function(a){ var u=ultima[a.id]; var d=u?Math.floor((new Date(fechaHoy)-new Date(u))/86400000):999;
+    return '<div class="row-item"><div class="avatar">'+ini(a.nombre)+'</div><div style="flex:1"><div class="row-name">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div></div><span class="dias-badge alerta">'+(d>=999?'Sin registros':d+' días')+'</span></div>';
   }).join('');
 
   // 5) Cinturones + graduaciones
@@ -1087,7 +1115,7 @@ async function cargarInformes(){
   var cKeys=ordenCint.filter(function(c){return porCint[c];}).concat(Object.keys(porCint).filter(function(c){return ordenCint.indexOf(c)<0;}));
   var maxCi=Math.max.apply(null,cKeys.map(function(k){return porCint[k];}))||1;
   var cintBars=cKeys.length?cKeys.map(function(k){return repBar(k,porCint[k],maxCi,(BELT_COLORS[k]||'#999'));}).join(''):'<div class="empty-state">Sin datos</div>';
-  var gradRows=grad.length?grad.map(function(g){ var det=g.tipo==='cinturon'?('Cinturon '+escHTML(g.cinturon_despues||'')):('Stripe '+(g.stripes_despues!=null?g.stripes_despues:''));
+  var gradRows=grad.length?grad.map(function(g){ var det=g.tipo==='cinturon'?('Cinturón '+escHTML(g.cinturon_despues||'')):('Stripe '+(g.stripes_despues!=null?g.stripes_despues:''));
     return '<div class="row-item"><div class="avatar">'+ini(g.nombre)+'</div><div style="flex:1"><div class="row-name">'+escHTML(g.nombre)+'</div><div class="row-sub">'+det+'</div></div><span class="badge-hora">'+escHTML(g.fecha)+'</span></div>';
   }).join(''):'<div class="empty-state">Sin graduaciones este mes</div>';
 
@@ -1103,33 +1131,33 @@ async function cargarInformes(){
     '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Asistencia por categoría</div></div><div style="padding:.5rem 0">'+catBars+'</div></div>'+
     '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Asistencia por turno</div></div><div style="padding:.5rem 0">'+turnoBars+'</div></div>'+
     '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Asistencia por dia</div></div><div style="padding:.5rem 0">'+diaBars+'</div></div>'+
-    '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Retencion</div></div>'+
+    '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Retención</div></div>'+
       '<div class="stats-grid" style="padding:1rem 1.25rem;margin:0">'+
       '<div class="stat-card"><div class="stat-label">Activos</div><div class="stat-num">'+activos+'</div></div>'+
       '<div class="stat-card"><div class="stat-label">Altas del mes</div><div class="stat-num green">'+altas+'</div></div>'+
       '<div class="stat-card"><div class="stat-label">En riesgo (hoy)</div><div class="stat-num orange">'+enRiesgo.length+'</div></div></div>'+
-      (enRiesgo.length?'<div class="section-sub" style="padding:2px 1.25rem 6px">Sin venir hace +14 dias:</div>'+riesgoRows:'')+'</div>'+
-    '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Distribucion por cinturon</div></div><div style="padding:.5rem 0">'+cintBars+'</div></div>'+
+      (enRiesgo.length?'<div class="section-sub" style="padding:2px 1.25rem 6px">Sin venir hace más de 14 días:</div>'+riesgoRows:'')+'</div>'+
+    '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Distribución por cinturón</div></div><div style="padding:.5rem 0">'+cintBars+'</div></div>'+
     '<div class="section"><div class="section-header"><div class="section-title">Graduaciones del mes</div></div>'+gradRows+'</div>';
 }
 
 // ── AUSENTES ─────────────────────────────────────────────────
 async function renderAusentes() {
   getMain().innerHTML =
-    '<div class="section"><div class="section-header"><div class="section-title">Sin venir hace mas de 7 dias</div><div class="section-sub" id="aus-sub">Ordenados por ausencia</div></div>'+
+    '<div class="section"><div class="section-header"><div class="section-title">Sin venir hace más de 7 días</div><div class="section-sub" id="aus-sub">Ordenados por ausencia</div></div>'+
     '<div style="padding:8px 1.25rem;border-bottom:1px solid var(--g2)">'+
     '<input type="text" id="srch-aus" placeholder="Buscar por nombre..." style="width:100%;padding:6px 10px;border:1px solid var(--g2);border-radius:var(--rs);font-size:13px;outline:none;background:var(--g1)" oninput="filtrarAusentes()" />'+
     '</div>'+
     '<div id="lista-aus"><div class="empty-state">Cargando...</div></div></div>';
-  var cutoff = ymdLocal(new Date(Date.now()-30*86400000));
+  var cutoff = ymdLocal(new Date(Date.now()-180*86400000));
   var [ral, rr] = await Promise.all([
     alumnosActivos(),
-    sb.from('asistencia').select('nombre,fecha').gte('fecha',cutoff)
+    sb.from('asistencia').select('alumno_id,fecha').gte('fecha',cutoff)
   ]);
   var ultima = {};
-  (rr.data||[]).forEach(function(x){if(!ultima[x.nombre]||x.fecha>ultima[x.nombre])ultima[x.nombre]=x.fecha;});
+  (rr.data||[]).forEach(function(x){if(!ultima[x.alumno_id]||x.fecha>ultima[x.alumno_id])ultima[x.alumno_id]=x.fecha;});
   ausAllData = (ral.data||[]).map(function(a){
-    var dias = ultima[a.nombre] ? Math.floor((new Date(fechaHoy)-new Date(ultima[a.nombre]))/86400000) : 999;
+    var dias = ultima[a.id] ? Math.floor((new Date(fechaHoy)-new Date(ultima[a.id]))/86400000) : 999;
     return Object.assign({},a,{dias:dias});
   }).filter(function(a){return a.dias>7;}).sort(function(a,b){return b.dias-a.dias;});
   var sub = document.getElementById('aus-sub');
@@ -1147,15 +1175,15 @@ function filtrarAusentes() {
     var lesion = '';
     if(a.estado==='lesionado'){
       var notas = (a.notas||'').trim() || 'Sin notas del instructor';
-      lesion = '<span class="lesion-badge" title="'+escAttr(notas)+'" data-n="'+escAttr(notas)+'" onclick="showNota(this.getAttribute(\'data-n\'))">&#129657; Lesion</span>';
+      lesion = '<span class="lesion-badge" title="'+escAttr(notas)+'" data-n="'+escAttr(notas)+'" onclick="showNota(this.getAttribute(\'data-n\'))">Lesión</span>';
     }
     return '<div class="row-item">'+
       avHTML(a)+
       '<div style="flex:1"><div class="row-name">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="row-sub">'+escHTML(a.turno)+'</div></div>'+
       lesion+
-      '<span class="dias-badge'+(a.dias>=14?' alerta':'')+'">'+( a.dias>=999?'Sin registros':a.dias+' dias')+'</span>'+
+      '<span class="dias-badge'+(a.dias>=14?' alerta':'')+'">'+( a.dias>=999?'Sin registros':a.dias+' días')+'</span>'+
     '</div>';
-  }).join('') : '<div class="empty-state">'+(srch?'Sin resultados':'Todos vinieron esta semana!')+'</div>';
+  }).join('') : '<div class="empty-state">'+(srch?'Sin resultados':'¡Todos vinieron esta semana!')+'</div>';
 }
 
 // ── GRADUACIONES ─────────────────────────────────────────────
@@ -1174,30 +1202,31 @@ async function renderGraduaciones() {
     '<div style="padding:10px 1.25rem;border-bottom:1px solid var(--g2)">'+
     '<input type="text" id="srch-grad" placeholder="Buscar alumno por nombre..." style="width:100%;padding:6px 10px;border:1px solid var(--g2);border-radius:var(--rs);font-size:13px;outline:none;background:var(--g1)" oninput="filtrarGrad()" />'+
     '</div>'+
-    '<div id="lista-grad"><div class="empty-state" style="padding:1.25rem">Escribi un nombre para buscar</div></div>'+
+    '<div id="lista-grad"><div class="empty-state" style="padding:1.25rem">Escribí un nombre para buscar</div></div>'+
     '</div></div>';
 
   var [ral, rg, ras] = await Promise.all([
     alumnosActivos(),
     sb.from('graduaciones').select('alumno_id,fecha').order('fecha',{ascending:false}),
-    sb.from('asistencia').select('nombre,fecha,tarde').gte('fecha',ymdLocal(new Date(Date.now()-180*86400000)))
+    sb.from('asistencia').select('alumno_id,fecha,tarde').gte('fecha',ymdLocal(new Date(Date.now()-180*86400000)))
   ]);
 
   var ultiGrad = {};
   (rg.data||[]).forEach(function(g){if(!ultiGrad[g.alumno_id])ultiGrad[g.alumno_id]=g.fecha;});
   var conteoMes = {};
-  (ras.data||[]).forEach(function(r){var m=r.fecha.slice(0,7);if(!conteoMes[r.nombre])conteoMes[r.nombre]={};conteoMes[r.nombre][m]=(conteoMes[r.nombre][m]||0)+1;});
+  (ras.data||[]).forEach(function(r){var m=r.fecha.slice(0,7);if(!conteoMes[r.alumno_id])conteoMes[r.alumno_id]={};conteoMes[r.alumno_id][m]=(conteoMes[r.alumno_id][m]||0)+1;});
 
   var candidatos = [], revisar = [];
   gradAllData = (ral.data||[]).map(function(a) {
-    var ultima = ultiGrad[a.id] || a.fecha_grad;
+    // sin graduaciones: se cuenta desde que empezó (no como 999 días)
+    var ultima = ultiGrad[a.id] || a.fecha_grad || a.fecha_inicio || (a.created_at||'').slice(0,10);
     var dias = ultima ? Math.floor((new Date(fechaHoy)-new Date(ultima))/86400000) : 999;
-    var hist = Object.values(conteoMes[a.nombre]||{});
+    var hist = Object.values(conteoMes[a.id]||{});
     var prom = hist.length ? hist.reduce(function(s,v){return s+v;},0)/hist.length : 0;
-    var nm=a.nombre; var ultm = [mesActual, new Date(Date.now()-30*86400000).toISOString().slice(0,7)].map(function(m){return (conteoMes[nm]&&conteoMes[nm][m])||0;});
+    var cm=conteoMes[a.id]; var ultm = [mesActual, ymdLocal(new Date(Date.now()-30*86400000)).slice(0,7)].map(function(m){return (cm&&cm[m])||0;});
     var promRec = (ultm[0]+ultm[1])/2;
     var caida = prom>0 && promRec<prom*0.6;
-    if(dias>=180) { if(caida) revisar.push(Object.assign({},a,{dias:dias})); else candidatos.push(Object.assign({},a,{dias:dias})); }
+    if(dias>=180 && a.cinturon!=='negro') { if(caida) revisar.push(Object.assign({},a,{dias:dias})); else candidatos.push(Object.assign({},a,{dias:dias})); }
     return Object.assign({},a,{dias:dias});
   });
 
@@ -1245,7 +1274,7 @@ function renderCandidatosPaginado() {
       tipoBadge+
       '<div style="margin-left:6px;color:#c9ccd1;font-size:22px;font-weight:300;line-height:1">&rsaquo;</div>'+
     '</div>';
-  }).join('') || '<div class="empty-state">'+(candAllData.length?'Sin resultados':'Ningun alumno cumple los 6 meses todavia')+'</div>';
+  }).join('') || '<div class="empty-state">'+(candAllData.length?'Sin resultados':'Ningún alumno cumple los 6 meses todavía')+'</div>';
   el.querySelectorAll('[data-cand-id]').forEach(function(row){
     row.onclick = function(){ abrirGrad(parseInt(row.dataset.candId), row.dataset.candNom); };
   });
@@ -1264,7 +1293,7 @@ function filtrarGrad() {
   var srch = ((document.getElementById('srch-grad')||{}).value||'').toLowerCase().trim();
   var el = document.getElementById('lista-grad');
   if(!el) return;
-  if(!srch) { el.innerHTML = '<div class="empty-state" style="padding:1.25rem">Escribi un nombre para buscar</div>'; return; }
+  if(!srch) { el.innerHTML = '<div class="empty-state" style="padding:1.25rem">Escribí un nombre para buscar</div>'; return; }
   var filt = gradAllData.filter(function(a){
     return ((a.nombre||'')+' '+(a.apellido||'')).toLowerCase().indexOf(srch) !== -1;
   });
@@ -1286,7 +1315,7 @@ function filtrarGrad() {
 
 function abrirGrad(id, nombre) {
   document.getElementById('mg-alumno-id').value = id;
-  document.getElementById('modal-grad-titulo').textContent = 'Graduacion - '+nombre;
+  document.getElementById('modal-grad-titulo').textContent = 'Graduación - '+nombre;
   document.getElementById('mg-fecha').value = fechaHoy;
   document.getElementById('mg-notas').value = '';
   document.getElementById('mg-tipo').value = 'stripe';
@@ -1299,31 +1328,33 @@ function toggleTipoGrad() {
   document.getElementById('mg-cinturon-wrap').style.display = tipo==='cinturon' ? 'block' : 'none';
 }
 
-async function guardarGrad() {
+function guardarGrad() { return unaVez('grad', _guardarGrad); }
+async function _guardarGrad() {
   var alumnoId = parseInt(document.getElementById('mg-alumno-id').value);
   var tipo = document.getElementById('mg-tipo').value;
   var fecha = document.getElementById('mg-fecha').value;
   var notas = document.getElementById('mg-notas').value;
-  if(!fecha) { alert('Ingresa la fecha'); return; }
+  if(!fecha) { alert('Ingresá la fecha'); return; }
   var ra = await sb.from('alumnos').select('cinturon,stripes,nombre,apellido').eq('id',alumnoId).single();
+  if(ra.error || !ra.data) { alert('No se pudo cargar el alumno. Probá de nuevo.'); return; }
   var a = ra.data;
   var cinturonNuevo = a.cinturon, stripesNuevo = a.stripes||0;
   if(tipo==='stripe') {
     var cfg = await sb.from('config_cinturones').select('max_stripes').eq('cinturon',a.cinturon).maybeSingle();
     var max = cfg.data ? cfg.data.max_stripes : 4;
-    if(stripesNuevo>=max) { alert('Ya tiene el maximo de stripes. Registra un cambio de cinturon.'); return; }
+    if(stripesNuevo>=max) { alert('Ya tiene el máximo de stripes. Registrá un cambio de cinturón.'); return; }
     stripesNuevo++;
   } else {
     cinturonNuevo = document.getElementById('mg-cinturon-nuevo').value;
     stripesNuevo = 0;
   }
-  await Promise.all([
-    sb.from('graduaciones').insert({alumno_id:alumnoId,nombre:a.nombre,tipo:tipo,cinturon_antes:a.cinturon,cinturon_despues:cinturonNuevo,stripes_antes:a.stripes||0,stripes_despues:stripesNuevo,fecha:fecha,notas:notas}),
-    sb.from('alumnos').update({cinturon:cinturonNuevo,stripes:stripesNuevo,fecha_grad:fecha}).eq('id',alumnoId)
-  ]);
+  var rg = await sb.from('graduaciones').insert({alumno_id:alumnoId,nombre:a.nombre,tipo:tipo,cinturon_antes:a.cinturon,cinturon_despues:cinturonNuevo,stripes_antes:a.stripes||0,stripes_despues:stripesNuevo,fecha:fecha,notas:notas});
+  if(rg.error) { alert('No se pudo registrar la graduación: '+rg.error.message); return; }
+  var ru = await sb.from('alumnos').update({cinturon:cinturonNuevo,stripes:stripesNuevo,fecha_grad:fecha}).eq('id',alumnoId);
+  if(ru.error) { alert('La graduación quedó registrada, pero no se pudo actualizar el cinturón del alumno: '+ru.error.message); }
   invalidarAlumnos();
   cerrarModal('grad');
-  showToast('Graduacion registrada');
+  showToast('Graduación registrada');
   renderGraduaciones();
 }
 
@@ -1331,7 +1362,7 @@ async function guardarGrad() {
 async function renderAlumnos() {
   getMain().innerHTML =
     '<div class="page-h"><div><h2>Alumnos</h2><p id="alumnos-sub">Cargando…</p></div><button class="btn-red" onclick="abrirAgregarAlumno()">+ Agregar</button></div>'+
-    '<input type="text" id="srch-alumnos" class="srch" placeholder="Buscar por nombre o apellido" oninput="filtrarAlumnosDeb()" />'+
+    '<input type="text" id="srch-alumnos" class="srch" placeholder="Buscar por nombre, apellido o DNI" oninput="filtrarAlumnosDeb()" />'+
     '<div class="cat-tabs" id="cat-tabs" style="padding:12px 0 2px"></div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap;padding:8px 0 12px">'+
     '<select class="filter-select" id="fil-al-turno" onchange="filtrarAlumnos()"><option value="">Turno</option><option value="manana">Mañana</option><option value="noche">Noche</option><option value="sabado">Sábado</option></select>'+
@@ -1343,11 +1374,11 @@ async function renderAlumnos() {
     '</div>';
   var [ral, ras] = await Promise.all([
     alumnosTodos(),
-    sb.from('asistencia').select('nombre,tarde').gte('fecha',mesActual+'-01').lt('fecha',finMes())
+    sb.from('asistencia').select('alumno_id,tarde').gte('fecha',mesActual+'-01').lt('fecha',finMes())
   ]);
   var tard = {};
-  (ras.data||[]).filter(function(x){return x.tarde;}).forEach(function(x){tard[x.nombre]=(tard[x.nombre]||0)+1;});
-  alumnosAll = (ral.data||[]).map(function(a){ return Object.assign({},a,{_tard:tard[a.nombre]||0}); });
+  (ras.data||[]).filter(function(x){return x.tarde;}).forEach(function(x){tard[x.alumno_id]=(tard[x.alumno_id]||0)+1;});
+  alumnosAll = (ral.data||[]).map(function(a){ return Object.assign({},a,{_tard:tard[a.id]||0}); });
   alumnosAll.sort(function(a,b){ return (a.estado==='discontinuado')-(b.estado==='discontinuado'); });
   alumnosFiltrados = alumnosAll.slice();
   alumnoPagina = 0;
@@ -1355,21 +1386,21 @@ async function renderAlumnos() {
 }
 
 function estadoBadge(estado, bloqueado) {
-  var b = bloqueado ? '<span style="background:#fdecec;color:#c0392b;border:1px solid #f3c2c4;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap">Bloqueado</span>' : '';
+  var b = bloqueado ? '<span class="eb eb-blq">Bloqueado</span>' : '';
   var e = estadoBadgeSolo(estado);
   return e && b ? e+' '+b : (e||b);
 }
 function estadoBadgeSolo(estado) {
   if(!estado || estado==='activo') return '';
-  if(estado==='lesionado') return '<span style="background:#fff4e0;color:#b9770e;border:1px solid #f0c98a;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap">&#129657; Lesion</span>';
-  if(estado==='discontinuado') return '<span style="background:#f0f0f0;color:#666;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap">Discontinuado</span>';
+  if(estado==='lesionado') return '<span class="eb eb-les">Lesión</span>';
+  if(estado==='discontinuado') return '<span class="eb eb-disc">Discontinuado</span>';
   return '';
 }
 
 // ── CACHE DE ALUMNOS (sin fotos) ─────────────────────────────
 // Las fotos son base64 pesados: las listas piden solo estas columnas y
 // comparten un mismo resultado entre pestañas durante ALU_TTL.
-var ALU_COLS = 'id,nombre,apellido,dni,turno,sexo,cinturon,stripes,estado,fecha_nac,fecha_grad,created_at,fecha_inicio,notas,emerg_nombre,emerg_telefono,emerg_relacion,es_profe,bloqueado,categoria';
+var ALU_COLS = 'id,nombre,apellido,dni,turno,sexo,cinturon,stripes,estado,fecha_nac,fecha_grad,created_at,fecha_inicio,notas,emerg_nombre,emerg_telefono,emerg_relacion,tutor_nombre,tutor_telefono,tutor_relacion,es_profe,bloqueado,categoria';
 var ALU_TTL = 60000;
 var aluCache = null, aluCacheTs = 0, aluCacheP = null, aluGen = 0;
 function copiaAlumnos(rows){ return { data: rows.map(function(a){ return Object.assign({}, a); }), error: null }; }
@@ -1400,11 +1431,13 @@ function invalidarAlumnos(){ aluGen++; aluCache = null; aluCacheTs = 0; aluCache
 // lote solo las fotos de los avatares visibles y las cachea por id.
 var fotoCache = {};   // id -> dataURL, o '' si no tiene foto
 var fotoPend = {}, fotoTimer = null;
+// Color del anillo del avatar: el blanco se oscurece un poco para que se vea sobre fondo claro
+function colorAnillo(c) { return c==='blanco' ? '#c4c4cb' : (BELT_COLORS[c]||'#d4d4d8'); }
 function avHTML(a) {
   var id = a && a.id;
   var foto = (a && a.foto_url) || (id != null ? fotoCache[id] : '');
   // anillo con el color del cinturón, si se conoce
-  var ring = a && a.cinturon ? ' ringed" style="--ring:'+(BELT_COLORS[a.cinturon]||'#d4d4d8') : '';
+  var ring = a && a.cinturon ? ' ringed" style="--ring:'+colorAnillo(a.cinturon) : '';
   if(foto) return '<div class="avatar'+ring+'"><img src="'+escHTML(foto)+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>';
   var lazy = (id != null && fotoCache[id] === undefined) ? ' data-av-id="'+escHTML(String(id))+'"' : '';
   return '<div class="avatar'+ring+'"'+lazy+'>'+ini(a&&a.nombre||'?')+'</div>';
@@ -1471,12 +1504,13 @@ function pintarCatTabs() {
 function filtrarAlumnos() {
   if(alCat==='sin' && !alumnosAll.some(function(a){ return !CATS[a.categoria]; })) alCat='';
   pintarCatTabs();
-  var srch = ((document.getElementById('srch-alumnos')||{}).value||'').toLowerCase().trim();
+  var sinTildes = function(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); };
+  var srch = sinTildes(((document.getElementById('srch-alumnos')||{}).value||'').trim());
   var turno = (document.getElementById('fil-al-turno')||{}).value||'';
   var cint = (document.getElementById('fil-al-cint')||{}).value||'';
   var est = (document.getElementById('fil-al-est')||{}).value||'';
   alumnosFiltrados = alumnosAll.filter(function(a){
-    if(srch && (((a.nombre||'')+' '+(a.apellido||'')).toLowerCase().indexOf(srch)===-1)) return false;
+    if(srch && sinTildes((a.nombre||'')+' '+(a.apellido||'')+' '+(a.dni||'')).indexOf(srch)===-1) return false;
     if(turno && (a.turno||'')!==turno) return false;
     if(cint && (a.cinturon||'')!==cint) return false;
     if(alCat==='sin'){ if(CATS[a.categoria]) return false; }
@@ -1538,7 +1572,8 @@ function abrirAgregarAlumno() {
   abrirModal('alumno');
 }
 
-async function guardarAlumno() {
+function guardarAlumno() { return unaVez('alta', _guardarAlumno); }
+async function _guardarAlumno() {
   var nombre = document.getElementById('ma-nombre').value.trim();
   var apellido = document.getElementById('ma-apellido').value.trim();
   var dni = document.getElementById('ma-dni').value.replace(/[^0-9]/g,'');
@@ -1548,12 +1583,12 @@ async function guardarAlumno() {
   var cinturon = document.getElementById('ma-cinturon').value;
   var categoria = document.getElementById('ma-categoria').value;
   if(!nombre||!apellido) { alert('Nombre y apellido son obligatorios'); return; }
-  if(!dni||dni.length<6) { alert('DNI invalido'); return; }
+  if(!dni||dni.length<6) { alert('DNI inválido'); return; }
   if(!fnac) { alert('La fecha de nacimiento es obligatoria'); return; }
-  if(!sexo) { alert('Selecciona el sexo'); return; }
-  if(!categoria) { alert('Selecciona la categoría'); return; }
+  if(!sexo) { alert('Seleccioná el sexo'); return; }
+  if(!categoria) { alert('Seleccioná la categoría'); return; }
   var r = await sb.from('alumnos').insert({nombre:nombre,apellido:apellido,dni:dni,fecha_nac:fnac,sexo:sexo,turno:turno,cinturon:cinturon,stripes:0,activo:true,estado:'activo',categoria:categoria});
-  if(r.error) { if(r.error.code==='23505') alert('Ese DNI ya esta registrado.'); else alert('Error: '+r.error.message); return; }
+  if(r.error) { if(r.error.code==='23505') alert('Ese DNI ya está registrado.'); else alert('Error: '+r.error.message); return; }
   invalidarAlumnos();
   cerrarModal('alumno');
   showToast('Alumno agregado');
@@ -1563,36 +1598,43 @@ async function guardarAlumno() {
 // ── EMERGENCIA ───────────────────────────────────────────────
 async function renderEmergencia() {
   getMain().innerHTML =
-    '<div class="section">'+
-    '<div class="section-header"><div class="section-title">Contactos de emergencia</div><div class="section-sub">Toca el numero para copiarlo al portapapeles</div></div>'+
-    '<div id="lista-emerg"><div class="empty-state">Cargando...</div></div>'+
-    '</div>';
+    '<div class="page-h"><div><h2>Emergencia</h2><p>Tocá el número para copiarlo</p></div></div>'+
+    '<div class="section"><div id="lista-emerg"><div class="empty-state">Cargando…</div></div></div>';
   var r = await alumnosActivos();
   var el = document.getElementById('lista-emerg');
   if(!el) return;
   var todos = r.data||[];
-  var conDatos = todos.filter(function(a){ return a.emerg_nombre||a.emerg_telefono; });
+  // Contacto de emergencia y, en los menores, padre/madre/tutor (lo cargan al registrarse en Asistencia)
+  function contactos(a) {
+    var c = [];
+    if(a.emerg_nombre||a.emerg_telefono) c.push({quien:a.emerg_nombre, rel:a.emerg_relacion, tel:a.emerg_telefono});
+    if((a.tutor_nombre||a.tutor_telefono) && a.tutor_telefono!==a.emerg_telefono)
+      c.push({quien:a.tutor_nombre, rel:a.tutor_relacion?capTxt(a.tutor_relacion):'Tutor', tel:a.tutor_telefono});
+    return c;
+  }
+  var conDatos = todos.filter(function(a){ return contactos(a).length; });
   var sinDatos = todos.length - conDatos.length;
   el.innerHTML = conDatos.map(function(a){
-    var tel = a.emerg_telefono||'';
     var badge = estadoBadge(a.estado, a.bloqueado);
-    return '<div class="row-item">'+
+    return '<div class="row-item" style="align-items:flex-start">'+
       avHTML(a)+
       '<div style="flex:1;min-width:0">'+
         '<div class="row-name">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+(badge?' '+badge:'')+'</div>'+
-        '<div class="row-sub">'+escHTML(a.turno)+(a.emerg_relacion?' · '+escHTML(a.emerg_relacion):'')+'</div>'+
-        '<div style="font-size:12px;color:var(--g5);margin-top:1px">'+escHTML(a.emerg_nombre)+'</div>'+
+        contactos(a).map(function(c){
+          return '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">'+
+            '<div style="flex:1;min-width:0;font-size:13px;color:var(--g5)">'+escHTML(c.quien||'Sin nombre')+(c.rel?' · '+escHTML(c.rel):'')+'</div>'+
+            (c.tel
+              ? '<button data-tel="'+escHTML(c.tel)+'" class="btn-copiar-tel" style="background:var(--red-light);color:var(--red);border:1px solid var(--red);border-radius:12px;padding:7px 12px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">'+escHTML(c.tel)+'</button>'
+              : '<span style="font-size:13px;color:var(--g5)">Sin teléfono</span>')+
+          '</div>';
+        }).join('')+
       '</div>'+
-      (tel
-        ? '<button data-tel="'+escHTML(tel)+'" class="btn-copiar-tel" style="background:var(--red-light);color:var(--red);border:1.5px solid var(--red);border-radius:var(--rs);padding:6px 12px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">'+escHTML(tel)+'</button>'
-        : '<span style="font-size:12px;color:var(--g5)">Sin telefono</span>'
-      )+
     '</div>';
-  }).join('')||'<div class="empty-state">Ningun alumno tiene contacto de emergencia cargado</div>';
+  }).join('')||'<div class="empty-state">Ningún alumno tiene contacto de emergencia cargado.</div>';
   el.querySelectorAll('.btn-copiar-tel').forEach(function(b){
     b.onclick = function(){ copiarTel(b.dataset.tel); };
   });
-  if(sinDatos>0) el.innerHTML += '<div style="padding:8px 1.25rem;font-size:12px;color:var(--g5);border-top:1px solid var(--g2)">'+sinDatos+' alumno'+(sinDatos!==1?'s':'')+' sin contacto de emergencia registrado</div>';
+  if(sinDatos>0) el.innerHTML += '<div style="padding:12px 1.25rem;font-size:13px;color:var(--g5);border-top:1px solid var(--g2)">'+sinDatos+(sinDatos!==1?' alumnos sin contacto cargado':' alumno sin contacto cargado')+'</div>';
 }
 
 function copiarTel(tel) {
@@ -1637,7 +1679,7 @@ async function cargarHistorial(id) {
   var [rAs,rGr,rTr]=await Promise.all([
     sb.from('asistencia').select('fecha,tarde').eq('alumno_id',id).gte('fecha',corte).order('fecha'),
     sb.from('graduaciones').select('tipo,cinturon_despues,stripes_despues,fecha').eq('alumno_id',id).order('fecha',{ascending:false}).limit(5),
-    sb.from('torneos_participantes').select('nombre_torneo,puesto,categoria,fecha').eq('alumno_id',id).order('fecha',{ascending:false}).limit(5)
+    sb.from('torneos_participantes').select('puesto,categoria,modalidad,created_at,torneos(nombre,fecha)').eq('alumno_id',id).order('created_at',{ascending:false}).limit(5)
   ]);
   var asSet={};
   (rAs.data||[]).forEach(function(a){ asSet[a.fecha]=a.tarde?'tarde':'ok'; });
@@ -1648,17 +1690,17 @@ async function cargarHistorial(id) {
     dots+='<div title="'+k+'" style="width:13px;height:13px;border-radius:3px;background:'+color+';flex-shrink:0"></div>';
   }
   var gradHTML=(rGr.data||[]).map(function(g){
-    var tipo=g.tipo==='cinturon'?('Cinturon '+escHTML(g.cinturon_despues)):('Stripe '+g.stripes_despues);
+    var tipo=g.tipo==='cinturon'?('Cinturón '+escHTML(g.cinturon_despues)):('Stripe '+g.stripes_despues);
     return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--g2);font-size:13px"><span>'+tipo+'</span><span style="color:var(--g5)">'+escHTML(g.fecha)+'</span></div>';
   }).join('');
   var tornHTML=(rTr.data||[]).map(function(t){
-    var p=t.puesto?t.puesto+'° puesto':'Participo';
-    return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--g2);font-size:13px"><span>'+escHTML(t.nombre_torneo||'Torneo')+'</span><span style="color:var(--g5)">'+p+'</span></div>';
+    var p=t.puesto?t.puesto+'.º puesto':'Participó';
+    return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--g2);font-size:13px"><span>'+escHTML((t.torneos&&t.torneos.nombre)||'Torneo')+(t.modalidad?' · '+escHTML(t.modalidad):'')+'</span><span style="color:var(--g5)">'+p+'</span></div>';
   }).join('');
   var total=(rAs.data||[]).length;
   var aTiempo=(rAs.data||[]).filter(function(x){return !x.tarde;}).length;
   cont.innerHTML=
-    '<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Asistencia ultimos 30 dias &nbsp;<span style="font-weight:400">('+total+' presencias, '+aTiempo+' a tiempo)</span></div>'+
+    '<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Asistencia de los últimos 30 días &nbsp;<span style="font-weight:400">('+total+(total===1?' presencia':' presencias')+', '+aTiempo+' a tiempo)</span></div>'+
     '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:1.1rem">'+dots+'</div>'+
     (gradHTML?'<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Ultimas graduaciones</div>'+gradHTML+'<div style="margin-bottom:.8rem"></div>':'')+
     (tornHTML?'<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Torneos</div>'+tornHTML:'');
@@ -1700,7 +1742,7 @@ async function abrirEditarAlumno(id){
   var catN = ({kinder:'Kinder',infantil:'Infantil',adulto:'Adulto'})[a.categoria]||'Sin categoría';
   document.getElementById('fe-head-sub').textContent = 'DNI '+(a.dni||'-')+' · '+catN+(a.turno?' · '+capTxt(a.turno):'');
   var fav = document.getElementById('fe-av');
-  fav.style.setProperty('--ring', BELT_COLORS[a.cinturon||'blanco']||'#d4d4d8');
+  fav.style.setProperty('--ring', colorAnillo(a.cinturon||'blanco'));
   fav.innerHTML = a.foto_url ? '<img src="'+escHTML(a.foto_url)+'">' : ini(a.nombre||'?');
   cargarResumenAlumno(a);
 }
@@ -1757,10 +1799,11 @@ var feApellido = '';
 async function eliminarAlumno(){
   var id = parseInt(document.getElementById('fe-id').value);
   var nom = document.getElementById('fe-head-name').textContent;
-  var t = prompt('Vas a ELIMINAR DEFINITIVAMENTE a '+nom+' junto con todas sus asistencias, graduaciones y torneos. No se puede deshacer.\n\nSi solo deja de venir, mejor ponelo como Discontinuado.\n\nPara confirmar, escribi su apellido:');
+  var t = prompt('Vas a ELIMINAR DEFINITIVAMENTE a '+nom+' junto con todas sus asistencias, graduaciones y torneos. No se puede deshacer.\n\nSi solo deja de venir, mejor ponelo como Discontinuado.\n\nPara confirmar, escribí '+(feApellido?'su apellido':'ELIMINAR')+':');
   if(t===null) return;
   var norm = function(x){ return (x||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); };
-  if(norm(t)!==norm(feApellido)){ alert('El apellido no coincide. No se elimino nada.'); return; }
+  var clave = feApellido || 'ELIMINAR';   // si no tiene apellido, se confirma escribiendo ELIMINAR
+  if(!norm(t) || norm(t)!==norm(clave)){ alert('No coincide. No se eliminó nada.'); return; }
   var btn = document.querySelector('.fe-del'); if(btn){ btn.disabled=true; btn.textContent='Eliminando...'; }
   var r = await sb.rpc('admin_eliminar_alumno',{p_id:id});
   if(btn){ btn.disabled=false; btn.textContent='Eliminar'; }
@@ -1769,7 +1812,7 @@ async function eliminarAlumno(){
   delete fotoCache[id];
   cerrarModal('editar');
   showToast('Alumno eliminado');
-  renderAlumnos();
+  refrescarTab();
 }
 
 async function guardarEditarAlumno(){
@@ -1785,7 +1828,7 @@ async function guardarEditarAlumno(){
     nombre:nombre, apellido:apellido, dni:dni,
     fecha_nac:dON('fe-fnac'), sexo:feVal('fe-sexo')||null, fecha_inicio:dON('fe-finicio'),
     telefono:feVal('fe-telefono').trim(), email:feVal('fe-email').trim(), domicilio:feVal('fe-domicilio').trim(), instagram:feVal('fe-instagram').trim(),
-    cinturon:feVal('fe-cinturon'), stripes:parseInt(feVal('fe-stripes'))||0, fecha_grad:dON('fe-fgrad'), turno:feVal('fe-turno').trim(),
+    cinturon:feVal('fe-cinturon'), stripes:Math.min(6, Math.max(0, parseInt(feVal('fe-stripes'))||0)), fecha_grad:dON('fe-fgrad'), turno:feVal('fe-turno').trim(),
     peso:nON('fe-peso'), altura:nON('fe-altura'), apto_vencimiento:dON('fe-apto-venc'),
     tutor_nombre:feVal('fe-tutor-nombre').trim(), tutor_relacion:feVal('fe-tutor-relacion').trim(), tutor_telefono:feVal('fe-tutor-telefono').trim(), tutor_email:feVal('fe-tutor-email').trim(),
     emerg_nombre:feVal('fe-emerg-nombre').trim(), emerg_relacion:feVal('fe-emerg-relacion').trim(), emerg_telefono:feVal('fe-emerg-telefono').trim(),
@@ -1803,7 +1846,7 @@ async function guardarEditarAlumno(){
   if(feFoto!==undefined) fotoCache[id] = feFoto || '';
   cerrarModal('editar');
   showToast('Ficha actualizada');
-  renderAlumnos();
+  refrescarTab();
 }
 
 // ── QR ───────────────────────────────────────────────────────
@@ -1811,7 +1854,7 @@ function renderQR() {
   var BASE = 'https://kaizo-asistencia.vercel.app/index.html';
   getMain().innerHTML =
     '<div class="section">'+
-    '<div class="section-header"><div><div class="section-title">QR unico del dojo</div><div class="section-sub">Imprimilo y pegalo en la pared. Sirve para todas las clases.</div></div>'+
+    '<div class="section-header"><div><div class="section-title">QR único del dojo</div><div class="section-sub">Imprimilo y pegalo en la pared. Sirve para todas las clases.</div></div>'+
     '<button class="btn-red" onclick="imprimirQR()">Imprimir</button></div>'+
     '<div class="qr-box"><div class="qr-inner"><div id="qr-render"></div><div style="margin-top:12px;font-size:13px;font-weight:600;color:#111">Kaizo BJJ - Registro de asistencia</div><div style="font-size:11px;color:var(--g5);margin-top:4px">'+BASE+'</div></div>'+
     '<div style="margin-top:1.5rem"><button class="btn-red" id="btn-copy-link">Copiar link</button></div>'+
@@ -1840,24 +1883,33 @@ function cargarScript(src) {
 }
 
 function imprimirQR() {
+  // qrcode.js dibuja un canvas y una imagen; se copia como imagen (el canvas no se copia con innerHTML)
+  var cont = document.getElementById('qr-render');
+  var img = cont && cont.querySelector('img'), cv = cont && cont.querySelector('canvas');
+  var src = (img && img.getAttribute('src')) || (cv && cv.toDataURL ? cv.toDataURL('image/png') : '');
+  if(!src) { showToast('El QR todavía se está generando'); return; }
   var w = window.open('');
-  w.document.write('<html><head><title>Kaizo BJJ QR</title><style>body{font-family:sans-serif;text-align:center;padding:2rem}h1{font-size:22px}p{color:#888;font-size:13px}</style></head><body>');
-  w.document.write('<h1>Kaizo BJJ</h1><p>Escanea para registrar tu asistencia</p>');
-  w.document.write(document.getElementById('qr-box').innerHTML);
+  if(!w) { alert('El navegador bloqueó la ventana de impresión. Permití las ventanas emergentes para este sitio.'); return; }
+  w.document.write('<html><head><title>Kaizo BJJ · QR</title><style>body{font-family:sans-serif;text-align:center;padding:2rem}h1{font-size:28px;margin-bottom:4px}p{color:#666;font-size:15px}img{width:320px;height:320px;margin-top:1.5rem;image-rendering:pixelated}</style></head><body>');
+  w.document.write('<h1>Kaizo BJJ</h1><p>Escaneá para registrar tu asistencia</p><img src="'+src+'" alt="QR de asistencia" />');
   w.document.write('</body></html>');
-  w.document.close(); w.print();
+  w.document.close();
+  var impreso = false;
+  var imprimir = function(){ if(impreso) return; impreso = true; try{ w.print(); }catch(e){} };
+  w.onload = imprimir;
+  setTimeout(imprimir, 400);
 }
 
 // ── TORNEOS ──────────────────────────────────────────────────
 async function renderTorneos() {
   getMain().innerHTML =
     '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Medallero de la academia</div></div>'+
-    '<div class="stats-grid" id="medallero" style="padding:1rem 1.25rem;margin:0"><div class="empty-state">Cargando...</div></div></div>'+
+    '<div class="stats-grid" id="medallero" style="padding:1rem 1.25rem;margin:0;grid-template-columns:repeat(3,1fr)"><div class="empty-state">Cargando...</div></div></div>'+
     '<div class="section" style="margin-bottom:1.25rem">'+
     '<div class="section-header"><div class="section-title">Torneos</div><button class="btn-red" id="btn-nt2">+ Nuevo torneo</button></div>'+
     '<div id="lista-torneos"><div class="empty-state">Cargando...</div></div>'+
     '</div>'+
-    '<div class="section"><div class="section-header"><div class="section-title">Resultados</div></div><div id="lista-resultados"><div class="empty-state">Selecciona un torneo para ver resultados</div></div></div>';
+    '<div class="section"><div class="section-header"><div class="section-title">Resultados</div></div><div id="lista-resultados"><div class="empty-state">Seleccioná un torneo para ver los resultados</div></div></div>';
 
   document.getElementById('btn-nt2') && (document.getElementById('btn-nt2').onclick=function(){ abrirModal('torneo'); });
   var [rt, rp] = await Promise.all([
@@ -1892,7 +1944,7 @@ async function verResultados(id, nom) {
   var medc = res.filter(function(x){return x.puesto&&x.puesto<=3;}).length;
   var lrEl = document.getElementById('lista-resultados');
   if(!lrEl) return;
-  lrEl.innerHTML = '<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--g2);font-weight:600">'+escHTML(nom)+' - '+res.length+' inscriptos - '+medc+' medallas</div>'+
+  lrEl.innerHTML = '<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--g2);font-weight:600">'+escHTML(nom)+' · '+res.length+(res.length===1?' inscripto':' inscriptos')+' · '+medc+(medc===1?' medalla':' medallas')+'</div>'+
     (res.length ? res.map(function(p){
       var pT = p.puesto ? p.puesto+'° puesto' : 'Participo';
       var pC = p.puesto===1?'#856404':p.puesto===2?'#444':p.puesto===3?'#7d3c00':'var(--g5)';
@@ -1916,10 +1968,11 @@ async function toggleVerificado(pid, val){
   verResultados(tornSel.id, tornSel.nom);
 }
 
-async function guardarTorneo() {
+function guardarTorneo() { return unaVez('torneo', _guardarTorneo); }
+async function _guardarTorneo() {
   var nombre = document.getElementById('mt-nombre').value.trim();
   var fecha = document.getElementById('mt-fecha').value;
-  if(!nombre||!fecha) { alert('Completa nombre y fecha'); return; }
+  if(!nombre||!fecha) { alert('Completá el nombre y la fecha'); return; }
   var r = await sb.from('torneos').insert({nombre:nombre,fecha:fecha,activo:true});
   if(r.error) { alert('Error: '+r.error.message); return; }
   cerrarModal('torneo');
@@ -1935,7 +1988,7 @@ async function renderConfig() {
     '<div id="s-turnos" style="display:none"><div id="lista-tolerancias"><div class="empty-state">Cargando...</div></div></div>'+
     '</div>'+
     '<div class="section" style="margin-bottom:1.25rem">'+
-    '<div class="section-header section-header--sm" data-sec="s-cinturones"><div class="section-title">Stripes maximos</div><span id="arr-cinturones">'+CH_D+'</span></div>'+
+    '<div class="section-header section-header--sm" data-sec="s-cinturones"><div class="section-title">Stripes máximos</div><span id="arr-cinturones">'+CH_D+'</span></div>'+
     '<div id="s-cinturones" style="display:none"><div id="lista-stripes"><div class="empty-state">Cargando...</div></div></div>'+
     '</div>'+
     '<div class="section">'+
@@ -2010,7 +2063,7 @@ async function saveTol(id) {
   var el = document.getElementById('tol-'+id);
   if(!el) return;
   var val = parseInt(el.value);
-  if(isNaN(val)||val<0) { alert('Valor invalido'); return; }
+  if(isNaN(val)||val<0) { alert('Valor inválido'); return; }
   var r = await sb.from('config_turnos').update({tolerancia_min:val}).eq('id',id);
   if(r.error) { alert('Error: '+r.error.message); return; }
   showToast('Tolerancia guardada');
@@ -2020,7 +2073,7 @@ async function saveStr(id) {
   var el = document.getElementById('str-'+id);
   if(!el) return;
   var val = parseInt(el.value);
-  if(isNaN(val)||val<1) { alert('Valor invalido'); return; }
+  if(isNaN(val)||val<1) { alert('Valor inválido'); return; }
   var r = await sb.from('config_cinturones').update({max_stripes:val}).eq('id',id);
   if(r.error) { alert('Error: '+r.error.message); return; }
   showToast('Stripes guardados');
@@ -2072,7 +2125,8 @@ async function abrirEditarClase(id) {
   abrirModal('clase');
 }
 
-async function guardarClase() {
+function guardarClase() { return unaVez('clase', _guardarClase); }
+async function _guardarClase() {
   var nombre = document.getElementById('mc-nombre').value.trim();
   var dia = parseInt(document.getElementById('mc-dia').value);
   var hi = document.getElementById('mc-hi').value;
@@ -2081,8 +2135,8 @@ async function guardarClase() {
   var turno = document.getElementById('mc-turno').value.trim().toLowerCase().replace(/\s+/g,'-');
   var fis = document.getElementById('mc-fis').checked;
   var hff = document.getElementById('mc-hff').value;
-  if(!nombre||!hi||!hf||!turno) { alert('Completa los campos obligatorios'); return; }
-  if(fis&&hff&&(hff<=hi||hff>=hf)) { alert('La hora del fisico debe estar entre '+hi+' y '+hf); return; }
+  if(!nombre||!hi||!hf||!turno) { alert('Completá los campos obligatorios'); return; }
+  if(fis&&hff&&(hff<=hi||hff>=hf)) { alert('La hora del físico debe estar entre '+hi+' y '+hf); return; }
   var datos = {nombre:nombre,categoria:document.getElementById('mc-categoria').value,dia:dia,hora_inicio:hi,hora_fin:hf,profe:profe,turno_id:turno,tiene_fisico:fis,hora_fisico:fis?hff:null};
   var r;
   if(editClaseId){
@@ -2099,25 +2153,23 @@ async function guardarClase() {
 }
 
 async function discontinuarClase(id) {
-  if(!confirm('Discontinuar esta clase? Los registros historicos se mantienen.')) return;
+  if(!confirm('¿Discontinuar esta clase? Los registros históricos se mantienen.')) return;
   await sb.from('config_clases').update({activo:false}).eq('id',id);
   showToast('Clase discontinuada');
   renderConfig();
 }
 
 // ── EXPORT ───────────────────────────────────────────────────
-async function exportarCSV() {
-  var r = await sb.from('asistencia').select('*').gte('fecha',mesActual+'-01').lt('fecha',finMes()).order('fecha');
-  if(!r.data||!r.data.length) { showToast('Sin datos este mes'); return; }
-  var rows = [['Fecha','Nombre','Apellido','Turno','Horario','Tarde','Motivo','Con Fisico']];
-  r.data.forEach(function(x){ rows.push([x.fecha,x.nombre||'',x.apellido||'',x.turno||'',x.horario||'',x.tarde?'Si':'No',x.motivo_tarde||'',x.con_fisico?'Si':'No']); });
-  var csv = rows.map(function(r){return r.join(',');}).join('\n');
+async function exportarCSV() { return exportarMes(mesActual); }
 
+// CSV para Excel en español: separador ";", campos entre comillas y BOM para que se vean las tildes
+function descargarCSV(rows, nombre) {
+  var esc = function(v){ v = v==null ? '' : String(v); return /[";\n\r,]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; };
+  var csv = '﻿' + rows.map(function(r){ return r.map(esc).join(';'); }).join('\r\n');
   var a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download = 'kaizo-'+mesActual+'.csv';
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download = nombre;
   a.click();
-  showToast('CSV exportado');
 }
 
 // ── UTILS ────────────────────────────────────────────────────
@@ -2164,8 +2216,9 @@ async function checkAlertas() {
   var r = await alumnosActivos();
   var cand = (r.data||[]).filter(function(a){
     if(a.cinturon==='negro') return false;
-    if(!a.fecha_grad) return true;
-    return Math.floor((new Date(fechaHoy)-new Date(a.fecha_grad))/86400000)>=180;
+    var desde = a.fecha_grad || a.fecha_inicio || (a.created_at||'').slice(0,10);
+    if(!desde) return true;
+    return Math.floor((new Date(fechaHoy)-new Date(desde))/86400000)>=180;
   }).length;
   var b=document.getElementById('alerta-badge');
   if(b){ if(cand>0){b.textContent=cand+' para graduar';b.style.display='inline-block';}else b.style.display='none'; }
@@ -2175,12 +2228,9 @@ async function exportarMes(ym) {
   var ini=ym+'-01', fin=mesShift(ym,1)+'-01';
   var r=await sb.from('asistencia').select('*').gte('fecha',ini).lt('fecha',fin).order('fecha');
   if(!r.data||!r.data.length){showToast('Sin datos en '+mesLabel(ym));return;}
-  var rows=[['Fecha','Nombre','Apellido','Turno','Horario','Tarde','Motivo','Con Fisico']];
-  r.data.forEach(function(x){rows.push([x.fecha,x.nombre||'',x.apellido||'',x.turno||'',x.horario||'',x.tarde?'Si':'No',x.motivo_tarde||'',x.con_fisico?'Si':'No']);});
-  var csv=rows.map(function(row){return row.join(',');}).join('\n');
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='kaizo-'+ym+'.csv'; a.click();
+  var rows=[['Fecha','Nombre','Apellido','Categoría','Turno','Horario','Tarde','Motivo','Con físico']];
+  r.data.forEach(function(x){rows.push([x.fecha,x.nombre||'',x.apellido||'',x.categoria||'',x.turno||'',x.horario||'',x.tarde?'Sí':'No',x.motivo_tarde||'',x.con_fisico?'Sí':'No']);});
+  descargarCSV(rows, 'kaizo-'+ym+'.csv');
   showToast('CSV exportado: '+mesLabel(ym));
 }
 
@@ -2198,7 +2248,7 @@ async function gateCheck(){
     var email = (user.email||'').toLowerCase();
     var chk = await sb.from('admins_autorizados').select('email').eq('email',email).maybeSingle();
     if(chk.data){ if(ov) ov.style.display='none'; setAcct(user); bootApp(); }
-    else { login('La cuenta '+email+' no esta autorizada para el panel.'); }
+    else { login('La cuenta '+email+' no está autorizada para el panel.'); }
   }catch(e){ login('Error de autenticacion: '+(e&&e.message?e.message:e)); }
 }
 
