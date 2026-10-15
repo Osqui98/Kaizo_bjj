@@ -83,7 +83,7 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke
 .pad .go:disabled{opacity:.6}
 .dhnt{font-size:13px;color:var(--tx-3);text-align:center;margin-top:12px}
 .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:18px}
-.lnk{display:inline-flex;align-items:center;gap:7px;color:var(--tx-2);font-size:14px;font-weight:600;text-decoration:none;background:none;border:none;padding:8px 4px}
+.lnk{display:inline-flex;align-items:center;gap:7px;color:var(--tx-2);font-size:14px;font-weight:600;text-decoration:none;background:none;border:none;padding:12px 6px;min-height:44px}
 .lnk svg{width:17px;height:17px}
 .lnk:hover{color:var(--tx)}
 
@@ -110,8 +110,8 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke
 .chips{display:flex;justify-content:center;gap:6px;margin-top:12px;flex-wrap:wrap}
 .chip{font-size:12px;font-weight:700;padding:5px 11px;border-radius:99px;background:var(--bk-2);color:var(--tx-2);border:1px solid var(--line);display:inline-flex;align-items:center;gap:6px}
 .chip i{width:8px;height:8px;border-radius:50%}
-.beltd{margin:22px auto 0;width:220px;height:22px;border-radius:5px;position:relative;box-shadow:inset 0 -3px 0 rgba(0,0,0,.22)}
-.beltd .tip{position:absolute;right:24px;top:0;bottom:0;width:50px;background:#111;display:flex;gap:4px;align-items:center;justify-content:flex-start;padding-left:6px}
+.beltd{margin:22px auto 0;width:220px;height:22px;border-radius:5px;position:relative;box-shadow:inset 0 -3px 0 rgba(0,0,0,.22),0 0 0 1px rgba(255,255,255,.16)}
+.beltd .tip{position:absolute;right:24px;top:0;bottom:0;width:50px;background:#000;box-shadow:-1px 0 0 rgba(255,255,255,.3),1px 0 0 rgba(255,255,255,.3);display:flex;gap:4px;align-items:center;justify-content:flex-start;padding-left:6px}
 .beltd.negro .tip{background:#c81e1e}
 .beltd .tip b{width:5px;height:14px;background:#fff;border-radius:1px}
 .cls{margin-top:20px;background:var(--bk-1);border:1px solid var(--line);border-radius:18px;padding:13px 15px;display:flex;align-items:center;gap:12px;text-align:left}
@@ -135,7 +135,7 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke
 .bsec:hover,.btn-back-ficha:hover,.bvlv:hover{background:var(--bk-1);color:var(--tx)}
 .btn-ficha{width:100%;height:52px;border-radius:16px;border:none;background:var(--bk-2);color:var(--tx);font-size:15px;font-weight:600;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-ficha:hover{background:var(--bk-3)}
-.stop{display:block;margin:10px auto 0;background:none;border:none;color:var(--tx-3);font-size:13px;text-decoration:underline}
+.stop{display:block;margin:6px auto 0;padding:12px 16px;background:none;border:none;color:var(--tx-3);font-size:14px;text-decoration:underline}
 
 /* ── Selección de clase ── */
 .clase-opts{display:flex;flex-direction:column;gap:9px;margin-top:16px}
@@ -244,7 +244,7 @@ select.fi{appearance:none;-webkit-appearance:none;background-image:url("data:ima
 .rw input,.rw select{flex:1;min-width:0;height:44px;background:transparent;border:none;outline:none;color:var(--tx);font-size:15px;font-weight:600;text-align:right;color-scheme:dark}
 .rw select{appearance:none;-webkit-appearance:none;direction:rtl}
 .rw select option{direction:ltr;background:var(--bk-2)}
-.rw input::placeholder{color:var(--bk-3);font-weight:500}
+.rw input::placeholder{color:#52525b;font-weight:500}
 .rw input:focus{color:#fff}
 .rw:focus-within{background:rgba(255,255,255,.03)}
 .rw .lock{flex:1;text-align:right;color:var(--tx-3);font-size:15px;display:flex;justify-content:flex-end;align-items:center;gap:6px}
@@ -295,6 +295,8 @@ input.sw:checked::after{transform:translateX(18px)}
 .ld-shimmer{height:120px;border-radius:22px;background:linear-gradient(90deg,var(--bk-1) 25%,var(--bk-2) 50%,var(--bk-1) 75%);background-size:200% 100%;animation:shimmer 1.4s ease infinite;margin-bottom:12px}
 
 .toastf{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--tx);color:var(--bk);padding:12px 20px;border-radius:99px;font-size:14px;font-weight:700;z-index:999;transition:opacity .3s;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.toastf.err{background:#7f1d1d;color:#fff;border:1px solid rgba(255,255,255,.12)}
+.toastf{max-width:calc(100% - 32px);text-align:center}
 
 @media(min-width:600px){
   body{align-items:center}
@@ -321,10 +323,10 @@ input.sw:checked::after{transform:translateX(18px)}
   <div class="tmin" id="tmin"></div>
   <div class="lbl" style="margin-top:14px">¿Cuál fue el motivo?</div>
   <div class="mlist">
-    <div class="mi" data-motivo="Llegue tarde por trabajo"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span><span class="mi-t">Trabajo</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-    <div class="mi" data-motivo="Problema de transporte"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><path d="M8 6v6M15 6v6M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg></span><span class="mi-t">Transporte</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-    <div class="mi" data-motivo="Motivo personal"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></span><span class="mi-t">Motivo personal</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-    <div class="mi" data-motivo="otro"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span><span class="mi-t">Otro</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <div class="mi" role="button" tabindex="0" data-motivo="Llegué tarde por trabajo"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span><span class="mi-t">Trabajo</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <div class="mi" role="button" tabindex="0" data-motivo="Problema de transporte"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><path d="M8 6v6M15 6v6M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg></span><span class="mi-t">Transporte</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <div class="mi" role="button" tabindex="0" data-motivo="Motivo personal"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></span><span class="mi-t">Motivo personal</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <div class="mi" role="button" tabindex="0" data-motivo="otro"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span><span class="mi-t">Otro</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
   </div>
   <input type="text" id="otro" class="otro" placeholder="Contanos brevemente…" />
   <div class="emsg" id="err-tarde"></div>
@@ -343,7 +345,7 @@ input.sw:checked::after{transform:translateX(18px)}
 
 <div class="ficha-scr" id="fs">
   <div class="ficha-hdr">
-    <div class="ficha-av" id="fav-wrap" title="Tocá para cambiar la foto">
+    <div class="ficha-av" id="fav-wrap" role="button" tabindex="0" aria-label="Cambiar foto" title="Tocá para cambiar la foto">
       <div class="av" id="fav"><span id="fav-ini"></span></div>
       <span class="cam"><svg class="i" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></span>
     </div>
@@ -523,7 +525,9 @@ function mkCron() {
     h+='<div class="chi '+e+'"><div class="cdot '+e+'"></div><div class="chi-info"><div class="chi-nom">'+escHTML(c.nom)+'</div><div class="chi-sub">'+escHTML(c.pro)+f+'</div></div><div class="chi-hr">'+escHTML(c.hi)+'</div></div>';
   });
   h+='<div class="lbl">Semana</div><div class="sgrid">';
-  [1,2,3,4,5,6].forEach(function(dia) {
+  var semana=[1,2,3,4,5,6];
+  if(d===0 || CLASES.some(function(c){ return c.dias.indexOf(0)>=0; })) semana.push(0);   // domingo, si hay clase o es hoy
+  semana.forEach(function(dia) {
     var cs=CLASES.filter(function(c){return c.dias.indexOf(dia)>=0;}).sort(sortHora);
     h+='<div class="sdia'+(dia===d?' hoy':'')+'"><div class="sdia-n">'+DIAS_C[dia]+'</div>';
     if(cs.length) cs.forEach(function(c){h+='<div class="scl"><span class="sh">'+escHTML(c.hi)+'</span> '+escHTML(c.nom)+'</div>';});
@@ -550,7 +554,12 @@ function bindPad(inputId, onGo) {
       else if(inp.value.length < 9) inp.value += k;
     };
   });
-  inp.addEventListener('keydown', function(e){ if(e.key==='Enter') onGo(); });
+  inp.addEventListener('keydown', function(e){
+    if(e.key!=='Enter') return;
+    var go = document.querySelector('.pad .go');
+    if(go && go.disabled) return;   // ya está buscando: evita la doble búsqueda
+    onGo();
+  });
 }
 
 function mkDNI(clases) {
@@ -571,6 +580,40 @@ function bindDNI() {
   if(bf) bf.onclick = function(){ mkFichaFlow(); };
 }
 
+
+// ── Actualización sola e inactividad ──
+// La tablet queda prendida todo el día: cada 20 s se revisa si empezó o terminó
+// una clase (pasa de "No hay clase" al teclado y viceversa) y se mueve la barra de
+// progreso. Si alguien deja una pantalla abierta (ficha, registro, aviso), a los 90 s
+// sin tocar nada vuelve sola al inicio para no dejar datos personales a la vista.
+document.addEventListener('keydown', function(e){
+  var el = e.target;
+  if((e.key==='Enter'||e.key===' ') && el && el.getAttribute && el.getAttribute('role')==='button' && el.tagName!=='BUTTON'){ e.preventDefault(); el.click(); }
+});
+var _ultimoToque = Date.now();
+['pointerdown','keydown','input'].forEach(function(ev){
+  document.addEventListener(ev, function(){ _ultimoToque = Date.now(); }, true);
+});
+function visible(id){ var e=document.getElementById(id); return !!e && e.classList.contains('show'); }
+function enInicio() {
+  return !alu && !visible('fs') && !visible('ts') && !visible('os') && !visible('modal-torneo') &&
+    !!(document.getElementById('di') || document.getElementById('btn-ver-ficha-cron'));
+}
+function claveClases(cs){ return cs.map(function(c){ return c.hi+c.hf+c.tur+c.cat; }).join('|'); }
+setInterval(function(){
+  ahora = new Date();
+  if(enInicio()) {
+    var di = document.getElementById('di');
+    if(di && di.value) return;
+    if(claveClases(findClasesActivas()) !== claveClases(clasesActivas)) { init(); return; }
+    document.querySelectorAll('#cp .live').forEach(function(el, i){
+      if(clasesActivas[i]) el.outerHTML = liveHTML(clasesActivas[i]);
+    });
+  } else if(!visible('os') && Date.now() - _ultimoToque > 90000) {
+    volver();
+  }
+}, 20000);
+
 async function init() {
   if(CLASES.length === 0) await Promise.all([cargarClases(), cargarTolerancias()]);
   clasesActivas = findClasesActivas();
@@ -584,6 +627,7 @@ async function init() {
   cp.innerHTML = mkDNI(clasesActivas);
   cp.classList.add('card-anim'); setTimeout(function(){cp.classList.remove('card-anim');},300);
   bindDNI();
+  if(window.matchMedia && matchMedia('(pointer:fine)').matches){ var di0=document.getElementById('di'); if(di0) di0.focus(); }   // en computadora, listo para tipear
   if(clasesActivas.length === 1) elegirClase(clasesActivas[0]);
 }
 
@@ -703,7 +747,7 @@ function mkSinClase(a) {
     '<button class="bsec" id="bni">Volver</button>'+
     '<button class="btn-ficha" id="bvf">'+IC.user+'Ver / editar mi ficha</button>';
   document.getElementById('bni').onclick = function(){ volverADNI(); };
-  document.getElementById('bvf').onclick = function(){ mostrarFicha(a); };
+  document.getElementById('bvf').onclick = function(){ mostrarFicha(a, null); };
 }
 
 function mkSeleccionClase(a, opciones) {
@@ -711,9 +755,10 @@ function mkSeleccionClase(a, opciones) {
   var h = acardHTML(a, 'Elegí tu clase');
   h += '<div class="clase-opts">';
   opciones.forEach(function(c,i) {
-    h += '<div class="clase-opt" data-idx="'+i+'"><div class="clase-opt-info"><div class="clase-opt-nom">'+escHTML(c.nom)+'</div><div class="clase-opt-sub">'+escHTML(c.pro)+' · '+escHTML(c.hi)+' a '+escHTML(c.hf)+'</div></div><span class="clase-opt-chk">'+IC.check+'</span></div>';
+    h += '<div class="clase-opt" role="button" tabindex="0" data-idx="'+i+'"><div class="clase-opt-info"><div class="clase-opt-nom">'+escHTML(c.nom)+'</div><div class="clase-opt-sub">'+escHTML(c.pro)+' · '+escHTML(c.hi)+' a '+escHTML(c.hf)+'</div></div><span class="clase-opt-chk">'+IC.check+'</span></div>';
   });
   h += '</div><button class="bok" id="bcnf-clase" style="display:none">Continuar</button>';
+  h += '<button class="bsec" id="bsel-no">No soy yo</button>';
   document.getElementById('cp').innerHTML = h;
   document.querySelectorAll('.clase-opt').forEach(function(el) {
     el.onclick = function() {
@@ -725,12 +770,13 @@ function mkSeleccionClase(a, opciones) {
     };
   });
   document.getElementById('bcnf-clase').onclick = function() { mkConfirm(alu); };
+  document.getElementById('bsel-no').onclick = volverADNI;
 }
 // Contacto de administración (alumnos bloqueados o discontinuados)
 var ADMIN_TEL = '+54 9 11 7817-6900';
 var ADMIN_WA = 'https://wa.me/5491178176900';
 function avisoAdmin(titulo) {
-  return '<div class="aviso rojo"><b>'+titulo+'</b><span>Comunicate con administración: <a href="'+ADMIN_WA+'" target="_blank" rel="noopener">'+ADMIN_TEL+'</a></span></div>';
+  return '<div class="aviso rojo"><b>'+titulo+'</b><span>Escribinos o llamanos: <a href="'+ADMIN_WA+'" target="_blank" rel="noopener">'+ADMIN_TEL+'</a></span></div>';
 }
 
 function mkBloqueado(a) {
@@ -741,7 +787,7 @@ function mkBloqueado(a) {
     '<button class="bsec" id="bni">Volver</button>'+
     '<button class="btn-ficha" id="bvf">'+IC.user+'Ver / editar mi ficha</button>';
   document.getElementById('bni').onclick = function(){ volverADNI(); };
-  document.getElementById('bvf').onclick = function(){ mostrarFicha(a); };
+  document.getElementById('bvf').onclick = function(){ mostrarFicha(a, null); };
 }
 
 function mkConfirm(a) {
@@ -794,7 +840,7 @@ function mkConfirm(a) {
       }
     }, 1000);
   }
-  document.getElementById('bvf').onclick = function(){ cancelAutoConfirm(); mostrarFicha(a); };
+  document.getElementById('bvf').onclick = function(){ cancelAutoConfirm(); mostrarFicha(a, function(){ mkConfirm(a); }); };
 }
 
 function mkFichaCompleta(a) {
@@ -802,13 +848,15 @@ function mkFichaCompleta(a) {
   var fN=!a.nombre||!a.apellido, fF=!a.fecha_nac, fS=!a.sexo;
   var h='<h2 class="ttl md">Completá<br>tu ficha</h2><p class="sub">Nos faltan algunos datos</p>';
   h+='<div class="emsg" id="ef"></div>';
-  if(fN) h+='<div class="frow"><div class="ff"><label class="fl">Nombre *</label><input type="text" class="fi" id="fn" placeholder="Matias" value="'+escHTML(a.nombre||'')+'" /></div><div class="ff"><label class="fl">Apellido *</label><input type="text" class="fi" id="fa" placeholder="Garcia" value="'+escHTML(a.apellido||'')+'" /></div></div>';
+  if(fN) h+='<div class="frow"><div class="ff"><label class="fl">Nombre *</label><input type="text" class="fi" id="fn" placeholder="Matías" value="'+escHTML(a.nombre||'')+'" /></div><div class="ff"><label class="fl">Apellido *</label><input type="text" class="fi" id="fa" placeholder="García" value="'+escHTML(a.apellido||'')+'" /></div></div>';
   if(fF) h+='<div class="ff"><label class="fl">Fecha de nacimiento *</label><input type="date" class="fi" id="ff" /></div>';
   if(fS) h+='<div class="ff"><label class="fl">Sexo *</label><div class="sxo"><button class="sxb" data-sx="masculino">Masculino</button><button class="sxb" data-sx="femenino">Femenino</button><button class="sxb" data-sx="otro">Otro</button></div></div>';
   h+='<button class="bok" id="bgf">Guardar y continuar</button>';
+  h+='<button class="bsec" id="bgf-no">No soy yo</button>';
   document.getElementById('cp').innerHTML=h;
   document.querySelectorAll('.sxb').forEach(function(b){ b.onclick=function(){ selSexo(this,this.dataset.sx); }; });
   document.getElementById('bgf').onclick = guardarFichaCompleta;
+  document.getElementById('bgf-no').onclick = volverADNI;
 }
 
 async function guardarFichaCompleta() {
@@ -828,7 +876,7 @@ function mkNuevo(dni) {
   sexoSel=null;
   var h='<h2 class="ttl md">¡Bienvenido<br>a Kaizo!</h2><p class="sub">Es tu primera vez. DNI '+escHTML(dni)+'</p>';
   h+='<div class="emsg" id="er"></div>';
-  h+='<div class="frow"><div class="ff"><label class="fl">Nombre *</label><input type="text" class="fi" id="rn" placeholder="Matias" /></div><div class="ff"><label class="fl">Apellido *</label><input type="text" class="fi" id="ra" placeholder="Garcia" /></div></div>';
+  h+='<div class="frow"><div class="ff"><label class="fl">Nombre *</label><input type="text" class="fi" id="rn" placeholder="Matías" /></div><div class="ff"><label class="fl">Apellido *</label><input type="text" class="fi" id="ra" placeholder="García" /></div></div>';
   h+='<div class="ff"><label class="fl">Fecha de nacimiento *</label><input type="date" class="fi" id="rf" /></div>';
   h+='<div class="ff"><label class="fl">Sexo *</label><div class="sxo"><button class="sxb" data-sx="masculino">Masculino</button><button class="sxb" data-sx="femenino">Femenino</button><button class="sxb" data-sx="otro">Otro</button></div></div>';
   // Menores: datos del tutor obligatorios (aparece al poner la fecha de nacimiento)
@@ -846,7 +894,7 @@ function mkNuevo(dni) {
   };
   document.querySelectorAll('.sxb').forEach(function(b){ b.onclick=function(){ selSexo(this,this.dataset.sx); }; });
   document.getElementById('brn').onclick = function(){ regNuevo(dni); };
-  document.getElementById('bat').onclick = init;
+  document.getElementById('bat').onclick = function(){ _postRegFicha=false; init(); };
 }
 
 function esMenorFecha(f) {
@@ -869,10 +917,14 @@ async function regNuevo(dni) {
     datos.tutor_telefono=document.getElementById('rtt').value.trim();
     if(!datos.tutor_nombre||!datos.tutor_relacion||!datos.tutor_telefono){setErr('er','Completá los datos del padre, madre o tutor');return;}
   }
+  var brn=document.getElementById('brn');
+  if(brn && brn.disabled) return;   // doble toque: un solo registro
+  if(brn){ brn.disabled=true; brn.textContent='Registrando…'; }
   var r=await sb.rpc('kiosco_registrar_alumno',{p_datos:datos});
+  if(r.error && brn){ brn.disabled=false; brn.textContent='Registrarme y marcar asistencia'; }
   if(r.error){if(r.error.code==='23505')setErr('er','Ese DNI ya está registrado.');else setErr('er','No pudimos registrarte. Probá de nuevo.');return;}
   alu=r.data;
-  if(_postRegFicha){ _postRegFicha=false; mostrarFicha(r.data); }
+  if(_postRegFicha){ _postRegFicha=false; mostrarFicha(r.data, null); }
   else {
     var op=clasesPara(r.data);
     if(op.length>1) mkSeleccionClase(r.data, op);
@@ -961,12 +1013,12 @@ async function registrar(est,mot) {
   var hs=pad(ahora.getHours())+':'+pad(ahora.getMinutes());
   try {
     var r=await sb.rpc('kiosco_marcar_asistencia',{p_alumno_id:alu.id,p_dni:alu.dni,p_datos:{fecha:dHoy(),turno:claseSeleccionada.tur,categoria:claseSeleccionada.cat,horario:claseSeleccionada.hi+' - '+claseSeleccionada.hf,tarde:est,motivo_tarde:mot,con_fisico:cf,timestamp:ahora.toISOString()}});
-    if(r.error && r.error.code==='23505') { _asistRegistrando=false; alert('Ya registraste asistencia en esta clase hoy.'); volverADNI(); return; }
-    if(r.error && r.error.message==='BLOQUEADO') { _asistRegistrando=false; alu.bloqueado=true; mkBloqueado(alu); return; }
-    if(r.error && r.error.message==='CATEGORIA') { _asistRegistrando=false; mkSinClase(alu); return; }
+    if(r.error && r.error.code==='23505') { _asistRegistrando=false; salirDeTarde(); volverADNI(); var yr=document.getElementById('yr'); if(yr) yr.style.display='block'; return; }
+    if(r.error && r.error.message==='BLOQUEADO') { _asistRegistrando=false; salirDeTarde(); alu.bloqueado=true; mkBloqueado(alu); return; }
+    if(r.error && r.error.message==='CATEGORIA') { _asistRegistrando=false; salirDeTarde(); mkSinClase(alu); return; }
     if(r.error) throw r.error;
     mostrarOk(est,mot,cf,hs);
-  } catch(e) { console.error(e); _asistRegistrando=false; var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} var btnT2=document.getElementById('btn-tarde');if(btnT2){btnT2.disabled=false;btnT2.textContent='Registrar asistencia';} alert('No pudimos registrar la asistencia. Probá de nuevo.'); }
+  } catch(e) { console.error(e); _asistRegistrando=false; var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} var btnT2=document.getElementById('btn-tarde');if(btnT2){btnT2.disabled=false;btnT2.textContent='Registrar asistencia';} showToastF('No pudimos registrar la asistencia. Probá de nuevo.', true); }
 }
 
 function mostrarOk(est,mot,cf,hs) {
@@ -1030,10 +1082,24 @@ function esCumple(fecha_nac) {
   return d.getMonth()===h.getMonth() && d.getDate()===h.getDate();
 }
 
+// Deja la pantalla de llegada tarde limpia para el próximo alumno (botón, motivo escrito, error)
+function resetTarde() {
+  var b=document.getElementById('btn-tarde'); if(b){ b.disabled=false; b.textContent='Registrar asistencia'; b.style.display='none'; }
+  var o=document.getElementById('otro'); if(o){ o.value=''; o.classList.remove('show'); }
+  var e=document.getElementById('err-tarde'); if(e) e.style.display='none';
+  document.querySelectorAll('.mi').forEach(function(m){m.classList.remove('on');});
+  motivoSel=null;
+}
+// Vuelve de la pantalla de llegada tarde a la principal (para mostrar un aviso ahí)
+function salirDeTarde() {
+  resetTarde();
+  document.getElementById('ts').classList.remove('show');
+  document.getElementById('mc').classList.remove('hide');
+}
 function volver() {
   cancelAutoConfirm();
   if(_volverTimer){ clearInterval(_volverTimer); _volverTimer=null; }
-  alu=null;motivoSel=null;sexoSel=null;esTarde=false;minTarde=0;claseSeleccionada=null;_asistRegistrando=false;
+  alu=null;motivoSel=null;sexoSel=null;esTarde=false;minTarde=0;claseSeleccionada=null;_asistRegistrando=false;_postRegFicha=false;_fichaVuelveA=null;
   var det=document.getElementById('odet'); if(det) det.innerHTML='';
   document.getElementById('mc').classList.remove('hide');
   document.getElementById('ts').classList.remove('show');
@@ -1041,7 +1107,7 @@ function volver() {
   document.getElementById('os').classList.remove('show');
   document.getElementById('fs').classList.remove('show');
   document.getElementById('btn-tarde').style.display='none';
-  document.getElementById('otro').classList.remove('show');
+  resetTarde();
   document.querySelectorAll('.mi').forEach(function(m){m.classList.remove('on');});
   init();
 }
@@ -1057,8 +1123,12 @@ function mkFichaFlow() {
   var buscar = async function() {
     var dni = normDNI(document.getElementById('di-f').value);
     if(dni.length < 6) { setErr('em-f','Ingresá un DNI válido'); return; }
+    var go = document.getElementById('bbs-f');
+    if(go.disabled) return;
+    go.disabled = true;
     var r = await sb.rpc('kiosco_buscar_alumno',{p_dni:dni});
-    if(r.data) { alu = r.data; mostrarFicha(r.data); }
+    go.disabled = false;
+    if(r.data) { alu = r.data; mostrarFicha(r.data, null); }
     else {
       var dniVal = dni;
       document.getElementById('em-f').innerHTML =
@@ -1071,7 +1141,9 @@ function mkFichaFlow() {
   document.getElementById('bbs-f').onclick = buscar;
   document.getElementById('bat-f').onclick = init;
 }
-async function mostrarFicha(a) {
+var _fichaVuelveA = null;
+async function mostrarFicha(a, vuelve) {
+  _fichaVuelveA = vuelve || null;
   document.getElementById('mc').classList.add('hide');
   var fs = document.getElementById('fs');
   fs.classList.add('show');
@@ -1095,6 +1167,7 @@ async function mostrarFicha(a) {
   document.getElementById('fav-wrap').onclick = function() { document.getElementById('foto-inp').click(); };
   document.getElementById('foto-inp').onchange = async function(e) {
     var file = e.target.files[0];
+    e.target.value = '';   // permite volver a elegir la misma foto después de cancelar
     if(!file) return;
     achicarFoto(file).then(function(base64) {
       fav.innerHTML = '<img src="'+base64+'" />';
@@ -1156,14 +1229,14 @@ async function mostrarFicha(a) {
     : '<div class="vacio">Todavía no cargaste torneos.</div>';
 
   var REL = [['','Elegí…'],['padre','Padre'],['madre','Madre'],['tutor','Tutor/a']];
-  var tutorContent = esMenor
-    ? '<div class="grp-t">Padre, madre o tutor</div><div class="grp">'+
+  // Siempre se dibuja; se muestra si es menor (y aparece al cambiar la fecha de nacimiento)
+  var tutorContent = '<div id="f-tut" style="display:'+(esMenor?'block':'none')+'">'+
+    '<div class="grp-t">Padre, madre o tutor</div><div class="grp">'+
       rw('Nombre', inp('f-tn','text',a.tutor_nombre,'Nombre y apellido'))+
       rw('Relación', sel('f-tr', REL, a.tutor_relacion))+
       rw('Teléfono', inp('f-ttel','tel',a.tutor_telefono,'11 1234-5678'))+
       rw('Email', inp('f-tem','email',a.tutor_email,'email@…'))+
-      '</div>'
-    : '';
+      '</div></div>';
 
   document.getElementById('ficha-body').innerHTML =
     '<div class="ftabs">'+
@@ -1225,9 +1298,11 @@ async function mostrarFicha(a) {
   function volverDesFicha() {
     document.getElementById('fs').classList.remove('show');
     document.getElementById('mc').classList.remove('hide');
-    if(alu && claseSeleccionada) mkConfirm(alu); else init();
+    // Vuelve a la confirmación solo si la ficha se abrió desde ahí; si no, al inicio (nunca marca sola)
+    if(_fichaVuelveA){ var fv=_fichaVuelveA; _fichaVuelveA=null; fv(); } else volver();
   }
 
+  document.getElementById('f-fnac').onchange = function(){ document.getElementById('f-tut').style.display = esMenorFecha(this.value) ? 'block' : 'none'; };
   document.getElementById('bgficha').onclick = function() { guardarFicha(a, volverDesFicha); };
   document.getElementById('bbficha').onclick = volverDesFicha;
 
@@ -1257,7 +1332,7 @@ async function guardarFicha(a, onDone) {
   var fnac = document.getElementById('f-fnac').value, sexo = document.getElementById('f-sexo').value;
   if(!nom || !ape || !fnac || !sexo) {
     fichaTabSwitch('info');
-    alert('Completá nombre, apellido, fecha de nacimiento y sexo.');
+    showToastF('Completá nombre, apellido, fecha de nacimiento y sexo.', true);
     return;
   }
   if(btn){ btn.disabled=true; btn.textContent='Guardando...'; }
@@ -1278,9 +1353,8 @@ async function guardarFicha(a, onDone) {
     peso: parseFloat(document.getElementById('f-peso').value) || null,
     altura: parseFloat(document.getElementById('f-alt').value) || null,
   };
-  if(a.fecha_nac) {
-    var edad = Math.floor((new Date()-new Date(a.fecha_nac))/(365.25*24*3600*1000));
-    if(edad < 18) {
+  if(esMenorFecha(fnac)) {   // con la fecha que acaba de cargar, no la que tenía
+    {
       var ftn=document.getElementById('f-tn'), ftr=document.getElementById('f-tr');
       if(ftn) updates.tutor_nombre=ftn.value.trim();
       if(ftr) updates.tutor_relacion=ftr.value;
@@ -1290,13 +1364,13 @@ async function guardarFicha(a, onDone) {
       if(ftn && (!updates.tutor_nombre||!updates.tutor_relacion||!updates.tutor_telefono)) {
         if(btn){btn.disabled=false;btn.textContent='Guardar cambios';}
         if(typeof fichaTabSwitch==='function') fichaTabSwitch('emerg');
-        alert('Completá nombre, relación y teléfono del padre, madre o tutor.');
+        showToastF('Completá nombre, relación y teléfono del padre, madre o tutor.', true);
         return;
       }
     }
   }
   var r = await sb.rpc('kiosco_actualizar_alumno',{p_id:a.id,p_dni:a.dni,p_datos:updates});
-  if(r.error){ if(btn){btn.disabled=false;btn.textContent='Guardar cambios';} alert('No pudimos guardar los cambios. Probá de nuevo.'); return; }
+  if(r.error){ if(btn){btn.disabled=false;btn.textContent='Guardar cambios';} showToastF('No pudimos guardar los cambios. Probá de nuevo.', true); return; }
   alu = Object.assign({},a,updates);
   var body = document.getElementById('ficha-body');
   if(body) body.innerHTML =
@@ -1325,30 +1399,31 @@ function abrirModalTorneo(a, listaTorneos) {
     var dup = await sb.from('torneos_participantes').select('id,modalidad').eq('torneo_id',torneoId).eq('alumno_id',a.id);
     var existing = dup.data || [];
     if(existing.some(function(x){ return x.modalidad===mod; })) {
-      alert('Ya estás inscripto en '+mod+' para este torneo.'); return;
+      showToastF('Ya estás inscripto en '+mod+' para este torneo.', true); return;
     }
     // Máximo 3 categorías por torneo (Gi + NoGi + Absoluto)
     if(existing.length >= 3) {
-      alert('Ya estás inscripto en 3 categorías para este torneo (es el máximo).'); return;
+      showToastF('Ya estás inscripto en 3 categorías para este torneo (es el máximo).', true); return;
     }
 
     var r = await sb.from('torneos_participantes').insert({
       torneo_id:torneoId, alumno_id:a.id, nombre:a.nombre, apellido:a.apellido,
       modalidad:mod, peso:peso, cinturon:a.cinturon, puesto:puesto, categoria:cat||null, cargado_por:'alumno'
     });
-    if(r.error) { alert('Error: '+r.error.message); return; }
+    if(r.error) { showToastF('No se pudo guardar la participación.', true); return; }
     document.getElementById('modal-torneo').classList.remove('show');
     showToastF('¡Participación registrada!');
-    mostrarFicha(a);
+    mostrarFicha(a, _fichaVuelveA);
   };
 }
 
-function showToastF(msg) {
+function showToastF(msg, err) {
+  var prev = document.querySelector('.toastf'); if(prev) prev.remove();
   var t = document.createElement('div');
-  t.className = 'toastf';
+  t.className = 'toastf'+(err?' err':'');
   t.textContent = msg;
   document.body.appendChild(t);
-  setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); },300); },2500);
+  setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); },300); }, err?4000:2500);
 }
 
 function selSexo(el,v) {
