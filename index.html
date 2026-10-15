@@ -244,7 +244,7 @@ select.fi{appearance:none;-webkit-appearance:none;background-image:url("data:ima
 .ftab.on{background:var(--tx);color:var(--bk)}
 .ftab-panel{display:none}
 .ftab-panel.on{display:block}
-.grp-t,.fsec-title{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx-3);margin:20px 4px 8px}
+.grp-t{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx-3);margin:20px 4px 8px}
 .grp{background:var(--bk-1);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .rw{display:flex;align-items:center;min-height:52px;padding:4px 16px;border-bottom:1px solid var(--line);gap:12px}
 .rw:last-child{border-bottom:none}
@@ -415,8 +415,6 @@ function escHTML(s) {
 
 var CLASES = [];
 var BELT_COLORS = {blanco:'#e0e0e0',gris:'#8a8f98',amarillo:'#f2c40f',naranja:'#f07f1a',verde:'#2e9d4f',azul:'#2980b9',violeta:'#8e44ad',marron:'#7f5539',negro:'#1a1a1a'};
-var DN = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
-var DL = ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'];
 var MARGEN = 45;
 
 var ahora = new Date();
@@ -518,7 +516,6 @@ function mkFoot(idFicha) {
   return '<div class="foot"><button class="lnk" id="'+idFicha+'">'+IC.user+'Mi ficha</button>'+
     '<a class="lnk" href="admin.html">'+IC.lock+'Profe</a></div>';
 }
-function mkProfe() { return ''; }
 
 function mkCron() {
   var d=ahora.getDay();
@@ -702,8 +699,7 @@ async function buscarDNI() {
       elegirClase(opciones[0]);
       var ya = await sb.rpc('kiosco_ya_registrado',{p_alumno_id:r.data.id,p_fecha:dHoy(),p_turno:claseSeleccionada.tur});
       if(ya.data) { document.getElementById('yr').style.display='block'; btn.textContent='Entrar'; btn.disabled=false; return; }
-      var falta = !r.data.nombre||!r.data.apellido||!r.data.fecha_nac||!r.data.sexo;
-      if(falta) mkFichaCompleta(r.data); else mkConfirm(r.data);
+      seguirAConfirmar(r.data);
     } else {
       mkNuevo(dni);
     }
@@ -777,7 +773,7 @@ function mkSeleccionClase(a, opciones) {
       bc.style.display = 'flex';
     };
   });
-  document.getElementById('bcnf-clase').onclick = function() { mkConfirm(alu); };
+  document.getElementById('bcnf-clase').onclick = function() { seguirAConfirmar(alu); };
   document.getElementById('bsel-no').onclick = volverADNI;
 }
 // Contacto de administración (alumnos bloqueados o discontinuados)
@@ -849,6 +845,12 @@ function mkConfirm(a) {
     }, 1000);
   }
   document.getElementById('bvf').onclick = function(){ cancelAutoConfirm(); mostrarFicha(a, function(){ mkConfirm(a); }); };
+}
+
+// Antes de confirmar: si le faltan datos obligatorios, primero los completa
+function seguirAConfirmar(a) {
+  var falta = !a.nombre||!a.apellido||!a.fecha_nac||!a.sexo;
+  if(falta) mkFichaCompleta(a); else mkConfirm(a);
 }
 
 function mkFichaCompleta(a) {
@@ -1207,17 +1209,14 @@ async function mostrarFicha(a, vuelve) {
     esMenor = edad < 18;
   }
 
-  // Cargar torneos del alumno
-  var torneos = [];
+  // Torneos del alumno y torneos abiertos para registrarse (en paralelo)
+  var torneos = [], listaTorneos = [];
   try {
-    var tr = await sb.from('torneos_participantes').select('*,torneos(nombre,fecha)').eq('alumno_id',a.id).order('created_at',{ascending:false});
+    var [tr, lr] = await Promise.all([
+      sb.from('torneos_participantes').select('*,torneos(nombre,fecha)').eq('alumno_id',a.id).order('created_at',{ascending:false}),
+      sb.from('torneos').select('id,nombre,fecha').eq('activo',true).order('fecha',{ascending:false})
+    ]);
     torneos = tr.data || [];
-  } catch(e) {}
-
-  // Cargar lista de torneos disponibles para registrar
-  var listaTorneos = [];
-  try {
-    var lr = await sb.from('torneos').select('id,nombre,fecha').eq('activo',true).order('fecha',{ascending:false});
     listaTorneos = lr.data || [];
   } catch(e) {}
 
@@ -1362,19 +1361,15 @@ async function guardarFicha(a, onDone) {
     altura: parseFloat(document.getElementById('f-alt').value) || null,
   };
   if(esMenorFecha(fnac)) {   // con la fecha que acaba de cargar, no la que tenía
-    {
-      var ftn=document.getElementById('f-tn'), ftr=document.getElementById('f-tr');
-      if(ftn) updates.tutor_nombre=ftn.value.trim();
-      if(ftr) updates.tutor_relacion=ftr.value;
-      var ftt=document.getElementById('f-ttel'), fte=document.getElementById('f-tem');
-      if(ftt) updates.tutor_telefono=ftt.value.trim();
-      if(fte) updates.tutor_email=fte.value.trim();
-      if(ftn && (!updates.tutor_nombre||!updates.tutor_relacion||!updates.tutor_telefono)) {
-        if(btn){btn.disabled=false;btn.textContent='Guardar cambios';}
-        if(typeof fichaTabSwitch==='function') fichaTabSwitch('emerg');
-        showToastF('Completá nombre, relación y teléfono del padre, madre o tutor.', true);
-        return;
-      }
+    updates.tutor_nombre = document.getElementById('f-tn').value.trim();
+    updates.tutor_relacion = document.getElementById('f-tr').value;
+    updates.tutor_telefono = document.getElementById('f-ttel').value.trim();
+    updates.tutor_email = document.getElementById('f-tem').value.trim();
+    if(!updates.tutor_nombre||!updates.tutor_relacion||!updates.tutor_telefono) {
+      if(btn){btn.disabled=false;btn.textContent='Guardar cambios';}
+      fichaTabSwitch('emerg');
+      showToastF('Completá nombre, relación y teléfono del padre, madre o tutor.', true);
+      return;
     }
   }
   var r = await sb.rpc('kiosco_actualizar_alumno',{p_id:a.id,p_dni:a.dni,p_datos:updates});

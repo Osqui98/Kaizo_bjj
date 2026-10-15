@@ -14,25 +14,14 @@
 :root{--red:#d61f26;--red-dark:#a01419;--red-light:#fdecec;--red-glow:rgba(214,31,38,.30);--ink:#0d0d0d;--silver-2:#cfd2d6;--silver-3:#8b8f96;--black:#111;--white:#fff;--g7:#444;--g5:#8a8d92;--g2:#e9e9ec;--g1:#f4f4f6;--green:#27ae60;--orange:#e67e22;--r:14px;--rs:10px;--shadow:0 2px 10px rgba(15,15,20,.06)}
 [data-theme="dark"]{--g1:#111113;--g2:#28282d;--g5:#62656d;--g7:#b2b5bc;--black:#eeeef0;--white:#1c1c20;--shadow:0 2px 12px rgba(0,0,0,.5);--red-light:#2d1416;--ink:#0a0a0c;--silver-3:#5a5d65;--red-glow:rgba(214,31,38,.45)}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--g1);color:var(--black);min-height:100vh;-webkit-font-smoothing:antialiased;transition:background-color .25s,color .15s}
-.section,.stat-card,.modal,.fe-modal,.fe-body,.row-item,.bottom-nav,.sidebar,.tabs,.filter-bar,.config-row,.fe-f input,.fe-f select,.fe-f textarea,.auth-card{transition:background-color .25s,border-color .2s,color .15s}
-/* ── GLASSMORPHISM (dark mode) ── */
-[data-theme="dark"] .stat-card{background:rgba(255,255,255,.04);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 32px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.05)}
-[data-theme="dark"] .section{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.07)}
-[data-theme="dark"] .topbar{border-bottom:none;box-shadow:0 1px 0 rgba(214,31,38,.7),0 2px 24px rgba(0,0,0,.5)}
-[data-theme="dark"] .fe-modal{background:rgba(28,28,32,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-[data-theme="dark"] .modal{background:rgba(28,28,32,.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.section,.stat-card,.modal,.fe-modal,.fe-body,.row-item,.bottom-nav,.sidebar,.config-row,.fe-f input,.fe-f select,.fe-f textarea,.auth-card{transition:background-color .25s,border-color .2s,color .15s}
 /* ── TAB TRANSITION ── */
 #main-content{transition:opacity .18s ease,transform .18s ease}
 #main-content.mc-out{opacity:0;transform:translateY(5px);pointer-events:none}
-/* ── ROW ENTRANCE ── */
-@keyframes rowIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.row-item{animation:rowIn .22s ease backwards}
 /* ── SKELETON ── */
 @keyframes skWave{0%{background-position:-200% 0}100%{background-position:200% 0}}
 .sk-line,.sk-av{background:linear-gradient(90deg,var(--g2) 25%,var(--g1) 50%,var(--g2) 75%);background-size:200% 100%;animation:skWave 1.4s ease infinite;border-radius:4px}
 .sk-av{border-radius:50%}
-/* ── TOPBAR ACCENT ── */
-.topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent 0%,var(--red) 40%,var(--red) 60%,transparent 100%);opacity:.6}
 .topbar{position:relative}
 /* Theme toggle */
 .theme-toggle{width:34px;height:34px;border-radius:9px;border:none;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s,color .2s,transform .3s}
@@ -103,7 +92,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .stat-label{font-size:11px;color:var(--g5);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
 .stat-num{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:600}
 .stat-num.red{color:var(--red)}.stat-num.green{color:var(--green)}.stat-num.orange{color:var(--orange)}
-.stat-sub{font-size:11px;color:var(--g5);margin-top:2px}
 .section{background:var(--white);border-radius:var(--r);border:1px solid var(--g2);margin-bottom:1.25rem;overflow:hidden;box-shadow:var(--shadow)}
 .section-header{padding:1rem 1.25rem;border-bottom:1px solid var(--g2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .section-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
@@ -149,7 +137,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .belt-name{font-size:12px;color:var(--g5)}
 .punct-badge{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;white-space:nowrap}
 .punct-ok{background:#e8f8ef;color:#1e8449}.punct-irr{background:#fff5e6;color:#854F0B}.punct-prob{background:var(--red-light);color:var(--red)}
-.chart-wrap{padding:1.25rem}
 .qr-box{text-align:center;padding:2rem}
 .qr-inner{display:inline-block;background:#fff;padding:20px;border-radius:12px;border:2px solid var(--red);box-shadow:0 8px 24px var(--red-glow)}
 .config-row{display:flex;align-items:center;gap:8px;padding:7px 1rem;border-bottom:1px solid var(--g2);flex-wrap:wrap}
@@ -163,17 +150,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .section-header--sm .section-title{font-size:13px}
 .section-collapsible{cursor:pointer;user-select:none}
 .section-collapsible:hover{background:var(--g1)}
-.grad-alert{border-radius:var(--rs);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;cursor:pointer}
-.grad-alert.listo{background:#fff8e6;border:1px solid #f0c040}
-.grad-alert.revisar{background:var(--red-light);border:1px solid #f09595}
-.grad-alert-name{font-size:14px;font-weight:600}
-.grad-alert-sub{font-size:12px;color:var(--g5);margin-top:1px}
-.grad-alert-action{font-size:12px;color:var(--red);font-weight:600}
 .empty-state{padding:1.5rem;text-align:center;color:var(--g5);font-size:14px}
-.filter-bar{padding:8px 1.25rem;border-bottom:1px solid var(--g2)}
 .filter-select{padding:6px 10px;border:1px solid var(--g2);border-radius:var(--rs);font-size:13px;color:var(--black);background:var(--white)}
-.panel{display:none}
-.panel.active{display:block}
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:1rem}
 .modal-bg.show{display:flex}
 .modal{background:var(--white);border-radius:var(--r);padding:1.5rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto}
@@ -268,12 +246,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 [data-theme="dark"]{--black:#fafafa;--white:#131316;--g7:#d4d4d8;--g5:#8b8b94;--g2:#26262c;--g1:#09090b;--red-light:rgba(227,38,46,.15);--shadow:none}
 body{font-family:var(--ui);font-size:15px;background:var(--g1)}
 button,input,select,textarea{font-family:inherit}
-[data-theme="dark"] .stat-card,[data-theme="dark"] .section,[data-theme="dark"] .fe-modal,[data-theme="dark"] .modal{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--white);border-color:var(--g2);box-shadow:none}
-.row-item{animation:none}
+[data-theme="dark"] .fe-modal{box-shadow:none}
 
 /* Barra superior clara */
 .topbar{background:var(--g1);border-bottom:1px solid var(--g2);box-shadow:none;padding:12px 18px}
-.topbar::after{display:none}
 [data-theme="dark"] .topbar{box-shadow:none;border-bottom:1px solid var(--g2)}
 .logo{width:38px;height:38px;border:none;box-shadow:none}
 .topbar h1{background:none;-webkit-text-fill-color:currentColor;color:var(--black);font-family:var(--disp);font-size:22px;font-weight:800;letter-spacing:.08em;line-height:1}
@@ -754,8 +730,6 @@ const hoy = new Date();
 function ymdLocal(d){ d=d||new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
 const fechaHoy = ymdLocal(hoy);
 const mesActual = ymdLocal(hoy).slice(0,7);
-function finMes(){var p=mesActual.split('-'),y=+p[0],m=+p[1];if(m===12){y++;m=1;}else{m++;}return y+'-'+(m<10?'0'+m:m)+'-01';}
-var chartMes = null;
 
 document.getElementById('fecha-hoy').textContent = 'Panel del profe · '+hoy.getDate()+' de '+MESES[hoy.getMonth()].toLowerCase();
 
@@ -1015,13 +989,6 @@ async function cargarHoy() {
   });
 }
 
-function toggleClaseHoy(id) {
-  var el=document.getElementById(id); if(!el) return;
-  var hidden=el.style.display==='none';
-  document.querySelectorAll('[id^="clase-hoy-"]').forEach(function(e){ e.style.display='none'; });
-  el.style.display=hidden?'block':'none';
-}
-
 // ── INFORMES ─────────────────────────────────────────────────
 var mesInforme = null;
 function mesIni(ym){ return ym+'-01'; }
@@ -1054,10 +1021,10 @@ async function cargarInformes(){
   var desde6=mesShift(mesInforme,-5)+'-01';
   var corte14=ymdLocal(new Date(Date.now()-14*86400000));
   var [rAsis,rAlum,rGrad,rRec]=await Promise.all([
-    sb.from('asistencia').select('alumno_id,fecha,turno,nombre,tarde,categoria').gte('fecha',desde6).lt('fecha',fin),
+    asistenciaDesde(desde6, 'alumno_id,fecha,turno,tarde,categoria', fin),
     alumnosActivos(),
     sb.from('graduaciones').select('nombre,tipo,cinturon_despues,stripes_despues,fecha').gte('fecha',iniMes).lt('fecha',fin).order('fecha',{ascending:false}),
-    sb.from('asistencia').select('alumno_id,fecha').gte('fecha',corte14)
+    asistenciaDesde(corte14, 'alumno_id,fecha')
   ]);
   var asis=rAsis.data||[], alum=rAlum.data||[], grad=rGrad.data||[], rec=rRec.data||[];
   var DIAS=['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
@@ -1152,7 +1119,7 @@ async function renderAusentes() {
   var cutoff = ymdLocal(new Date(Date.now()-180*86400000));
   var [ral, rr] = await Promise.all([
     alumnosActivos(),
-    sb.from('asistencia').select('alumno_id,fecha').gte('fecha',cutoff)
+    asistenciaDesde(cutoff, 'alumno_id,fecha')
   ]);
   var ultima = {};
   (rr.data||[]).forEach(function(x){if(!ultima[x.alumno_id]||x.fecha>ultima[x.alumno_id])ultima[x.alumno_id]=x.fecha;});
@@ -1208,7 +1175,7 @@ async function renderGraduaciones() {
   var [ral, rg, ras] = await Promise.all([
     alumnosActivos(),
     sb.from('graduaciones').select('alumno_id,fecha').order('fecha',{ascending:false}),
-    sb.from('asistencia').select('alumno_id,fecha,tarde').gte('fecha',ymdLocal(new Date(Date.now()-180*86400000)))
+    asistenciaDesde(ymdLocal(new Date(Date.now()-180*86400000)), 'alumno_id,fecha')
   ]);
 
   var ultiGrad = {};
@@ -1576,7 +1543,6 @@ function filtrarAlumnos() {
   });
   alumnoPagina = 0;
   renderAlumnosPaginado();
-  staggerRows('lista-alumnos');
 }
 
 function renderAlumnosPaginado() {
@@ -1706,11 +1672,6 @@ var gradAllData = []; var ausAllData = [];
 var candAllData = []; var candFiltrados = []; var candPagina = 0; var CAND_PP = 10;
 var feHistId = null;
 
-function staggerRows(containerId) {
-  var el=document.getElementById(containerId); if(!el) return;
-  el.querySelectorAll('.row-item').forEach(function(row,i){ row.style.animationDelay=(i*22)+'ms'; });
-}
-
 function feTabSwitch(tab) {
   ['datos','bjj','cont'].forEach(function(t){
     document.getElementById('fe-tp-'+t).classList.toggle('on', t===tab);
@@ -1827,11 +1788,12 @@ function feFotoChange(input){
   rd.onload = function(e){
     var img = new Image();
     img.onload = function(){
-      var max=400, w=img.width, h=img.height;
+      // mismo tamaño que en Asistencia (256 px, JPEG 0.8): fotos livianas para las listas
+      var max=256, w=img.width, h=img.height;
       if(w>h && w>max){ h=Math.round(h*max/w); w=max; } else if(h>max){ w=Math.round(w*max/h); h=max; }
       var c=document.createElement('canvas'); c.width=w; c.height=h;
       c.getContext('2d').drawImage(img,0,0,w,h);
-      feFoto = c.toDataURL('image/jpeg',0.85);
+      feFoto = c.toDataURL('image/jpeg',0.8);
       document.getElementById('fe-av').innerHTML = '<img src="'+feFoto+'">';
     };
     img.src = e.target.result;
@@ -2099,9 +2061,7 @@ async function renderConfig() {
   document.querySelectorAll('.btn-saveStr').forEach(function(b){ b.onclick=function(){ saveStr(parseInt(b.dataset.sid)); }; });
   document.querySelectorAll('.btn-discontinuar').forEach(function(b){ b.onclick=function(){ discontinuarClase(parseInt(b.dataset.cid)); }; });
   document.querySelectorAll('.btn-editar-clase').forEach(function(b){ b.onclick=function(){ abrirEditarClase(parseInt(b.dataset.cid)); }; });
-  var bnt = document.getElementById('btn-nuevo-torneo'); if(bnt) bnt.onclick=function(){ abrirModal('torneo'); };
-  var bnt2 = document.getElementById('btn-nt'); if(bnt2) bnt2.onclick=function(){ abrirModal('torneo'); };
-  var bac = document.getElementById('btn-agregar-clase'); if(bac) bac.onclick=function(){ event.stopPropagation(); abrirAgregarClase(); };
+  var bac = document.getElementById('btn-agregar-clase'); if(bac) bac.onclick=function(e){ e.stopPropagation(); abrirAgregarClase(); };
 }
 
 function toggleSec(id) {
@@ -2209,7 +2169,8 @@ async function _guardarClase() {
 
 async function discontinuarClase(id) {
   if(!confirm('¿Discontinuar esta clase? Los registros históricos se mantienen.')) return;
-  await sb.from('config_clases').update({activo:false}).eq('id',id);
+  var r = await sb.from('config_clases').update({activo:false}).eq('id',id);
+  if(r.error) { alert('No se pudo discontinuar la clase: '+r.error.message); return; }
   showToast('Clase discontinuada');
   renderConfig();
 }
@@ -2281,8 +2242,10 @@ async function checkAlertas() {
 
 async function exportarMes(ym) {
   var ini=ym+'-01', fin=mesShift(ym,1)+'-01';
-  var r=await sb.from('asistencia').select('*').gte('fecha',ini).lt('fecha',fin).order('fecha');
-  if(!r.data||!r.data.length){showToast('Sin datos en '+mesLabel(ym));return;}
+  var r=await asistenciaDesde(ini, 'fecha,nombre,apellido,categoria,turno,horario,tarde,motivo_tarde,con_fisico,timestamp', fin);
+  if(r.error){alert('No se pudo exportar: '+r.error.message);return;}
+  if(!r.data.length){showToast('Sin datos en '+mesLabel(ym));return;}
+  r.data.sort(function(a,b){ return (a.fecha+(a.timestamp||'')).localeCompare(b.fecha+(b.timestamp||'')); });
   var rows=[['Fecha','Nombre','Apellido','Categoría','Turno','Horario','Tarde','Motivo','Con físico']];
   r.data.forEach(function(x){rows.push([x.fecha,x.nombre||'',x.apellido||'',x.categoria||'',x.turno||'',x.horario||'',x.tarde?'Sí':'No',x.motivo_tarde||'',x.con_fisico?'Sí':'No']);});
   descargarCSV(rows, 'kaizo-'+ym+'.csv');
