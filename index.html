@@ -572,7 +572,7 @@ function bindDNI() {
 }
 
 async function init() {
-  if(CLASES.length === 0) await cargarClases();
+  if(CLASES.length === 0) await Promise.all([cargarClases(), cargarTolerancias()]);
   clasesActivas = findClasesActivas();
   var cp = document.getElementById('cp');
   if(!clasesActivas.length) {
@@ -584,16 +584,7 @@ async function init() {
   cp.innerHTML = mkDNI(clasesActivas);
   cp.classList.add('card-anim'); setTimeout(function(){cp.classList.remove('card-anim');},300);
   bindDNI();
-  if(clasesActivas.length === 1) {
-    claseSeleccionada = clasesActivas[0];
-    var diff = mNow() - toM(claseSeleccionada.hi);
-    minTarde = diff;
-    try {
-      var r = await sb.from('config_turnos').select('tolerancia_min').eq('dia',DL[ahora.getDay()]).eq('horario',claseSeleccionada.hi+' - '+claseSeleccionada.hf).maybeSingle();
-      if(r.data) tolMin = r.data.tolerancia_min;
-    } catch(e) {}
-    esTarde = diff > tolMin;
-  }
+  if(clasesActivas.length === 1) elegirClase(clasesActivas[0]);
 }
 
 // ── FOTOS ────────────────────────────────────────────────────
@@ -676,8 +667,26 @@ function clasesPara(a) {
   return clasesActivas.filter(function(c){ return c.cat===a.categoria || c.cat==='todas'; });
 }
 
+// Tolerancia de llegada tarde de cada turno (Panel → Config). En config_turnos el día
+// lleva tilde y el horario usa raya ("19:00 – 22:00"), así que se compara normalizado.
+var TOLS = [];
+async function cargarTolerancias() {
+  try {
+    var r = await sb.from('config_turnos').select('dia,horario,tolerancia_min').eq('activo',true);
+    TOLS = r.data || [];
+  } catch(e) {}
+}
+function normTxt(s) { return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
+function normHora(s) { return String(s||'').replace(/\s/g,'').replace(/[–—]/g,'-'); }
+function toleranciaDe(c) {
+  var dia = normTxt(DIAS_L[ahora.getDay()]), hor = normHora(c.hi+'-'+c.hf);
+  var t = TOLS.filter(function(x){ return normTxt(x.dia)===dia && normHora(x.horario)===hor; })[0];
+  return t && t.tolerancia_min!=null ? t.tolerancia_min : 15;
+}
+
 function elegirClase(c) {
   claseSeleccionada = c;
+  tolMin = toleranciaDe(c);
   var diff = mNow() - toM(c.hi);
   minTarde = diff; esTarde = diff > tolMin;
 }
