@@ -528,11 +528,15 @@ async function buscarDNI() {
         if(alu !== aRef) return;
         var av = document.querySelector('#cp .acard .aav'); if(av) ponerImg(av, f);
       });
-      if(clasesActivas.length > 1 && !claseSeleccionada) {
-        mkSeleccionClase(r.data);
+      // Solo las clases en curso de su categoría
+      var opciones = clasesPara(r.data);
+      if(!opciones.length) { mkSinClase(r.data); btn.textContent='Buscar'; btn.disabled=false; return; }
+      if(opciones.length > 1) {
+        mkSeleccionClase(r.data, opciones);
         btn.textContent='Buscar'; btn.disabled=false;
         return;
       }
+      elegirClase(opciones[0]);
       var ya = await sb.rpc('kiosco_ya_registrado',{p_alumno_id:r.data.id,p_fecha:dHoy(),p_turno:claseSeleccionada.tur});
       if(ya.data) { document.getElementById('yr').style.display='block'; btn.textContent='Buscar'; btn.disabled=false; return; }
       var falta = !r.data.nombre||!r.data.apellido||!r.data.fecha_nac||!r.data.sexo;
@@ -544,35 +548,59 @@ async function buscarDNI() {
   btn.textContent='Buscar'; btn.disabled=false;
 }
 
-function mkSeleccionClase(a) {
+// Clases en curso a las que puede anotarse: las de su categoría y las abiertas.
+// Profes y alumnos sin categoría asignada pueden elegir cualquiera.
+var CAT_NOM = {kinder:'Kinders', infantil:'Infantiles', adulto:'Adultos'};
+function clasesPara(a) {
+  if(!a.categoria || a.es_profe) return clasesActivas.slice();
+  return clasesActivas.filter(function(c){ return c.cat===a.categoria || c.cat==='todas'; });
+}
+
+function elegirClase(c) {
+  claseSeleccionada = c;
+  var diff = mNow() - toM(c.hi);
+  minTarde = diff; esTarde = diff > tolMin;
+}
+
+function mkSinClase(a) {
+  cancelAutoConfirm();
+  var ini = ((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+  document.getElementById('cp').innerHTML =
+    '<div class="acard"><div class="aav">'+ini+'</div><div><div class="aname">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="asub">Grupo: '+escHTML(CAT_NOM[a.categoria]||'-')+'</div></div></div>'+
+    '<div style="background:var(--g1);border:1px solid var(--g2);border-radius:10px;padding:12px 14px;margin:12px 0;text-align:left">'+
+      '<div style="font-size:14px;font-weight:700;margin-bottom:4px">Ahora no hay clase de '+escHTML(CAT_NOM[a.categoria]||'tu grupo')+'</div>'+
+      '<div style="font-size:13px;color:var(--g5)">Las clases en curso son de otro grupo. Si creés que es un error, avisale al profe.</div>'+
+    '</div>'+
+    '<button class="bsec" id="bni">Volver</button>'+
+    '<button class="btn-ficha" id="bvf" style="margin-top:8px">Ver / editar mi ficha</button>';
+  if(a.foto_url) ponerImg(document.querySelector('#cp .acard .aav'), a.foto_url);
+  document.getElementById('bni').onclick = function(){ volverADNI(); };
+  document.getElementById('bvf').onclick = function(){ mostrarFicha(a); };
+}
+
+function mkSeleccionClase(a, opciones) {
+  opciones = opciones || clasesPara(a);
   var ini = ((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
   var h = '<div class="acard"><div class="aav">'+ini+'</div><div><div class="aname">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="asub">Selecciona la clase</div></div></div>';
   h += '<div class="clase-opts">';
-  clasesActivas.forEach(function(c,i) {
+  opciones.forEach(function(c,i) {
     h += '<div class="clase-opt" data-idx="'+i+'"><div class="clase-opt-info"><div class="clase-opt-nom">'+escHTML(c.nom)+'</div><div class="clase-opt-sub">'+escHTML(c.pro)+' - '+escHTML(c.hi)+' a '+escHTML(c.hf)+'</div></div><svg class="clase-opt-chk" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>';
   });
   h += '</div><button class="bok" id="bcnf-clase" style="display:none">Confirmar asistencia</button>';
   document.getElementById('cp').innerHTML = h;
+  if(a.foto_url) ponerImg(document.querySelector('#cp .acard .aav'), a.foto_url);
   document.querySelectorAll('.clase-opt').forEach(function(el) {
     el.onclick = function() {
       document.querySelectorAll('.clase-opt').forEach(function(x){x.classList.remove('on');});
       el.classList.add('on');
-      var idx = parseInt(el.dataset.idx);
-      claseSeleccionada = clasesActivas[idx];
-      var diff = mNow() - toM(claseSeleccionada.hi);
-      minTarde = diff; esTarde = diff > tolMin;
+      elegirClase(opciones[parseInt(el.dataset.idx)]);
       var bc = document.getElementById('bcnf-clase');
       bc.style.display = 'block';
       bc.className = 'bok'+(esTarde?' org':'');
     };
   });
   document.getElementById('bcnf-clase').onclick = function() { mkConfirm(alu); };
-  // Si una sola de las clases en curso es de su categoría, queda preseleccionada
-  var mias = [];
-  clasesActivas.forEach(function(c,i){ if(a.categoria && c.cat===a.categoria) mias.push(i); });
-  if(mias.length===1) document.querySelector('.clase-opt[data-idx="'+mias[0]+'"]').onclick();
 }
-
 // Contacto de administración (alumnos bloqueados o discontinuados)
 var ADMIN_TEL = '+54 9 11 7817-6900';
 var ADMIN_WA = 'https://wa.me/5491178176900';
@@ -711,7 +739,7 @@ async function regNuevo(dni) {
   if(!n||!a){setErr('er','Nombre y apellido son obligatorios');return;}
   if(!f){setErr('er','La fecha de nacimiento es obligatoria');return;}
   if(!sexoSel){setErr('er','Selecciona el sexo');return;}
-  var datos={nombre:n,apellido:a,dni:normDNI(dni),fecha_nac:f,sexo:sexoSel,categoria:claseSeleccionada?claseSeleccionada.cat:null};
+  var datos={nombre:n,apellido:a,dni:normDNI(dni),fecha_nac:f,sexo:sexoSel};  // la categoría la asigna el profe ("Sin categoría" en el panel)
   if(esMenorFecha(f)){
     datos.tutor_nombre=document.getElementById('rtn').value.trim();
     datos.tutor_relacion=document.getElementById('rtr').value;
@@ -722,7 +750,11 @@ async function regNuevo(dni) {
   if(r.error){if(r.error.code==='23505')setErr('er','Ese DNI ya esta registrado.');else setErr('er','Error al registrar.');return;}
   alu=r.data;
   if(_postRegFicha){ _postRegFicha=false; mostrarFicha(r.data); }
-  else mkConfirm(r.data);
+  else {
+    var op=clasesPara(r.data);
+    if(op.length>1) mkSeleccionClase(r.data, op);
+    else { if(op.length===1) elegirClase(op[0]); mkConfirm(r.data); }
+  }
 }
 
 var _asistRegistrando = false;
@@ -808,6 +840,7 @@ async function registrar(est,mot) {
     var r=await sb.rpc('kiosco_marcar_asistencia',{p_alumno_id:alu.id,p_dni:alu.dni,p_datos:{fecha:dHoy(),turno:claseSeleccionada.tur,categoria:claseSeleccionada.cat,horario:claseSeleccionada.hi+' - '+claseSeleccionada.hf,tarde:est,motivo_tarde:mot,con_fisico:cf,timestamp:ahora.toISOString()}});
     if(r.error && r.error.code==='23505') { _asistRegistrando=false; alert('Ya registraste asistencia en esta clase hoy.'); volverADNI(); return; }
     if(r.error && r.error.message==='BLOQUEADO') { _asistRegistrando=false; alu.bloqueado=true; mkBloqueado(alu); return; }
+    if(r.error && r.error.message==='CATEGORIA') { _asistRegistrando=false; mkSinClase(alu); return; }
     if(r.error) throw r.error;
     mostrarOk(est,mot,cf,hs);
   } catch(e) { console.error(e); _asistRegistrando=false; var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} var btnT2=document.getElementById('btn-tarde');if(btnT2){btnT2.disabled=false;btnT2.textContent='Registrar asistencia';} alert('Error al registrar. Intenta de nuevo.'); }

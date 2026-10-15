@@ -4,7 +4,8 @@
 --
 --   · alumnos.categoria: la asigna el profe a mano. Esta migración la
 --     completa UNA SOLA VEZ por edad; después nunca se recalcula.
---   · config_clases.categoria: a qué grupo pertenece cada clase.
+--   · config_clases.categoria: a qué grupo pertenece cada clase
+--     (o 'todas' si es abierta). Cada alumno solo marca en las de su grupo.
 --   · asistencia.categoria: el grupo de la clase en la que marcó.
 -- ════════════════════════════════════════════════════════════════
 
@@ -19,7 +20,7 @@ alter table public.alumnos add constraint alumnos_categoria_check
   check (categoria is null or categoria in ('kinder','infantil','adulto'));
 alter table public.config_clases drop constraint if exists config_clases_categoria_check;
 alter table public.config_clases add constraint config_clases_categoria_check
-  check (categoria in ('kinder','infantil','adulto'));
+  check (categoria in ('kinder','infantil','adulto','todas'));   -- todas = clase abierta (open mat, seminarios)
 
 -- 2. Carga inicial por edad (una sola vez): <7 Kinder, 7–12 Infantil, resto Adulto
 update public.alumnos set categoria = case
@@ -77,6 +78,13 @@ begin
   if a.bloqueado then
     raise exception 'BLOQUEADO' using errcode = 'P0001';
   end if;
+  -- Solo puede marcar en clases de su categoría (o abiertas). Profes y alumnos
+  -- sin categoría asignada pueden marcar en cualquiera.
+  if cat in ('kinder','infantil','adulto') and a.categoria is not null
+     and cat <> a.categoria and not coalesce(a.es_profe, false) then
+    raise exception 'CATEGORIA' using errcode = 'P0001';
+  end if;
+  -- En la asistencia queda el grupo de la clase; en las abiertas, el del alumno
   if cat is null or cat not in ('kinder','infantil','adulto') then cat := coalesce(a.categoria, 'adulto'); end if;
   d := jsonb_populate_record(null::public.asistencia, p_datos);
   insert into public.asistencia

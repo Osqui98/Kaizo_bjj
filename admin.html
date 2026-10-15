@@ -390,7 +390,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <h3 id="mc-titulo">Agregar clase</h3>
     <label>Nombre *</label><input type="text" id="mc-nombre" placeholder="BJJ Adultos - Noche" />
     <label>Categoría *</label>
-    <select id="mc-categoria"><option value="kinder">Kinder</option><option value="infantil">Infantil</option><option value="adulto">Adulto</option></select>
+    <select id="mc-categoria"><option value="kinder">Kinder</option><option value="infantil">Infantil</option><option value="adulto">Adulto</option><option value="todas">Abierta a todos</option></select>
     <label>Dia *</label>
     <select id="mc-dia">
       <option value="1">Lunes</option><option value="2">Martes</option>
@@ -565,7 +565,8 @@ const BELT_COLORS = {blanco:'#e0e0e0',gris:'#8a8f98',amarillo:'#f2c40f',naranja:
 var CATS = {
   kinder:   {l:'Kinder',   lp:'Kinders',    c:'#0369a1', b:'#e0f2fe'},
   infantil: {l:'Infantil', lp:'Infantiles', c:'#6d28d9', b:'#ede9fe'},
-  adulto:   {l:'Adulto',   lp:'Adultos',    c:'#475569', b:'#eef1f5'}
+  adulto:   {l:'Adulto',   lp:'Adultos',    c:'#475569', b:'#eef1f5'},
+  todas:    {l:'Abierta a todos', lp:'Abiertas', c:'#b45309', b:'#fef3c7'}   // solo clases
 };
 function catPill(cat) {
   var k = CATS[cat];
