@@ -40,7 +40,7 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke
 
 /* ── Contenedores de pantalla ── */
 .card,.tscr,.oscr,.ficha-scr{flex:1;display:flex;flex-direction:column;color:var(--tx)}
-.card{padding:14px 20px 22px}
+.card{padding:14px 20px 0}
 #cp{flex:1;display:flex;flex-direction:column}
 .tscr,.oscr,.ficha-scr{display:none}
 .tscr.show,.oscr.show,.ficha-scr.show{display:flex}
@@ -82,7 +82,15 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke
 .pad .go:active{background:var(--red-dark)}
 .pad .go:disabled{opacity:.6}
 .dhnt{font-size:13px;color:var(--tx-3);text-align:center;margin-top:12px}
-.foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:18px}
+/* Varias clases a la vez o pantalla baja: tarjetas y teclado más compactos para que entre todo */
+.lives.multi .live{padding:11px 15px;margin-bottom:8px}
+.lives.multi .live h3{font-size:21px;margin:7px 0 2px}
+.lives.multi .live .prog{margin-top:8px}
+.lives.multi + .hola{margin-top:8px}
+.lives.multi + .hola .ttl{font-size:34px}
+@media(max-height:780px){.pad button{height:50px}.pad{gap:7px}.dnii{height:58px}.hola .sub{margin-bottom:12px}.dhnt{display:none}}
+/* "Mi ficha" y "Profe" siempre visibles: barra fija abajo aunque haya que scrollear */
+.foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;position:sticky;bottom:0;z-index:20;margin-left:-20px;margin-right:-20px;padding:22px 20px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(to bottom,rgba(9,9,11,0),var(--bk) 40%)}
 .lnk{display:inline-flex;align-items:center;gap:7px;color:var(--tx-2);font-size:14px;font-weight:600;text-decoration:none;background:none;border:none;padding:12px 6px;min-height:44px}
 .lnk svg{width:17px;height:17px}
 .lnk:hover{color:var(--tx)}
@@ -563,7 +571,7 @@ function bindPad(inputId, onGo) {
 }
 
 function mkDNI(clases) {
-  return clases.map(liveHTML).join('')+
+  return '<div class="lives'+(clases.length>1?' multi':'')+'">'+clases.map(liveHTML).join('')+'</div>'+
     '<div class="hola"><h2 class="ttl">¡A entrenar!</h2><p class="sub">Ingresá tu DNI para marcar asistencia</p></div>'+
     '<input type="text" id="di" class="dnii" placeholder="········" inputmode="none" autocomplete="off" maxlength="9" />'+
     '<div class="yareg" id="yr">Ya registraste asistencia en esta clase hoy.</div>'+
