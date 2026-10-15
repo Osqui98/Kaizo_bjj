@@ -569,7 +569,31 @@ function mkSeleccionClase(a) {
   document.getElementById('bcnf-clase').onclick = function() { mkConfirm(alu); };
 }
 
+// Contacto de administración (alumnos bloqueados o discontinuados)
+var ADMIN_TEL = '+54 9 11 7817-6900';
+var ADMIN_WA = 'https://wa.me/5491178176900';
+function avisoAdmin(titulo) {
+  return '<div style="background:#fdecec;border:1px solid #f3c2c4;border-radius:10px;padding:12px 14px;margin:12px 0;text-align:left">'+
+    '<div style="font-size:14px;font-weight:700;color:#c0392b;margin-bottom:4px">'+titulo+'</div>'+
+    '<div style="font-size:13px;color:#555">Comunicate con administración: <a href="'+ADMIN_WA+'" target="_blank" rel="noopener" style="color:#c0392b;font-weight:700;white-space:nowrap">'+ADMIN_TEL+'</a></div>'+
+  '</div>';
+}
+
+function mkBloqueado(a) {
+  cancelAutoConfirm();
+  var ini=((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+  document.getElementById('cp').innerHTML=
+    '<div class="acard"><div class="aav">'+ini+'</div><div><div class="aname">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="asub">No se puede registrar la asistencia</div></div></div>'+
+    avisoAdmin('Tenés que hablar con administración')+
+    '<button class="bsec" id="bni">Volver</button>'+
+    '<button class="btn-ficha" id="bvf" style="margin-top:8px">Ver / editar mi ficha</button>';
+  if(a.foto_url) ponerImg(document.querySelector('#cp .acard .aav'), a.foto_url);
+  document.getElementById('bni').onclick = function(){ volverADNI(); };
+  document.getElementById('bvf').onclick = function(){ mostrarFicha(a); };
+}
+
 function mkConfirm(a) {
+  if(a.bloqueado) { mkBloqueado(a); return; }
   cancelAutoConfirm();
   var ini=((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
   var belt=a.cinturon||'blanco';
@@ -754,6 +778,7 @@ async function registrar(est,mot) {
   try {
     var r=await sb.rpc('kiosco_marcar_asistencia',{p_alumno_id:alu.id,p_dni:alu.dni,p_datos:{fecha:dHoy(),turno:claseSeleccionada.tur,horario:claseSeleccionada.hi+' - '+claseSeleccionada.hf,tarde:est,motivo_tarde:mot,con_fisico:cf,timestamp:ahora.toISOString()}});
     if(r.error && r.error.code==='23505') { _asistRegistrando=false; alert('Ya registraste asistencia en esta clase hoy.'); volverADNI(); return; }
+    if(r.error && r.error.message==='BLOQUEADO') { _asistRegistrando=false; alu.bloqueado=true; mkBloqueado(alu); return; }
     if(r.error) throw r.error;
     mostrarOk(est,mot,cf,hs);
   } catch(e) { console.error(e); _asistRegistrando=false; var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} var btnT2=document.getElementById('btn-tarde');if(btnT2){btnT2.disabled=false;btnT2.textContent='Registrar asistencia';} alert('Error al registrar. Intenta de nuevo.'); }
@@ -780,13 +805,14 @@ function mostrarOk(est,mot,cf,hs) {
       '<div style="font-size:13px;font-weight:600;margin-top:2px">'+escHTML(claseSeleccionada.hi||'')+' - '+escHTML(claseSeleccionada.hf||'')+'</div></div>'+
       '<div><div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em">Llegada</div>'+
       '<div style="font-size:13px;font-weight:600;margin-top:2px;color:'+(est?'var(--orange)':'var(--green)')+'">'+escHTML(hs)+(est?' (+'+minTarde+' min)':' ✓')+'</div></div>'+
-    '</div>';
+    '</div>'+
+    (alu.estado==='discontinuado' ? avisoAdmin('Tenés que hablar con administración') : '');
   var otm=document.getElementById('otm'); otm.textContent=est&&mot?'Motivo: '+mot:''; otm.style.display=(est&&mot)?'block':'none';
   document.getElementById('ofi').style.display=cf?'block':'none';
 
   // Auto-reset en 5s
   if(_volverTimer) clearInterval(_volverTimer);
-  var vsecs = 5;
+  var vsecs = alu.estado==='discontinuado' ? 15 : 5; // más tiempo para leer el aviso
   var vBtn = document.getElementById('bvlv');
   if(vBtn) {
     vBtn.textContent = 'Volver ('+vsecs+'s)';

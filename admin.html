@@ -244,6 +244,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .fe-save{background:linear-gradient(180deg,#e2262d,#bb171d);color:#fff;box-shadow:0 6px 16px var(--red-glow)}
 .fe-save:active{transform:translateY(1px)}
 .fe-save:disabled{opacity:.6;cursor:default}
+.fe-foot .fe-del{flex:0 0 auto;background:#fff;color:var(--red);border:1.5px solid #f3c2c4;padding:13px 14px}
+.fe-foot .fe-del:disabled{opacity:.6;cursor:default}
+.row-item.discontinuado{opacity:.5}
 @media(min-width:600px){.fe-bg{align-items:center;padding:1rem}.fe-modal{border-radius:20px}}
 </style>
 </head>
@@ -463,8 +466,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         <div class="fe-sec">
           <div class="fe-sec-t">Estado</div>
           <div class="fe-grid">
-            <div class="fe-f"><label>Estado</label><select id="fe-estado"><option value="activo">Activo</option><option value="lesionado">Lesionado</option><option value="inactivo">Inactivo</option><option value="baja">Baja</option></select></div>
-            <div class="fe-f" style="display:flex;align-items:flex-end"><div class="fe-chk" style="width:100%" onclick="var c=document.getElementById('fe-activo');if(event.target!==c)c.checked=!c.checked"><input type="checkbox" id="fe-activo" /><label>Activo (aparece en listados)</label></div></div>
+            <div class="fe-f"><label>Estado</label><select id="fe-estado"><option value="activo">Activo</option><option value="lesionado">Lesionado</option><option value="discontinuado">Discontinuado</option></select></div>
+            <div class="fe-f" style="display:flex;align-items:flex-end"><div class="fe-chk" style="width:100%" onclick="var c=document.getElementById('fe-bloqueado');if(event.target!==c)c.checked=!c.checked;feBloqToggle()"><input type="checkbox" id="fe-bloqueado" /><label>Bloqueado para marcar asistencia</label></div></div>
+            <div class="fe-f full" id="fe-motivo-wrap" style="display:none"><label>Motivo del bloqueo (solo lo ve el profe)</label><input id="fe-motivo-bloqueo" placeholder="Ej: cuota impaga" /></div>
             <div class="fe-f full"><label>Notas</label><textarea id="fe-notas" placeholder="Observaciones del profe..."></textarea></div>
           </div>
         </div>
@@ -523,6 +527,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       </div>
     </div>
     <div class="fe-foot">
+      <button class="fe-del" onclick="eliminarAlumno()" title="Eliminar definitivamente">Eliminar</button>
       <button class="fe-cancel" onclick="cerrarModal('editar')">Cancelar</button>
       <button class="fe-save" id="fe-save-btn" onclick="guardarEditarAlumno()">Guardar cambios</button>
     </div>
@@ -1126,38 +1131,52 @@ async function renderAlumnos() {
     '<input type="text" id="srch-alumnos" placeholder="Buscar por nombre..." style="flex:1;min-width:130px;padding:6px 10px;border:1px solid var(--g2);border-radius:var(--rs);font-size:13px;outline:none;background:var(--g1)" oninput="filtrarAlumnosDeb()" />'+
     '<select class="filter-select" id="fil-al-turno" onchange="filtrarAlumnos()"><option value="">Todos los turnos</option><option value="manana">Manana</option><option value="noche">Noche</option><option value="sabado">Sabado</option></select>'+
     '<select class="filter-select" id="fil-al-cint" onchange="filtrarAlumnos()"><option value="">Todos los cinturones</option><option value="blanco">Blanco</option><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marron</option><option value="negro">Negro</option></select>'+
-    '<select class="filter-select" id="fil-al-est" onchange="filtrarAlumnos()"><option value="">Todos los estados</option><option value="activo">Activo</option><option value="lesionado">Lesionado</option><option value="inactivo">Inactivo</option></select>'+
+    '<select class="filter-select" id="fil-al-est" onchange="filtrarAlumnos()"><option value="">Todos los estados</option><option value="activo">Activo</option><option value="lesionado">Lesionado</option><option value="discontinuado">Discontinuado</option><option value="bloqueado">Bloqueado</option></select>'+
     '</div>'+
     '<div id="lista-alumnos"><div class="empty-state">Cargando...</div></div>'+
     '<div id="pag-alumnos"></div>'+
     '</div>';
   var [ral, ras] = await Promise.all([
-    alumnosActivos(),
+    alumnosTodos(),
     sb.from('asistencia').select('nombre,tarde').gte('fecha',mesActual+'-01').lt('fecha',finMes())
   ]);
   var tard = {};
   (ras.data||[]).filter(function(x){return x.tarde;}).forEach(function(x){tard[x.nombre]=(tard[x.nombre]||0)+1;});
   alumnosAll = (ral.data||[]).map(function(a){ return Object.assign({},a,{_tard:tard[a.nombre]||0}); });
+  alumnosAll.sort(function(a,b){ return (a.estado==='discontinuado')-(b.estado==='discontinuado'); });
   alumnosFiltrados = alumnosAll.slice();
   alumnoPagina = 0;
   filtrarAlumnos();
 }
 
-function estadoBadge(estado) {
+function estadoBadge(estado, bloqueado) {
+  var b = bloqueado ? '<span style="background:#fdecec;color:#c0392b;border:1px solid #f3c2c4;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap">Bloqueado</span>' : '';
+  var e = estadoBadgeSolo(estado);
+  return e && b ? e+' '+b : (e||b);
+}
+function estadoBadgeSolo(estado) {
   if(!estado || estado==='activo') return '';
   if(estado==='lesionado') return '<span style="background:#fff4e0;color:#b9770e;border:1px solid #f0c98a;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap">&#129657; Lesion</span>';
-  if(estado==='inactivo') return '<span style="background:#f0f0f0;color:#666;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap">Inactivo</span>';
+  if(estado==='discontinuado') return '<span style="background:#f0f0f0;color:#666;font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap">Discontinuado</span>';
   return '';
 }
 
 // ── CACHE DE ALUMNOS (sin fotos) ─────────────────────────────
 // Las fotos son base64 pesados: las listas piden solo estas columnas y
 // comparten un mismo resultado entre pestañas durante ALU_TTL.
-var ALU_COLS = 'id,nombre,apellido,dni,turno,sexo,cinturon,stripes,estado,fecha_nac,fecha_grad,created_at,fecha_inicio,notas,emerg_nombre,emerg_telefono,emerg_relacion,es_profe';
+var ALU_COLS = 'id,nombre,apellido,dni,turno,sexo,cinturon,stripes,estado,fecha_nac,fecha_grad,created_at,fecha_inicio,notas,emerg_nombre,emerg_telefono,emerg_relacion,es_profe,bloqueado';
 var ALU_TTL = 60000;
 var aluCache = null, aluCacheTs = 0, aluCacheP = null, aluGen = 0;
 function copiaAlumnos(rows){ return { data: rows.map(function(a){ return Object.assign({}, a); }), error: null }; }
+// alumnosActivos: los que entrenan (sin discontinuados) para reportes, ausentes, etc.
+// alumnosTodos: incluye discontinuados (lista de Alumnos, donde aparecen en gris).
 function alumnosActivos() {
+  return alumnosTodos().then(function(r){
+    if(r.error) return r;
+    return { data: r.data.filter(function(a){ return a.estado!=='discontinuado'; }), error: null };
+  });
+}
+function alumnosTodos() {
   if(aluCache && Date.now()-aluCacheTs < ALU_TTL) return Promise.resolve(copiaAlumnos(aluCache));
   if(!aluCacheP) {
     var gen = aluGen;
@@ -1237,7 +1256,8 @@ function filtrarAlumnos() {
     if(srch && (((a.nombre||'')+' '+(a.apellido||'')).toLowerCase().indexOf(srch)===-1)) return false;
     if(turno && (a.turno||'')!==turno) return false;
     if(cint && (a.cinturon||'')!==cint) return false;
-    if(est && (a.estado||'activo')!==est) return false;
+    if(est==='bloqueado'){ if(!a.bloqueado) return false; }
+    else if(est && (a.estado||'activo')!==est) return false;
     return true;
   });
   alumnoPagina = 0;
@@ -1257,9 +1277,9 @@ function renderAlumnosPaginado() {
   var pagina = alumnosFiltrados.slice(desde, desde+ALUMNOS_PP);
   if(sub) sub.textContent = total+' alumno'+(total!==1?'s':'')+(total!==alumnosAll.length?' (filtrado de '+alumnosAll.length+')':'');
   el.innerHTML = pagina.map(function(a){
-    var badge = estadoBadge(a.estado);
+    var badge = estadoBadge(a.estado, a.bloqueado);
     var cumpleBadge = esCumpleHoy(a.fecha_nac) ? ' <span title="Cumpleaños hoy!" style="font-size:15px">&#127874;</span>' : '';
-    return '<div class="row-item" style="cursor:pointer" data-edit-id="'+escHTML(String(a.id))+'">'+
+    return '<div class="row-item'+(a.estado==='discontinuado'?' discontinuado':'')+'" style="cursor:pointer" data-edit-id="'+escHTML(String(a.id))+'">'+
       avHTML(a)+
       '<div style="flex:1;min-width:0"><div class="row-name">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+cumpleBadge+(badge?' '+badge:'')+'</div>'+
       '<div class="row-sub">'+escHTML(a.turno)+' - '+escHTML(a.sexo)+'</div></div>'+
@@ -1327,7 +1347,7 @@ async function renderEmergencia() {
   var sinDatos = todos.length - conDatos.length;
   el.innerHTML = conDatos.map(function(a){
     var tel = a.emerg_telefono||'';
-    var badge = estadoBadge(a.estado);
+    var badge = estadoBadge(a.estado, a.bloqueado);
     return '<div class="row-item">'+
       avHTML(a)+
       '<div style="flex:1;min-width:0">'+
@@ -1445,7 +1465,9 @@ async function abrirEditarAlumno(id){
   feSet('fe-tutor-nombre',a.tutor_nombre); feSet('fe-tutor-relacion',a.tutor_relacion); feSet('fe-tutor-telefono',a.tutor_telefono); feSet('fe-tutor-email',a.tutor_email);
   feSet('fe-emerg-nombre',a.emerg_nombre); feSet('fe-emerg-relacion',a.emerg_relacion); feSet('fe-emerg-telefono',a.emerg_telefono);
   feSet('fe-estado',a.estado||'activo'); feSet('fe-notas',a.notas);
-  feSetChk('fe-competidor',a.es_competidor); feSetChk('fe-profe',a.es_profe); feSetChk('fe-apto',a.apto_fisico); feSetChk('fe-activo',a.activo);
+  feSetChk('fe-competidor',a.es_competidor); feSetChk('fe-profe',a.es_profe); feSetChk('fe-apto',a.apto_fisico); feSetChk('fe-bloqueado',a.bloqueado);
+  feSet('fe-motivo-bloqueo',a.motivo_bloqueo); feBloqToggle();
+  feApellido = a.apellido||'';
   document.getElementById('fe-head-name').textContent = (a.nombre||'')+' '+(a.apellido||'');
   document.getElementById('fe-head-sub').textContent = 'DNI '+(a.dni||'-')+' · '+(a.cinturon||'')+(a.stripes? ' · '+a.stripes+' stripe'+(a.stripes>1?'s':''):'');
   document.getElementById('fe-av').innerHTML = a.foto_url ? '<img src="'+a.foto_url+'">' : ini(a.nombre||'?');
@@ -1469,6 +1491,29 @@ function feFotoChange(input){
   rd.readAsDataURL(f);
 }
 
+function feBloqToggle(){
+  var w=document.getElementById('fe-motivo-wrap'); if(w) w.style.display=feChk('fe-bloqueado')?'':'none';
+}
+
+var feApellido = '';
+async function eliminarAlumno(){
+  var id = parseInt(document.getElementById('fe-id').value);
+  var nom = document.getElementById('fe-head-name').textContent;
+  var t = prompt('Vas a ELIMINAR DEFINITIVAMENTE a '+nom+' junto con todas sus asistencias, graduaciones y torneos. No se puede deshacer.\n\nSi solo deja de venir, mejor ponelo como Discontinuado.\n\nPara confirmar, escribi su apellido:');
+  if(t===null) return;
+  var norm = function(x){ return (x||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); };
+  if(norm(t)!==norm(feApellido)){ alert('El apellido no coincide. No se elimino nada.'); return; }
+  var btn = document.querySelector('.fe-del'); if(btn){ btn.disabled=true; btn.textContent='Eliminando...'; }
+  var r = await sb.rpc('admin_eliminar_alumno',{p_id:id});
+  if(btn){ btn.disabled=false; btn.textContent='Eliminar'; }
+  if(r.error){ alert('No se pudo eliminar: '+r.error.message); return; }
+  invalidarAlumnos();
+  delete fotoCache[id];
+  cerrarModal('editar');
+  showToast('Alumno eliminado');
+  renderAlumnos();
+}
+
 async function guardarEditarAlumno(){
   var id = parseInt(document.getElementById('fe-id').value);
   var nombre = feVal('fe-nombre').trim();
@@ -1487,7 +1532,8 @@ async function guardarEditarAlumno(){
     tutor_nombre:feVal('fe-tutor-nombre').trim(), tutor_relacion:feVal('fe-tutor-relacion').trim(), tutor_telefono:feVal('fe-tutor-telefono').trim(), tutor_email:feVal('fe-tutor-email').trim(),
     emerg_nombre:feVal('fe-emerg-nombre').trim(), emerg_relacion:feVal('fe-emerg-relacion').trim(), emerg_telefono:feVal('fe-emerg-telefono').trim(),
     estado:feVal('fe-estado'), notas:feVal('fe-notas').trim(),
-    es_competidor:feChk('fe-competidor'), es_profe:feChk('fe-profe'), apto_fisico:feChk('fe-apto'), activo:feChk('fe-activo')
+    es_competidor:feChk('fe-competidor'), es_profe:feChk('fe-profe'), apto_fisico:feChk('fe-apto'),
+    bloqueado:feChk('fe-bloqueado'), motivo_bloqueo:feChk('fe-bloqueado')?(feVal('fe-motivo-bloqueo').trim()||null):null
   };
   if(feFoto!==undefined) upd.foto_url = feFoto;
   var btn = document.getElementById('fe-save-btn');
