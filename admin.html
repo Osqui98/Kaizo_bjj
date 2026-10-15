@@ -247,6 +247,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .fe-foot .fe-del{flex:0 0 auto;background:#fff;color:var(--red);border:1.5px solid #f3c2c4;padding:13px 14px}
 .fe-foot .fe-del:disabled{opacity:.6;cursor:default}
 .row-item.discontinuado{opacity:.5}
+.cat-tabs{display:flex;gap:6px;padding:12px 1.25rem 2px;overflow-x:auto;scrollbar-width:none}
+.cat-tabs::-webkit-scrollbar{display:none}
+.cat-tab{flex-shrink:0;display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:99px;border:1.5px solid var(--g2);background:var(--white);font-size:13px;font-weight:600;color:var(--g7);cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s}
+.cat-tab .n{font-size:11px;font-weight:700;background:var(--g1);border-radius:99px;padding:1px 7px;color:var(--g5)}
+.cat-tab.on{background:var(--red);border-color:var(--red);color:#fff}
+.cat-tab.on .n{background:rgba(255,255,255,.22);color:#fff}
+.cat-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.cat-pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;vertical-align:middle}
+.seg{display:flex;background:var(--g1);border:1.5px solid var(--g2);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;border:none;background:none;padding:9px 6px;border-radius:9px;font-size:13px;font-weight:600;color:var(--g5);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button.on{background:var(--white);color:var(--g7);box-shadow:0 1px 4px rgba(0,0,0,.12)}
 @media(min-width:600px){.fe-bg{align-items:center;padding:1rem}.fe-modal{border-radius:20px}}
 </style>
 </head>
@@ -328,6 +339,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <option value="femenino">Femenino</option>
       <option value="otro">Otro</option>
     </select>
+    <label>Categoría *</label>
+    <select id="ma-categoria">
+      <option value="">Seleccionar...</option>
+      <option value="kinder">Kinder</option>
+      <option value="infantil">Infantil</option>
+      <option value="adulto">Adulto</option>
+    </select>
     <label>Turno habitual</label>
     <select id="ma-turno">
       <option value="manana">Manana (07:00-09:00)</option>
@@ -335,13 +353,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
       <option value="sabado">Sabado (11:00-14:00)</option>
     </select>
     <label>Cinturon</label>
-    <select id="ma-cinturon">
-      <option value="blanco">Blanco</option>
-      <option value="azul">Azul</option>
-      <option value="violeta">Violeta</option>
-      <option value="marron">Marron</option>
-      <option value="negro">Negro</option>
-    </select>
+    <select id="ma-cinturon"><option value="blanco">Blanco</option><optgroup label="Infantiles"><option value="gris">Gris</option><option value="amarillo">Amarillo</option><option value="naranja">Naranja</option><option value="verde">Verde</option></optgroup><optgroup label="Adultos"><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marrón</option><option value="negro">Negro</option></optgroup></select>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="cerrarModal('alumno')">Cancelar</button>
       <button class="btn-save" onclick="guardarAlumno()">Guardar</button>
@@ -362,12 +374,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     </select>
     <div id="mg-cinturon-wrap" style="display:none">
       <label>Nuevo cinturon</label>
-      <select id="mg-cinturon-nuevo">
-        <option value="azul">Azul</option>
-        <option value="violeta">Violeta</option>
-        <option value="marron">Marron</option>
-        <option value="negro">Negro</option>
-      </select>
+      <select id="mg-cinturon-nuevo"><optgroup label="Infantiles"><option value="gris">Gris</option><option value="amarillo">Amarillo</option><option value="naranja">Naranja</option><option value="verde">Verde</option></optgroup><optgroup label="Adultos"><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marrón</option><option value="negro">Negro</option></optgroup></select>
     </div>
     <label>Fecha de la ceremonia *</label><input type="date" id="mg-fecha" />
     <label>Notas</label><textarea id="mg-notas" placeholder="Observaciones..."></textarea>
@@ -382,6 +389,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
   <div class="modal">
     <h3 id="mc-titulo">Agregar clase</h3>
     <label>Nombre *</label><input type="text" id="mc-nombre" placeholder="BJJ Adultos - Noche" />
+    <label>Categoría *</label>
+    <select id="mc-categoria"><option value="kinder">Kinder</option><option value="infantil">Infantil</option><option value="adulto">Adulto</option></select>
     <label>Dia *</label>
     <select id="mc-dia">
       <option value="1">Lunes</option><option value="2">Martes</option>
@@ -452,6 +461,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
             <div class="fe-f"><label>Fecha de nacimiento</label><input type="date" id="fe-fnac" /></div>
             <div class="fe-f"><label>Sexo</label><select id="fe-sexo"><option value="">Seleccionar...</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="otro">Otro</option></select></div>
             <div class="fe-f"><label>Fecha de inicio</label><input type="date" id="fe-finicio" /></div>
+            <div class="fe-f full"><label>Categoría</label><div class="seg" id="fe-cat"><button type="button" data-cat="kinder" onclick="feSetCat(this.dataset.cat)"><span class="cat-dot" style="background:#0369a1"></span>Kinder</button><button type="button" data-cat="infantil" onclick="feSetCat(this.dataset.cat)"><span class="cat-dot" style="background:#6d28d9"></span>Infantil</button><button type="button" data-cat="adulto" onclick="feSetCat(this.dataset.cat)"><span class="cat-dot" style="background:#475569"></span>Adulto</button></div></div>
           </div>
         </div>
         <div class="fe-sec">
@@ -479,7 +489,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
         <div class="fe-sec">
           <div class="fe-sec-t">Jiu-Jitsu</div>
           <div class="fe-grid">
-            <div class="fe-f"><label>Cinturón</label><select id="fe-cinturon"><option value="blanco">Blanco</option><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marrón</option><option value="negro">Negro</option></select></div>
+            <div class="fe-f"><label>Cinturón</label><select id="fe-cinturon"><option value="blanco">Blanco</option><optgroup label="Infantiles"><option value="gris">Gris</option><option value="amarillo">Amarillo</option><option value="naranja">Naranja</option><option value="verde">Verde</option></optgroup><optgroup label="Adultos"><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marrón</option><option value="negro">Negro</option></optgroup></select></div>
             <div class="fe-f"><label>Stripes</label><input type="number" id="fe-stripes" min="0" max="6" /></div>
             <div class="fe-f"><label>Última graduación</label><input type="date" id="fe-fgrad" /></div>
             <div class="fe-f"><label>Turno</label><input id="fe-turno" /></div>
@@ -549,7 +559,19 @@ function escHTML(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
 }
 
-const BELT_COLORS = {blanco:'#e0e0e0',azul:'#2980b9',violeta:'#8e44ad',marron:'#7f5539',negro:'#1a1a1a'};
+const BELT_COLORS = {blanco:'#e0e0e0',gris:'#8a8f98',amarillo:'#f2c40f',naranja:'#f07f1a',verde:'#2e9d4f',azul:'#2980b9',violeta:'#8e44ad',marron:'#7f5539',negro:'#1a1a1a'};
+
+// Categorías por grupo de edad (las asigna el profe a mano)
+var CATS = {
+  kinder:   {l:'Kinder',   lp:'Kinders',    c:'#0369a1', b:'#e0f2fe'},
+  infantil: {l:'Infantil', lp:'Infantiles', c:'#6d28d9', b:'#ede9fe'},
+  adulto:   {l:'Adulto',   lp:'Adultos',    c:'#475569', b:'#eef1f5'}
+};
+function catPill(cat) {
+  var k = CATS[cat];
+  if(!k) return '<span class="cat-pill" style="background:#fdecec;color:#c0392b">Sin categoría</span>';
+  return '<span class="cat-pill" style="background:'+k.b+';color:'+k.c+'"><span class="cat-dot" style="background:'+k.c+'"></span>'+k.l+'</span>';
+}
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const hoy = new Date();
 function ymdLocal(d){ d=d||new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10); }
@@ -825,7 +847,7 @@ async function cargarInformes(){
   var desde6=mesShift(mesInforme,-5)+'-01';
   var corte14=ymdLocal(new Date(Date.now()-14*86400000));
   var [rAsis,rAlum,rGrad,rRec]=await Promise.all([
-    sb.from('asistencia').select('fecha,turno,nombre,tarde').gte('fecha',desde6).lt('fecha',fin),
+    sb.from('asistencia').select('fecha,turno,nombre,tarde,categoria').gte('fecha',desde6).lt('fecha',fin),
     alumnosActivos(),
     sb.from('graduaciones').select('nombre,tipo,cinturon_despues,stripes_despues,fecha').gte('fecha',iniMes).lt('fecha',fin).order('fecha',{ascending:false}),
     sb.from('asistencia').select('nombre,fecha').gte('fecha',corte14)
@@ -864,6 +886,9 @@ async function cargarInformes(){
   var maxT=Math.max.apply(null,tKeys.map(function(k){return porTurno[k];}))||1;
   function repBar(label,val,max,color){ var w=Math.round(val/(max||1)*100); return '<div class="rep-bar-row"><div class="rep-bar-label">'+label+'</div><div class="rep-bar-track"><div class="rep-bar-fill" style="width:'+w+'%'+(color?';background:'+color:'')+'"></div></div><div class="rep-bar-val">'+val+'</div></div>'; }
   var turnoBars=tKeys.length?tKeys.map(function(k){return repBar(escHTML(capTxt(k)),porTurno[k],maxT);}).join(''):'<div class="empty-state">Sin datos</div>';
+  var porCat={}; mesRows.forEach(function(r){ var c=r.categoria||'adulto'; porCat[c]=(porCat[c]||0)+1; });
+  var maxCat=Math.max.apply(null,Object.keys(porCat).map(function(k){return porCat[k];}))||1;
+  var catBars=['kinder','infantil','adulto'].filter(function(k){return porCat[k];}).map(function(k){return repBar(CATS[k].lp,porCat[k],maxCat,CATS[k].c);}).join('')||'<div class="empty-state">Sin datos</div>';
   var porDia=[0,0,0,0,0,0,0]; mesRows.forEach(function(r){ porDia[new Date(r.fecha+'T12:00:00').getDay()]++; });
   var maxD=Math.max.apply(null,porDia)||1;
   var diaBars=[1,2,3,4,5,6,0].map(function(d){return repBar(DIAS[d],porDia[d],maxD);}).join('');
@@ -879,7 +904,7 @@ async function cargarInformes(){
 
   // 5) Cinturones + graduaciones
   var porCint={}; alum.forEach(function(a){ var c=a.cinturon||'(sin)'; porCint[c]=(porCint[c]||0)+1; });
-  var ordenCint=['blanco','azul','violeta','marron','negro'];
+  var ordenCint=['blanco','gris','amarillo','naranja','verde','azul','violeta','marron','negro'];
   var cKeys=ordenCint.filter(function(c){return porCint[c];}).concat(Object.keys(porCint).filter(function(c){return ordenCint.indexOf(c)<0;}));
   var maxCi=Math.max.apply(null,cKeys.map(function(k){return porCint[k];}))||1;
   var cintBars=cKeys.length?cKeys.map(function(k){return repBar(k,porCint[k],maxCi,(BELT_COLORS[k]||'#999'));}).join(''):'<div class="empty-state">Sin datos</div>';
@@ -896,6 +921,7 @@ async function cargarInformes(){
       '<div><div style="font-size:12px;color:var(--g5)">asistencias</div><div class="kpi-delta '+(totalMes>=totalPrev?'up':'down')+'">'+(totalMes>=totalPrev?'&#9650;':'&#9660;')+' '+Math.abs(delta)+'% vs '+MESES[(+prevYm.split('-')[1])-1]+'</div></div></div>'+
       '<div style="display:flex;align-items:flex-end;gap:6px;margin-top:1.3rem">'+trendBars+'</div></div></div>'+
     '<div class="section" style="margin-bottom:1.25rem"><div class="section-header section-collapsible" onclick="toggleRanking()"><div class="section-title">Ranking de asistencia</div><span id="arr-ranking" style="color:var(--g5)">&#9660;</span></div><div id="rank-body" style="display:none">'+rankRows+'</div></div>'+
+    '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Asistencia por categoría</div></div><div style="padding:.5rem 0">'+catBars+'</div></div>'+
     '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Asistencia por turno</div></div><div style="padding:.5rem 0">'+turnoBars+'</div></div>'+
     '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Asistencia por dia</div></div><div style="padding:.5rem 0">'+diaBars+'</div></div>'+
     '<div class="section" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Retencion</div></div>'+
@@ -1127,10 +1153,11 @@ async function renderAlumnos() {
   getMain().innerHTML =
     '<div class="section">'+
     '<div class="section-header"><div><div class="section-title">Alumnos registrados</div><div class="section-sub" id="alumnos-sub">Cargando...</div></div><button class="btn-red" onclick="abrirAgregarAlumno()">+ Agregar</button></div>'+
+    '<div class="cat-tabs" id="cat-tabs"></div>'+
     '<div style="display:flex;gap:8px;flex-wrap:wrap;padding:10px 1.25rem;border-bottom:1px solid var(--g2)">'+
     '<input type="text" id="srch-alumnos" placeholder="Buscar por nombre..." style="flex:1;min-width:130px;padding:6px 10px;border:1px solid var(--g2);border-radius:var(--rs);font-size:13px;outline:none;background:var(--g1)" oninput="filtrarAlumnosDeb()" />'+
     '<select class="filter-select" id="fil-al-turno" onchange="filtrarAlumnos()"><option value="">Todos los turnos</option><option value="manana">Manana</option><option value="noche">Noche</option><option value="sabado">Sabado</option></select>'+
-    '<select class="filter-select" id="fil-al-cint" onchange="filtrarAlumnos()"><option value="">Todos los cinturones</option><option value="blanco">Blanco</option><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marron</option><option value="negro">Negro</option></select>'+
+    '<select class="filter-select" id="fil-al-cint" onchange="filtrarAlumnos()"><option value="">Todos los cinturones</option><option value="blanco">Blanco</option><optgroup label="Infantiles"><option value="gris">Gris</option><option value="amarillo">Amarillo</option><option value="naranja">Naranja</option><option value="verde">Verde</option></optgroup><optgroup label="Adultos"><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marrón</option><option value="negro">Negro</option></optgroup></select>'+
     '<select class="filter-select" id="fil-al-est" onchange="filtrarAlumnos()"><option value="">Todos los estados</option><option value="activo">Activo</option><option value="lesionado">Lesionado</option><option value="discontinuado">Discontinuado</option><option value="bloqueado">Bloqueado</option></select>'+
     '</div>'+
     '<div id="lista-alumnos"><div class="empty-state">Cargando...</div></div>'+
@@ -1164,7 +1191,7 @@ function estadoBadgeSolo(estado) {
 // ── CACHE DE ALUMNOS (sin fotos) ─────────────────────────────
 // Las fotos son base64 pesados: las listas piden solo estas columnas y
 // comparten un mismo resultado entre pestañas durante ALU_TTL.
-var ALU_COLS = 'id,nombre,apellido,dni,turno,sexo,cinturon,stripes,estado,fecha_nac,fecha_grad,created_at,fecha_inicio,notas,emerg_nombre,emerg_telefono,emerg_relacion,es_profe,bloqueado';
+var ALU_COLS = 'id,nombre,apellido,dni,turno,sexo,cinturon,stripes,estado,fecha_nac,fecha_grad,created_at,fecha_inicio,notas,emerg_nombre,emerg_telefono,emerg_relacion,es_profe,bloqueado,categoria';
 var ALU_TTL = 60000;
 var aluCache = null, aluCacheTs = 0, aluCacheP = null, aluGen = 0;
 function copiaAlumnos(rows){ return { data: rows.map(function(a){ return Object.assign({}, a); }), error: null }; }
@@ -1247,7 +1274,23 @@ function showNota(texto) {
 var _filAlTimer = null;
 function filtrarAlumnosDeb() { clearTimeout(_filAlTimer); _filAlTimer = setTimeout(filtrarAlumnos, 150); }
 
+var alCat = '';   // '' todos · kinder · infantil · adulto · sin
+function pintarCatTabs() {
+  var el = document.getElementById('cat-tabs'); if(!el) return;
+  var n = {'':alumnosAll.length, kinder:0, infantil:0, adulto:0, sin:0};
+  alumnosAll.forEach(function(a){ if(CATS[a.categoria]) n[a.categoria]++; else n.sin++; });
+  var tabs = [['','Todos',null],['kinder',CATS.kinder.lp,CATS.kinder.c],['infantil',CATS.infantil.lp,CATS.infantil.c],['adulto',CATS.adulto.lp,CATS.adulto.c]];
+  if(n.sin) tabs.push(['sin','Sin categoría','#c0392b']);
+  el.innerHTML = tabs.map(function(t){
+    return '<button class="cat-tab'+(alCat===t[0]?' on':'')+'" data-cat="'+t[0]+'">'+
+      (t[2]?'<span class="cat-dot" style="background:'+(alCat===t[0]?'#fff':t[2])+'"></span>':'')+t[1]+'<span class="n">'+n[t[0]]+'</span></button>';
+  }).join('');
+  el.querySelectorAll('.cat-tab').forEach(function(b){ b.onclick = function(){ alCat = b.dataset.cat; filtrarAlumnos(); }; });
+}
+
 function filtrarAlumnos() {
+  if(alCat==='sin' && !alumnosAll.some(function(a){ return !CATS[a.categoria]; })) alCat='';
+  pintarCatTabs();
   var srch = ((document.getElementById('srch-alumnos')||{}).value||'').toLowerCase().trim();
   var turno = (document.getElementById('fil-al-turno')||{}).value||'';
   var cint = (document.getElementById('fil-al-cint')||{}).value||'';
@@ -1256,6 +1299,8 @@ function filtrarAlumnos() {
     if(srch && (((a.nombre||'')+' '+(a.apellido||'')).toLowerCase().indexOf(srch)===-1)) return false;
     if(turno && (a.turno||'')!==turno) return false;
     if(cint && (a.cinturon||'')!==cint) return false;
+    if(alCat==='sin'){ if(CATS[a.categoria]) return false; }
+    else if(alCat && a.categoria!==alCat) return false;
     if(est==='bloqueado'){ if(!a.bloqueado) return false; }
     else if(est && (a.estado||'activo')!==est) return false;
     return true;
@@ -1282,7 +1327,7 @@ function renderAlumnosPaginado() {
     return '<div class="row-item'+(a.estado==='discontinuado'?' discontinuado':'')+'" style="cursor:pointer" data-edit-id="'+escHTML(String(a.id))+'">'+
       avHTML(a)+
       '<div style="flex:1;min-width:0"><div class="row-name">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+cumpleBadge+(badge?' '+badge:'')+'</div>'+
-      '<div class="row-sub">'+escHTML(a.turno)+' - '+escHTML(a.sexo)+'</div></div>'+
+      '<div class="row-sub">'+catPill(a.categoria)+' '+escHTML(a.turno)+' - '+escHTML(a.sexo)+'</div></div>'+
       beltHTML(a.cinturon,a.stripes)+
       '<div style="margin-left:8px">'+punctBadge(a._tard)+'</div>'+
       '<div style="margin-left:6px;color:#c9ccd1;font-size:22px;font-weight:300;line-height:1">&rsaquo;</div>'+
@@ -1307,6 +1352,7 @@ function abrirAgregarAlumno() {
     var el=document.getElementById(id); if(el) el.value='';
   });
   document.getElementById('ma-sexo').value='';
+  document.getElementById('ma-categoria').value=alCat&&alCat!=='sin'?alCat:'';
   document.getElementById('ma-turno').value='manana';
   document.getElementById('ma-cinturon').value='blanco';
   abrirModal('alumno');
@@ -1320,11 +1366,13 @@ async function guardarAlumno() {
   var sexo = document.getElementById('ma-sexo').value;
   var turno = document.getElementById('ma-turno').value;
   var cinturon = document.getElementById('ma-cinturon').value;
+  var categoria = document.getElementById('ma-categoria').value;
   if(!nombre||!apellido) { alert('Nombre y apellido son obligatorios'); return; }
   if(!dni||dni.length<6) { alert('DNI invalido'); return; }
   if(!fnac) { alert('La fecha de nacimiento es obligatoria'); return; }
   if(!sexo) { alert('Selecciona el sexo'); return; }
-  var r = await sb.from('alumnos').insert({nombre:nombre,apellido:apellido,dni:dni,fecha_nac:fnac,sexo:sexo,turno:turno,cinturon:cinturon,stripes:0,activo:true,estado:'activo'});
+  if(!categoria) { alert('Selecciona la categoría'); return; }
+  var r = await sb.from('alumnos').insert({nombre:nombre,apellido:apellido,dni:dni,fecha_nac:fnac,sexo:sexo,turno:turno,cinturon:cinturon,stripes:0,activo:true,estado:'activo',categoria:categoria});
   if(r.error) { if(r.error.code==='23505') alert('Ese DNI ya esta registrado.'); else alert('Error: '+r.error.message); return; }
   invalidarAlumnos();
   cerrarModal('alumno');
@@ -1464,7 +1512,7 @@ async function abrirEditarAlumno(id){
   feSet('fe-peso',a.peso); feSet('fe-altura',a.altura); feSet('fe-apto-venc',a.apto_vencimiento);
   feSet('fe-tutor-nombre',a.tutor_nombre); feSet('fe-tutor-relacion',a.tutor_relacion); feSet('fe-tutor-telefono',a.tutor_telefono); feSet('fe-tutor-email',a.tutor_email);
   feSet('fe-emerg-nombre',a.emerg_nombre); feSet('fe-emerg-relacion',a.emerg_relacion); feSet('fe-emerg-telefono',a.emerg_telefono);
-  feSet('fe-estado',a.estado||'activo'); feSet('fe-notas',a.notas);
+  feSet('fe-estado',a.estado||'activo'); feSet('fe-notas',a.notas); feSetCat(a.categoria);
   feSetChk('fe-competidor',a.es_competidor); feSetChk('fe-profe',a.es_profe); feSetChk('fe-apto',a.apto_fisico); feSetChk('fe-bloqueado',a.bloqueado);
   feSet('fe-motivo-bloqueo',a.motivo_bloqueo); feBloqToggle();
   feApellido = a.apellido||'';
@@ -1489,6 +1537,13 @@ function feFotoChange(input){
     img.src = e.target.result;
   };
   rd.readAsDataURL(f);
+}
+
+function feSetCat(cat){
+  document.querySelectorAll('#fe-cat button').forEach(function(b){ b.classList.toggle('on', b.dataset.cat===cat); });
+}
+function feCatVal(){
+  var b=document.querySelector('#fe-cat button.on'); return b ? b.dataset.cat : null;
 }
 
 function feBloqToggle(){
@@ -1531,7 +1586,7 @@ async function guardarEditarAlumno(){
     peso:nON('fe-peso'), altura:nON('fe-altura'), apto_vencimiento:dON('fe-apto-venc'),
     tutor_nombre:feVal('fe-tutor-nombre').trim(), tutor_relacion:feVal('fe-tutor-relacion').trim(), tutor_telefono:feVal('fe-tutor-telefono').trim(), tutor_email:feVal('fe-tutor-email').trim(),
     emerg_nombre:feVal('fe-emerg-nombre').trim(), emerg_relacion:feVal('fe-emerg-relacion').trim(), emerg_telefono:feVal('fe-emerg-telefono').trim(),
-    estado:feVal('fe-estado'), notas:feVal('fe-notas').trim(),
+    estado:feVal('fe-estado'), notas:feVal('fe-notas').trim(), categoria:feCatVal(),
     es_competidor:feChk('fe-competidor'), es_profe:feChk('fe-profe'), apto_fisico:feChk('fe-apto'),
     bloqueado:feChk('fe-bloqueado'), motivo_bloqueo:feChk('fe-bloqueado')?(feVal('fe-motivo-bloqueo').trim()||null):null
   };
@@ -1721,7 +1776,7 @@ async function renderConfig() {
   if(elCl) elCl.innerHTML = (rcl.data||[]).map(function(c){
     return '<div class="config-row">'+
       '<div style="flex:1;min-width:120px"><div class="config-label">'+escHTML(DIAS[c.dia])+' · '+escHTML(c.hora_inicio)+' - '+escHTML(c.hora_fin)+'</div>'+
-      '<div class="config-sub">'+escHTML(c.nombre)+' · '+escHTML(c.profe||'Sin profe')+(c.tiene_fisico?' · Físico hasta '+escHTML(c.hora_fisico):'')+'</div></div>'+
+      '<div class="config-sub">'+catPill(c.categoria)+' '+escHTML(c.nombre)+' · '+escHTML(c.profe||'Sin profe')+(c.tiene_fisico?' · Físico hasta '+escHTML(c.hora_fisico):'')+'</div></div>'+
       '<div style="display:flex;gap:4px;flex-shrink:0">'+
       '<button class="btn-save-cfg btn-editar-clase" data-cid="'+escHTML(String(c.id))+'" style="background:#555">Editar</button>'+
       '<button class="btn-save-cfg btn-discontinuar" data-cid="'+escHTML(String(c.id))+'" style="background:#999">&#10005;</button>'+
@@ -1787,6 +1842,7 @@ async function abrirAgregarClase() {
   await cargarProfesSelect('');
   ['mc-nombre','mc-turno'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var dd=document.getElementById('mc-dia'); if(dd) dd.value='1';
+  document.getElementById('mc-categoria').value='adulto';
   var hi=document.getElementById('mc-hi'); if(hi) hi.value='19:00';
   var hf=document.getElementById('mc-hf'); if(hf) hf.value='22:00';
   var fis=document.getElementById('mc-fis'); if(fis) fis.checked=false;
@@ -1802,6 +1858,7 @@ async function abrirEditarClase(id) {
   var t=document.getElementById('mc-titulo'); if(t) t.textContent='Editar turno';
   await cargarProfesSelect(c.profe||'');
   document.getElementById('mc-nombre').value = c.nombre||'';
+  document.getElementById('mc-categoria').value = c.categoria||'adulto';
   document.getElementById('mc-dia').value = String(c.dia);
   document.getElementById('mc-hi').value = c.hora_inicio||'';
   document.getElementById('mc-hf').value = c.hora_fin||'';
@@ -1823,7 +1880,7 @@ async function guardarClase() {
   var hff = document.getElementById('mc-hff').value;
   if(!nombre||!hi||!hf||!turno) { alert('Completa los campos obligatorios'); return; }
   if(fis&&hff&&(hff<=hi||hff>=hf)) { alert('La hora del fisico debe estar entre '+hi+' y '+hf); return; }
-  var datos = {nombre:nombre,dia:dia,hora_inicio:hi,hora_fin:hf,profe:profe,turno_id:turno,tiene_fisico:fis,hora_fisico:fis?hff:null};
+  var datos = {nombre:nombre,categoria:document.getElementById('mc-categoria').value,dia:dia,hora_inicio:hi,hora_fin:hf,profe:profe,turno_id:turno,tiene_fisico:fis,hora_fisico:fis?hff:null};
   var r;
   if(editClaseId){
     r = await sb.from('config_clases').update(datos).eq('id',editClaseId);

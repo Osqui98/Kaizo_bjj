@@ -337,7 +337,7 @@ function escHTML(s) {
 }
 
 var CLASES = [];
-var BELT_COLORS = {blanco:'#e0e0e0',azul:'#2980b9',violeta:'#8e44ad',marron:'#7f5539',negro:'#1a1a1a'};
+var BELT_COLORS = {blanco:'#e0e0e0',gris:'#8a8f98',amarillo:'#f2c40f',naranja:'#f07f1a',verde:'#2e9d4f',azul:'#2980b9',violeta:'#8e44ad',marron:'#7f5539',negro:'#1a1a1a'};
 var DN = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
 var DL = ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'];
 var MARGEN = 45;
@@ -373,8 +373,8 @@ async function cargarClases() {
     if(r.data && r.data.length) {
       var map = {};
       r.data.forEach(function(c) {
-        var key = c.hora_inicio+'|'+c.hora_fin+'|'+c.turno_id;
-        if(!map[key]) map[key] = {dias:[],hi:c.hora_inicio,hf:c.hora_fin,nom:c.nombre,pro:c.profe||'',tur:c.turno_id,fis:c.tiene_fisico,hff:c.hora_fisico};
+        var key = c.hora_inicio+'|'+c.hora_fin+'|'+c.turno_id+'|'+(c.categoria||'adulto');
+        if(!map[key]) map[key] = {dias:[],hi:c.hora_inicio,hf:c.hora_fin,nom:c.nombre,pro:c.profe||'',tur:c.turno_id,fis:c.tiene_fisico,hff:c.hora_fisico,cat:c.categoria||'adulto'};
         map[key].dias.push(c.dia);
       });
       CLASES = Object.values(map);
@@ -567,6 +567,10 @@ function mkSeleccionClase(a) {
     };
   });
   document.getElementById('bcnf-clase').onclick = function() { mkConfirm(alu); };
+  // Si una sola de las clases en curso es de su categoría, queda preseleccionada
+  var mias = [];
+  clasesActivas.forEach(function(c,i){ if(a.categoria && c.cat===a.categoria) mias.push(i); });
+  if(mias.length===1) document.querySelector('.clase-opt[data-idx="'+mias[0]+'"]').onclick();
 }
 
 // Contacto de administración (alumnos bloqueados o discontinuados)
@@ -676,12 +680,30 @@ function mkNuevo(dni) {
   h+='<div class="frow"><div class="ff"><label class="fl">Nombre *</label><input type="text" class="fi" id="rn" placeholder="Matias" /></div><div class="ff"><label class="fl">Apellido *</label><input type="text" class="fi" id="ra" placeholder="Garcia" /></div></div>';
   h+='<div class="ff"><label class="fl">Fecha de nacimiento *</label><input type="date" class="fi" id="rf" /></div>';
   h+='<div class="ff"><label class="fl">Sexo *</label><div class="sxo"><button class="sxb" data-sx="masculino">Masculino</button><button class="sxb" data-sx="femenino">Femenino</button><button class="sxb" data-sx="otro">Otro</button></div></div>';
+  // Menores: datos del tutor obligatorios (aparece al poner la fecha de nacimiento)
+  h+='<div id="rtut" style="display:none;border-top:1px solid var(--g2);padding-top:14px;margin-top:4px">'+
+    '<label class="fl" style="font-size:14px;margin-bottom:10px">Datos del padre, madre o tutor</label>'+
+    '<div class="frow"><div class="ff"><label class="fl">Nombre y apellido *</label><input type="text" class="fi" id="rtn" /></div>'+
+    '<div class="ff"><label class="fl">Relación *</label><select class="fi" id="rtr"><option value="">Elegí...</option><option value="padre">Padre</option><option value="madre">Madre</option><option value="tutor">Tutor/a</option></select></div></div>'+
+    '<div class="ff"><label class="fl">Teléfono *</label><input type="tel" class="fi" id="rtt" placeholder="11 1234-5678" inputmode="tel" /></div>'+
+  '</div>';
   h+='<button class="bok" id="brn">Registrarme y marcar asistencia</button>';
   h+='<button class="bsec" id="bat">Atras</button>';
   document.getElementById('cp').innerHTML=h;
+  document.getElementById('rf').onchange = function(){
+    document.getElementById('rtut').style.display = esMenorFecha(this.value) ? 'block' : 'none';
+  };
   document.querySelectorAll('.sxb').forEach(function(b){ b.onclick=function(){ selSexo(this,this.dataset.sx); }; });
   document.getElementById('brn').onclick = function(){ regNuevo(dni); };
   document.getElementById('bat').onclick = init;
+}
+
+function esMenorFecha(f) {
+  if(!f) return false;
+  var n=new Date(f+'T12:00:00'), h=new Date();
+  var e=h.getFullYear()-n.getFullYear();
+  if(h.getMonth()<n.getMonth()||(h.getMonth()===n.getMonth()&&h.getDate()<n.getDate())) e--;
+  return e<18;
 }
 
 async function regNuevo(dni) {
@@ -689,7 +711,14 @@ async function regNuevo(dni) {
   if(!n||!a){setErr('er','Nombre y apellido son obligatorios');return;}
   if(!f){setErr('er','La fecha de nacimiento es obligatoria');return;}
   if(!sexoSel){setErr('er','Selecciona el sexo');return;}
-  var r=await sb.rpc('kiosco_registrar_alumno',{p_datos:{nombre:n,apellido:a,dni:normDNI(dni),fecha_nac:f,sexo:sexoSel}});
+  var datos={nombre:n,apellido:a,dni:normDNI(dni),fecha_nac:f,sexo:sexoSel,categoria:claseSeleccionada?claseSeleccionada.cat:null};
+  if(esMenorFecha(f)){
+    datos.tutor_nombre=document.getElementById('rtn').value.trim();
+    datos.tutor_relacion=document.getElementById('rtr').value;
+    datos.tutor_telefono=document.getElementById('rtt').value.trim();
+    if(!datos.tutor_nombre||!datos.tutor_relacion||!datos.tutor_telefono){setErr('er','Completá los datos del padre, madre o tutor');return;}
+  }
+  var r=await sb.rpc('kiosco_registrar_alumno',{p_datos:datos});
   if(r.error){if(r.error.code==='23505')setErr('er','Ese DNI ya esta registrado.');else setErr('er','Error al registrar.');return;}
   alu=r.data;
   if(_postRegFicha){ _postRegFicha=false; mostrarFicha(r.data); }
@@ -776,7 +805,7 @@ async function registrar(est,mot) {
   var cf=claseSeleccionada.fis?ma<=toM(claseSeleccionada.hff):null;
   var hs=pad(ahora.getHours())+':'+pad(ahora.getMinutes());
   try {
-    var r=await sb.rpc('kiosco_marcar_asistencia',{p_alumno_id:alu.id,p_dni:alu.dni,p_datos:{fecha:dHoy(),turno:claseSeleccionada.tur,horario:claseSeleccionada.hi+' - '+claseSeleccionada.hf,tarde:est,motivo_tarde:mot,con_fisico:cf,timestamp:ahora.toISOString()}});
+    var r=await sb.rpc('kiosco_marcar_asistencia',{p_alumno_id:alu.id,p_dni:alu.dni,p_datos:{fecha:dHoy(),turno:claseSeleccionada.tur,categoria:claseSeleccionada.cat,horario:claseSeleccionada.hi+' - '+claseSeleccionada.hf,tarde:est,motivo_tarde:mot,con_fisico:cf,timestamp:ahora.toISOString()}});
     if(r.error && r.error.code==='23505') { _asistRegistrando=false; alert('Ya registraste asistencia en esta clase hoy.'); volverADNI(); return; }
     if(r.error && r.error.message==='BLOQUEADO') { _asistRegistrando=false; alu.bloqueado=true; mkBloqueado(alu); return; }
     if(r.error) throw r.error;
@@ -1099,6 +1128,12 @@ async function guardarFicha(a, onDone) {
       var ftt=document.getElementById('f-ttel'), fte=document.getElementById('f-tem');
       if(ftt) updates.tutor_telefono=ftt.value.trim();
       if(fte) updates.tutor_email=fte.value.trim();
+      if(ftn && (!updates.tutor_nombre||!updates.tutor_relacion||!updates.tutor_telefono)) {
+        if(btn){btn.disabled=false;btn.textContent='Guardar cambios';}
+        if(typeof fichaTabSwitch==='function') fichaTabSwitch('emerg');
+        alert('Completá nombre, relación y teléfono del padre, madre o tutor.');
+        return;
+      }
     }
   }
   var r = await sb.rpc('kiosco_actualizar_alumno',{p_id:a.id,p_dni:a.dni,p_datos:updates});
