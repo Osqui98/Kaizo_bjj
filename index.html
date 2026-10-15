@@ -89,6 +89,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .fl{font-size:13px;font-weight:600;color:#444;margin-bottom:5px;display:block}
 .fi{width:100%;padding:11px 14px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:15px;color:var(--black);background:var(--g1);outline:none;transition:border-color .2s}
 .fi:focus{border-color:var(--red);background:var(--white);box-shadow:0 0 0 4px rgba(214,31,38,.1)}
+.fi:disabled{background:transparent;border-style:dashed;color:var(--g5);-webkit-text-fill-color:var(--g5);opacity:1;cursor:default}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .sxo{display:flex;gap:8px}
 .sxb{flex:1;padding:10px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:13px;font-weight:500;background:var(--g1);color:#444;cursor:pointer;text-align:center;transition:all .15s}
@@ -1073,6 +1074,27 @@ async function mostrarFicha(a) {
 
     // ── Tab 1: Mi info
     '<div id="ftab-info" class="ftab-panel on">'+
+    '<div class="fsec-title" style="margin-bottom:10px">Datos personales</div>'+
+    '<div class="frow2">'+
+    '<div class="fitem"><label>Nombre *</label><input type="text" class="fi" id="f-nom" value="'+escHTML(a.nombre||'')+'" /></div>'+
+    '<div class="fitem"><label>Apellido *</label><input type="text" class="fi" id="f-ape" value="'+escHTML(a.apellido||'')+'" /></div>'+
+    '</div>'+
+    '<div class="frow2">'+
+    '<div class="fitem"><label>Fecha de nacimiento *</label><input type="date" class="fi" id="f-fnac" value="'+escHTML(a.fecha_nac||'')+'" /></div>'+
+    '<div class="fitem"><label>Sexo *</label><select class="fi" id="f-sexo">'+
+      [['','Elegí...'],['masculino','Masculino'],['femenino','Femenino'],['otro','Otro']].map(function(o){ return '<option value="'+o[0]+'"'+((a.sexo||'')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+
+    '</select></div>'+
+    '</div>'+
+    '<div class="frow2">'+
+    '<div class="fitem"><label>Turno habitual</label><select class="fi" id="f-turno">'+opcionesTurno(a.turno)+'</select></div>'+
+    '<div class="fitem"><label>Entreno desde</label><input type="date" class="fi" id="f-finicio" value="'+escHTML(a.fecha_inicio||'')+'" /></div>'+
+    '</div>'+
+    '<div class="frow2">'+
+    '<div class="fitem"><label>DNI</label><input type="text" class="fi" value="'+escHTML(a.dni||'')+'" disabled /></div>'+
+    '<div class="fitem"><label>Grupo</label><input type="text" class="fi" value="'+escHTML(CAT_NOM[a.categoria]||'Sin asignar')+'" disabled /></div>'+
+    '</div>'+
+    '<div style="font-size:12px;color:var(--g5);margin:-4px 0 14px">El DNI, el grupo y el cinturón los cambia el profe.</div>'+
+    '<div class="fsec-title" style="margin-bottom:10px">Contacto y físico</div>'+
     '<div class="frow2">'+
     '<div class="fitem"><label>Telefono</label><input type="tel" class="fi" id="f-tel" value="'+escHTML(a.telefono||'')+'" placeholder="+54..." /></div>'+
     '<div class="fitem"><label>Email</label><input type="email" class="fi" id="f-email" value="'+escHTML(a.email||'')+'" placeholder="email@..." /></div>'+
@@ -1135,10 +1157,27 @@ function fichaTabSwitch(tab) {
   if(sw) sw.style.display = tab==='comp'?'none':'block';
 }
 
+// Turno habitual: los tres turnos estándar; si tiene otro valor cargado, se conserva
+function opcionesTurno(actual) {
+  var ops = [['','Elegí...'],['manana','Mañana'],['noche','Noche'],['sabado','Sábado']];
+  if(actual && !ops.some(function(o){ return o[0]===actual; })) ops.push([actual, actual]);
+  return ops.map(function(o){ return '<option value="'+escHTML(o[0])+'"'+((actual||'')===o[0]?' selected':'')+'>'+escHTML(o[1])+'</option>'; }).join('');
+}
+
 async function guardarFicha(a, onDone) {
   var btn = document.getElementById('bgficha');
+  var nom = document.getElementById('f-nom').value.trim(), ape = document.getElementById('f-ape').value.trim();
+  var fnac = document.getElementById('f-fnac').value, sexo = document.getElementById('f-sexo').value;
+  if(!nom || !ape || !fnac || !sexo) {
+    fichaTabSwitch('info');
+    alert('Completá nombre, apellido, fecha de nacimiento y sexo.');
+    return;
+  }
   if(btn){ btn.disabled=true; btn.textContent='Guardando...'; }
   var updates = {
+    nombre: nom, apellido: ape, fecha_nac: fnac, sexo: sexo,
+    turno: document.getElementById('f-turno').value || null,
+    fecha_inicio: document.getElementById('f-finicio').value || null,
     telefono: document.getElementById('f-tel').value.trim(),
     email: document.getElementById('f-email').value.trim(),
     domicilio: document.getElementById('f-dom').value.trim(),
