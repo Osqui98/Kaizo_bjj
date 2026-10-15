@@ -1368,34 +1368,63 @@ async function renderAlumnos() {
     '<select class="filter-select" id="fil-al-turno" onchange="filtrarAlumnos()"><option value="">Turno</option><option value="manana">Mañana</option><option value="noche">Noche</option><option value="sabado">Sábado</option></select>'+
     '<select class="filter-select" id="fil-al-cint" onchange="filtrarAlumnos()"><option value="">Cinturón</option><option value="blanco">Blanco</option><optgroup label="Infantiles"><option value="gris">Gris</option><option value="amarillo">Amarillo</option><option value="naranja">Naranja</option><option value="verde">Verde</option></optgroup><optgroup label="Adultos"><option value="azul">Azul</option><option value="violeta">Violeta</option><option value="marron">Marrón</option><option value="negro">Negro</option></optgroup></select>'+
     '<select class="filter-select" id="fil-al-est" onchange="filtrarAlumnos()"><option value="">Estado</option><option value="activo">Activo</option><option value="lesionado">Lesionado</option><option value="discontinuado">Discontinuado</option><option value="bloqueado">Bloqueado</option></select>'+
-    '<select class="filter-select" id="fil-al-act" onchange="filtrarAlumnos()" title="Según la asistencia de los últimos 3 meses"><option value="">Asistencia</option><option value="si">Vino en los últimos 3 meses</option><option value="no">Sin venir hace 3 meses</option></select>'+
+    '<select class="filter-select" id="fil-al-act" onchange="filtrarAlumnos()"><option value="">Asistencia</option><option value="si">Vino</option><option value="no">No vino</option></select>'+
+    '<select class="filter-select" id="fil-al-meses" onchange="cambiarMesesAct()" style="display:none">'+
+      AL_MESES_OPC.map(function(m){ return '<option value="'+m+'"'+(m===alMeses?' selected':'')+'>'+(m===1?'en el último mes':m===12?'en el último año':'en los últimos '+m+' meses')+'</option>'; }).join('')+
+    '</select>'+
     '</div>'+
     '<div class="section"><div id="lista-alumnos"><div class="empty-state">Cargando…</div></div>'+
     '<div id="pag-alumnos"></div>'+
     '</div>';
-  // Una sola consulta de 3 meses: sirve para el filtro de asistencia y para las tardanzas del mes
-  var d3 = new Date(hoy); d3.setMonth(d3.getMonth()-3);
+  // Una sola consulta de asistencia: sirve para el filtro "Vino / No vino" y para las tardanzas del mes
+  var desde = desdeMeses(alMeses);
   var [ral, ras] = await Promise.all([
     alumnosTodos(),
-    asistenciaDesde(ymdLocal(d3), 'alumno_id,fecha,tarde')
+    asistenciaDesde(desde, 'alumno_id,fecha,tarde')
   ]);
-  var tard = {}, vino3m = {}, iniMes = mesActual+'-01';
+  var tard = {}, iniMes = mesActual+'-01';
+  alUltAsis = {}; alAsisDesde = desde;
   (ras.data||[]).forEach(function(x){
-    vino3m[x.alumno_id] = true;
+    if(!alUltAsis[x.alumno_id] || x.fecha>alUltAsis[x.alumno_id]) alUltAsis[x.alumno_id] = x.fecha;
     if(x.tarde && x.fecha>=iniMes) tard[x.alumno_id]=(tard[x.alumno_id]||0)+1;
   });
-  alumnosAll = (ral.data||[]).map(function(a){ return Object.assign({},a,{_tard:tard[a.id]||0,_vino3m:!!vino3m[a.id]}); });
+  alumnosAll = (ral.data||[]).map(function(a){ return Object.assign({},a,{_tard:tard[a.id]||0}); });
   alumnosAll.sort(function(a,b){ return (a.estado==='discontinuado')-(b.estado==='discontinuado'); });
   alumnosFiltrados = alumnosAll.slice();
   alumnoPagina = 0;
   filtrarAlumnos();
 }
 
+// Filtro "Vino / No vino": ventana de meses elegible. Se guarda la última
+// asistencia de cada alumno desde alAsisDesde; si se elige una ventana más
+// larga, se pide solo el tramo que falta.
+var AL_MESES_OPC = [1,2,3,4,6,9,12];
+var alMeses = 3, alUltAsis = {}, alAsisDesde = '';
+function desdeMeses(m){ var d = new Date(hoy); d.setMonth(d.getMonth()-m); return ymdLocal(d); }
+async function cambiarMesesAct() {
+  var sel = document.getElementById('fil-al-meses'); if(!sel) return;
+  alMeses = parseInt(sel.value) || 3;
+  var desde = desdeMeses(alMeses);
+  if(desde < alAsisDesde) {
+    sel.disabled = true;
+    var r = await asistenciaDesde(desde, 'alumno_id,fecha', alAsisDesde);
+    sel.disabled = false;
+    if(r.error){ showToast('No se pudo cargar la asistencia'); return; }
+    (r.data||[]).forEach(function(x){
+      if(!alUltAsis[x.alumno_id] || x.fecha>alUltAsis[x.alumno_id]) alUltAsis[x.alumno_id] = x.fecha;
+    });
+    alAsisDesde = desde;
+  }
+  filtrarAlumnos();
+}
+
 // Supabase corta cada consulta en 1000 filas: pide la asistencia por tandas
-async function asistenciaDesde(desde, cols) {
+async function asistenciaDesde(desde, cols, hasta) {
   var filas = [], PAG = 1000;
   for(var i=0;;i+=PAG){
-    var r = await sb.from('asistencia').select(cols).gte('fecha',desde).order('id').range(i, i+PAG-1);
+    var q = sb.from('asistencia').select(cols).gte('fecha',desde);
+    if(hasta) q = q.lt('fecha',hasta);
+    var r = await q.order('id').range(i, i+PAG-1);
     if(r.error) return { data: filas, error: r.error };
     filas = filas.concat(r.data||[]);
     if(!r.data || r.data.length < PAG) return { data: filas, error: null };
@@ -1527,9 +1556,15 @@ function filtrarAlumnos() {
   var cint = (document.getElementById('fil-al-cint')||{}).value||'';
   var est = (document.getElementById('fil-al-est')||{}).value||'';
   var act = (document.getElementById('fil-al-act')||{}).value||'';
+  var selMeses = document.getElementById('fil-al-meses');
+  if(selMeses) selMeses.style.display = act ? '' : 'none';
+  var desdeAct = desdeMeses(alMeses);
   alumnosFiltrados = alumnosAll.filter(function(a){
-    if(act==='si' && !a._vino3m) return false;
-    if(act==='no' && a._vino3m) return false;
+    if(act){
+      var vino = (alUltAsis[a.id]||'') >= desdeAct;
+      if(act==='si' && !vino) return false;
+      if(act==='no' && vino) return false;
+    }
     if(srch && sinTildes((a.nombre||'')+' '+(a.apellido||'')+' '+(a.dni||'')).indexOf(srch)===-1) return false;
     if(turno && (a.turno||'')!==turno) return false;
     if(cint && (a.cinturon||'')!==cint) return false;
