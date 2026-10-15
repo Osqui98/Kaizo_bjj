@@ -10,282 +10,348 @@
 <link rel="preconnect" href="https://whaqfschfxztiuhvqwam.supabase.co" crossorigin>
 <script async src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
 <style>
+/* ═══ Kaizo BJJ · Asistencia — modo oscuro deportivo ═══ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--red:#d61f26;--red-dark:#a01419;--red-light:#fdecec;--red-glow:rgba(214,31,38,.35);--ink:#0d0d0d;--ink-2:#171717;--silver-1:#f5f5f7;--silver-2:#cfd2d6;--silver-3:#8b8f96;--black:#111;--white:#fff;--g6:#666;--g5:#8a8d92;--g2:#e9e9ec;--g1:#f5f5f7;--green:#27ae60;--orange:#e67e22;--r:16px;--rs:10px;--shadow:0 12px 34px rgba(0,0,0,.10)}
-html,body{height:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--ink);color:var(--white);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
-.hdr{position:relative;padding:1.1rem 1.25rem .9rem;display:flex;align-items:center;gap:13px;background:radial-gradient(130% 150% at 0% 0%,#1f1f1f 0%,var(--ink) 62%);border-bottom:1px solid rgba(255,255,255,.06)}
-.logo{width:50px;height:50px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--red);box-shadow:0 0 0 3px rgba(214,31,38,.16),0 4px 12px rgba(0,0,0,.55)}
-.hdr h1{font-family:'Oswald',sans-serif;font-size:23px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;line-height:1;background:linear-gradient(180deg,#fff 0%,#cfd2d6 48%,#9aa0a6 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.hdr p{font-size:10px;color:var(--silver-3);margin-top:4px;letter-spacing:.16em;text-transform:uppercase}
+:root{
+  --red:#e3262e;--red-2:#ff3b43;--red-dark:#b81d24;--red-soft:rgba(227,38,46,.14);--red-light:rgba(227,38,46,.14);
+  --bk:#09090b;--bk-1:#111114;--bk-2:#18181c;--bk-3:#26262c;--line:rgba(255,255,255,.08);--line-2:rgba(255,255,255,.14);
+  --tx:#fafafa;--tx-2:#a1a1aa;--tx-3:#71717a;
+  --ok:#22c55e;--warn:#f59e0b;--orange:#f59e0b;--green:#22c55e;
+  --g1:#18181c;--g2:rgba(255,255,255,.08);--g5:#a1a1aa;--g6:#a1a1aa;--black:#fafafa;--white:#111114;
+  --r:22px;--rs:14px;
+  --disp:'Barlow Condensed',sans-serif;--ui:'Barlow',system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+html,body{min-height:100%}
+body{font-family:var(--ui);font-size:15px;background:radial-gradient(120% 55% at 50% -12%,rgba(227,38,46,.30),transparent 62%) no-repeat,var(--bk);background-color:var(--bk);color:var(--tx);min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* ── Barra superior ── */
+.hdr{display:flex;align-items:center;gap:10px;padding:18px 20px 6px}
+.logo{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1.5px solid var(--line-2)}
+.wm{font-family:var(--disp);font-weight:800;font-size:21px;letter-spacing:.08em;line-height:1}
+.wm small{display:block;font-family:var(--ui);font-weight:600;font-size:10px;letter-spacing:.18em;color:var(--tx-3);margin-top:3px}
 .clock{margin-left:auto;text-align:right}
-.clock .hr{font-family:'Oswald',sans-serif;font-size:21px;font-weight:600;color:#fff}
-.clock .dy{font-size:10.5px;color:var(--silver-3);text-transform:capitalize}
-.card{background:var(--white);border-radius:22px 22px 0 0;padding:1.6rem 1.25rem 2rem;flex:1;color:var(--black);box-shadow:0 -6px 24px rgba(0,0,0,.20)}
-/* CRONOGRAMA */
-.noc-hdr{text-align:center;padding:1rem 0 1.25rem}
-.noc-hdr h2{font-family:'Oswald',sans-serif;font-size:22px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px}
-.noc-hdr p{font-size:14px;color:var(--g5)}
-.slbl{font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-.chi{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--g1);border:1px solid var(--g2);border-radius:var(--rs);margin-bottom:8px;transition:transform .15s,box-shadow .15s}
-.cdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.cdot.activa{background:var(--red)}.cdot.proxima{background:var(--orange)}.cdot.pasada{background:var(--g2)}
-.chi-info{flex:1}
-.chi-nom{font-size:14px;font-weight:600}
-.chi-sub{font-size:12px;color:var(--g5);margin-top:1px}
-.chi-hr{font-size:13px;font-weight:600;color:var(--g6)}
-.ftag{font-size:11px;color:var(--orange);margin-top:2px}
-.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
-.sdia{background:var(--g1);border-radius:var(--rs);padding:10px 8px}
-.sdia-n{font-size:11px;font-weight:700;color:var(--g5);margin-bottom:6px;text-transform:uppercase}
-.scl{font-size:11px;color:var(--black);line-height:1.4;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--g2)}
-.scl:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-.scl .sh{font-weight:700;color:var(--red)}
-/* BANNER */
-.bnr{background:linear-gradient(135deg,#e2262d 0%,#a01419 100%);border-radius:var(--rs);padding:13px 16px;margin-bottom:1.25rem;display:flex;align-items:center;gap:12px;box-shadow:0 8px 22px var(--red-glow)}
-.bdot{width:8px;height:8px;border-radius:50%;background:#fff;animation:pulse 1.5s infinite;flex-shrink:0}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.binfo{flex:1}
-.bnom{font-size:14px;font-weight:700;color:#fff}
-.bsub{font-size:12px;color:rgba(255,255,255,.75);margin-top:1px}
-.bhr{font-size:13px;color:rgba(255,255,255,.9);font-weight:600}
-.fbdg{background:rgba(255,255,255,.2);color:#fff;font-size:11px;padding:2px 8px;border-radius:99px;margin-top:4px;display:inline-block}
-/* OPCIONES MULTIPLES CLASE */
-.clase-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem}
-.clase-opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--g2);border-radius:var(--rs);cursor:pointer;transition:all .15s}
-.clase-opt:hover{border-color:var(--red);background:var(--red-light)}
-.clase-opt.on{border-color:var(--red);background:var(--red-light)}
-.clase-opt-info{flex:1}
-.clase-opt-nom{font-size:14px;font-weight:600}
-.clase-opt-sub{font-size:12px;color:var(--g5)}
-.clase-opt-chk{color:var(--red);display:none}
-.clase-opt.on .clase-opt-chk{display:block}
-/* DNI */
-.card h2{font-family:'Oswald',sans-serif;font-size:23px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;margin-bottom:4px}
-.sub{font-size:14px;color:var(--g5);margin-bottom:1.25rem}
-.dniw{display:flex;gap:8px;margin-bottom:1rem}
-.dnii{flex:1;padding:14px 16px;border:2px solid var(--g2);border-radius:var(--rs);font-size:20px;font-weight:700;color:var(--black);background:var(--g1);outline:none;letter-spacing:2px;text-align:center;transition:border-color .2s,box-shadow .2s}
-.dnii:focus{border-color:var(--red);background:var(--white);box-shadow:0 0 0 4px rgba(214,31,38,.12)}
-.bbsc{padding:14px 22px;background:linear-gradient(180deg,#e2262d,#bb171d);color:var(--white);border:none;border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px var(--red-glow);transition:transform .12s,box-shadow .12s}
-.bbsc:hover{box-shadow:0 8px 22px var(--red-glow)}.bbsc:active{transform:translateY(1px)}
-.dhnt{font-size:12px;color:var(--g5);text-align:center;margin-bottom:1rem}
-.btn-ficha{width:100%;padding:12px;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;transition:background .15s}
-.btn-ficha:hover{background:var(--red-light)}
-/* ACCESO PROFE */
-.profe-wrap{display:flex;justify-content:flex-end;margin-top:1.5rem}
-.profe-link{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:99px;color:var(--g5);font-size:12px;font-weight:600;text-decoration:none;opacity:.75;transition:opacity .15s,background .15s,color .15s}
-.profe-link:hover,.profe-link:focus-visible{opacity:1;background:var(--g1);color:#444}
-.profe-link svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-/* CONFIRM ALUMNO */
-.acard{background:var(--g1);border-radius:var(--rs);padding:16px;margin-bottom:1rem;display:flex;align-items:center;gap:14px}
-.aav{width:48px;height:48px;border-radius:50%;background:var(--red-light);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--red);flex-shrink:0;overflow:hidden}
-.aav img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.aname{font-size:17px;font-weight:700}
-.asub{font-size:13px;color:var(--g5);margin-top:2px}
-/* FORM */
-.ff{margin-bottom:14px}
-.fl{font-size:13px;font-weight:600;color:#444;margin-bottom:5px;display:block}
-.fi{width:100%;padding:11px 14px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:15px;color:var(--black);background:var(--g1);outline:none;transition:border-color .2s}
-.fi:focus{border-color:var(--red);background:var(--white);box-shadow:0 0 0 4px rgba(214,31,38,.1)}
-.fi:disabled{background:transparent;border-style:dashed;color:var(--g5);-webkit-text-fill-color:var(--g5);opacity:1;cursor:default}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.sxo{display:flex;gap:8px}
-.sxb{flex:1;padding:10px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:13px;font-weight:500;background:var(--g1);color:#444;cursor:pointer;text-align:center;transition:all .15s}
-.sxb.on{border-color:var(--red);background:var(--red-light);color:var(--red);font-weight:700}
-.emsg{background:var(--red-light);border:1px solid #f09595;border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:12px;display:none}
-.yareg{background:#fff8e6;border:1.5px solid #f0c040;border-radius:var(--rs);padding:10px 14px;font-size:13px;color:#856404;margin-bottom:12px;text-align:center;display:none}
-.bok{width:100%;padding:14px;background:linear-gradient(180deg,#e2262d,#bb171d);color:var(--white);border:none;border-radius:var(--rs);font-size:16px;font-weight:700;cursor:pointer;margin-top:6px;box-shadow:0 6px 16px var(--red-glow);transition:transform .12s}
-.bok:active{transform:translateY(1px)}
-.bok.org{background:linear-gradient(180deg,#f08a30,#d96f12);box-shadow:0 6px 16px rgba(230,126,34,.32)}
-.bsec{width:100%;padding:11px;background:transparent;color:var(--g6);border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;cursor:pointer;margin-top:8px}
-.ld{text-align:center;padding:2rem 0;color:var(--g5)}
-.dot{display:inline-block;width:6px;height:6px;background:var(--red);border-radius:50%;margin:0 2px;animation:bnc 1s infinite}
-.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
-@keyframes bnc{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-/* TARDE */
-.tscr{display:none;flex-direction:column;flex:1;background:var(--white);border-radius:var(--r) var(--r) 0 0;padding:1.5rem 1.25rem 2rem;color:var(--black)}
-.tscr.show{display:flex}
-.mlist{display:flex;flex-direction:column;gap:8px;margin:1rem 0}
-.mi{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--g2);border-radius:var(--rs);cursor:pointer;transition:all .15s}
-.mi:hover{border-color:var(--orange);background:#fff9f0}
-.mi.on{border-color:var(--orange);background:#fff5e6}
-.mchk{color:var(--orange);display:none}
-.mi.on .mchk{display:block}
-.otro{width:100%;padding:11px 12px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;color:var(--black);background:var(--g1);outline:none;display:none;margin-top:6px}
-.otro.show{display:block}
-/* SUCCESS */
-.oscr{display:none;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:2rem;text-align:center;background:var(--white);border-radius:var(--r) var(--r) 0 0;color:var(--black)}
-.oscr.show{display:flex}
+.clock .hr{font-family:var(--disp);font-size:28px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.clock .dy{font-size:11px;color:var(--tx-3);margin-top:2px}
+
+/* ── Contenedores de pantalla ── */
+.card,.tscr,.oscr,.ficha-scr{flex:1;display:flex;flex-direction:column;color:var(--tx)}
+.card{padding:14px 20px 22px}
+#cp{flex:1;display:flex;flex-direction:column}
+.tscr,.oscr,.ficha-scr{display:none}
+.tscr.show,.oscr.show,.ficha-scr.show{display:flex}
 .hide{display:none!important}
-.ocirc{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem}
-.ocirc.green{background:#e8f8ef}.ocirc.org{background:#fff5e6}
-.oscr h2{font-size:22px;font-weight:700;margin-bottom:6px}
-.osub{font-size:14px;color:var(--g5)}
-.ocls{font-size:13px;color:var(--red);margin-top:6px;font-weight:600}
-.otrd{font-size:13px;color:var(--orange);margin-top:4px;display:none}
-.ofis{font-size:13px;color:var(--orange);margin-top:4px;display:none}
-.bvlv{margin-top:2rem;padding:11px 28px;background:var(--g1);border:none;border-radius:var(--rs);font-size:14px;color:#444;cursor:pointer}
-/* FICHA TABS */
-.ftabs{display:flex;border-bottom:1px solid var(--g2);margin:-1.25rem -1.25rem 1.25rem}
-.ftab{flex:1;padding:11px 4px;font-size:13px;font-weight:600;color:var(--g5);background:none;border:none;border-bottom:2.5px solid transparent;cursor:pointer;transition:color .15s}
-.ftab.on{color:var(--red);border-bottom-color:var(--red)}
-.ftab-panel{display:none}
-.ftab-panel.on{display:block}
-/* FICHA */
-.ficha-scr{display:none;flex-direction:column;flex:1;background:var(--white);border-radius:var(--r) var(--r) 0 0;color:var(--black);overflow-y:auto}
-.ficha-scr.show{display:flex}
-.ficha-hdr{background:radial-gradient(130% 150% at 0% 0%,#1f1f1f 0%,var(--ink) 65%);padding:1.4rem 1.25rem;display:flex;align-items:center;gap:14px}
-.ficha-av{width:64px;height:64px;border-radius:50%;background:var(--red-light);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:var(--red);flex-shrink:0;overflow:hidden;cursor:pointer;border:2px solid var(--red)}
-.ficha-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.ficha-name{font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#fff}
-.ficha-belt{font-size:13px;color:rgba(255,255,255,.7);margin-top:2px}
-.ficha-body{padding:1.25rem;flex:1}
-.fsec{margin-bottom:1.5rem}
-.fsec-title{font-size:12px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--g2)}
-.frow2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.fitem{margin-bottom:10px}
-.fitem label{font-size:12px;color:var(--g5);display:block;margin-bottom:3px}
-.fitem input,.fitem select{width:100%;padding:9px 12px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;color:var(--black);background:var(--g1);outline:none}
-.fitem input:focus,.fitem select:focus{border-color:var(--red);background:var(--white);box-shadow:0 0 0 4px rgba(214,31,38,.1)}
-.ftag-read{font-size:14px;color:var(--black);padding:9px 0}
-.belt-vis{display:flex;align-items:center;gap:8px;padding:9px 0}
-.belt-bar{height:14px;border-radius:3px}
-.chk-row{display:flex;align-items:center;gap:8px;padding:8px 0}
-.chk-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--red);cursor:pointer}
-.chk-row label{font-size:14px;color:var(--black);cursor:pointer}
-.btn-guardar-ficha{width:100%;padding:13px;background:linear-gradient(180deg,#e2262d,#bb171d);color:#fff;border:none;border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;box-shadow:0 6px 16px var(--red-glow);transition:transform .12s}
-.btn-guardar-ficha:active{transform:translateY(1px)}
-.btn-back-ficha{width:100%;padding:11px;background:transparent;color:var(--g6);border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;cursor:pointer;margin-top:8px}
-.foto-input{display:none}
-.ficha-foto-hint{font-size:11px;color:rgba(255,255,255,.5);margin-top:4px}
-/* TORNEO DESDE ALUMNO */
-.torneo-item{background:var(--g1);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px}
-.torneo-nom{font-size:14px;font-weight:600}
-.torneo-sub{font-size:12px;color:var(--g5);margin-top:2px}
-.puesto-badge{display:inline-block;font-size:12px;font-weight:700;padding:2px 10px;border-radius:99px;margin-top:4px}
-.puesto-1{background:#fff8dc;color:#856404}
-.puesto-2{background:#f0f0f0;color:#444}
-.puesto-3{background:#fff0e6;color:#7d3c00}
-.btn-add-torneo{width:100%;padding:11px;background:transparent;color:var(--red);border:1.5px solid var(--red);border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;margin-top:4px}
-/* MODAL TORNEO */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:1rem}
-.modal-bg.show{display:flex}
-.modal{background:var(--white);border-radius:var(--r);padding:1.5rem;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
-.modal h3{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;color:var(--black)}
-.mfield{margin-bottom:12px}
-.mfield label{font-size:12px;font-weight:600;color:#444;display:block;margin-bottom:4px}
-.mfield input,.mfield select{width:100%;padding:9px 12px;border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;color:var(--black);background:var(--g1);outline:none}
-.mbts{display:flex;gap:8px;margin-top:1rem}
-.mbts button{flex:1;padding:10px;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer}
-.mbts .bconf{background:linear-gradient(180deg,#e2262d,#bb171d);color:#fff;box-shadow:0 4px 12px var(--red-glow)}
-.mbts .bcanc{background:var(--g1);color:#444}
-@media(min-width:600px){body{background:radial-gradient(120% 80% at 50% 0%,#1c1c1c 0%,#0a0a0a 70%);align-items:center}.hdr{max-width:480px;width:100%;border-radius:var(--r) var(--r) 0 0;margin-top:2rem;border-bottom:none}.card,.tscr,.oscr,.ficha-scr{max-width:480px;width:100%;border-radius:0 0 var(--r) var(--r);flex:none;box-shadow:var(--shadow)}.card{border-radius:0 0 var(--r) var(--r)}}
-
-/* ── MODERNIZACION INDEX ────────────────────────────── */
-
-/* Header glow */
-.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--red) 40%,var(--red) 60%,transparent);opacity:.5}
-.hdr{position:relative}
-
-/* Card area */
-.card{border-radius:24px 24px 0 0;box-shadow:0 -8px 32px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.9);overflow:hidden}
-
-/* Entrada suave de cada pantalla */
-@keyframes scrIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scrIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .card-anim{animation:scrIn .24s cubic-bezier(.4,0,.2,1)}
 
-/* DNI input más grande (kiosko) */
-.dnii{font-size:26px;border-radius:14px;letter-spacing:4px;padding:16px 18px;border-width:2px;min-width:0}
-.bbsc{border-radius:14px;padding:16px 24px;font-size:15px;flex-shrink:0}
+/* ── Títulos ── */
+.ttl{font-family:var(--disp);font-size:42px;font-weight:800;text-transform:uppercase;line-height:.95;letter-spacing:.005em}
+.ttl.md{font-size:34px}
+.card h2{font-family:var(--disp);font-size:34px;font-weight:800;text-transform:uppercase;line-height:.95}
+.sub{font-size:15px;color:var(--tx-2);margin:6px 0 16px}
+.lbl{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx-3);margin:20px 2px 8px}
 
-/* Botones más modernos */
-.bok{border-radius:14px;font-size:16px;letter-spacing:.02em;padding:15px}
-.btn-ficha{border-radius:14px}
-.bsec{border-radius:14px}
+/* ── Clase en curso ── */
+.live{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:var(--r);padding:15px 17px;margin-bottom:10px}
+.pill-live{display:inline-flex;align-items:center;gap:7px;background:var(--red-soft);color:var(--red-2);font-weight:700;font-size:11px;letter-spacing:.12em;padding:4px 10px;border-radius:99px}
+.pill-live i{width:7px;height:7px;border-radius:50%;background:var(--red-2);animation:pl 1.6s infinite}
+@keyframes pl{0%{box-shadow:0 0 0 0 rgba(255,59,67,.5)}100%{box-shadow:0 0 0 8px rgba(255,59,67,0)}}
+.live h3{font-family:var(--disp);font-size:28px;font-weight:800;text-transform:uppercase;line-height:1;margin:9px 0 4px}
+.live .meta{display:flex;justify-content:space-between;gap:10px;color:var(--tx-2);font-size:13px}
+.live .fis{display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:var(--warn)}
+.prog{height:4px;background:var(--bk-3);border-radius:9px;margin-top:12px;overflow:hidden}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--red-2));border-radius:9px}
+.live.cat-kinder .pill-live,.live.cat-infantil .pill-live{background:rgba(139,92,246,.16);color:#c4b5fd}
+.live.cat-kinder .pill-live i,.live.cat-infantil .pill-live i{background:#a78bfa}
 
-/* Confirm card más visual */
-.acard{background:linear-gradient(135deg,var(--g1) 0%,var(--white) 100%);border-radius:18px;border:1px solid var(--g2);box-shadow:0 4px 20px rgba(0,0,0,.07);padding:18px}
-.aav{width:56px;height:56px;border-radius:50%}
-.aname{font-size:18px}
+/* ── DNI + teclado ── */
+.hola{margin-top:14px}
+.dnii{width:100%;height:66px;border-radius:18px;background:var(--bk-1);border:1.5px solid var(--line-2);color:var(--tx);text-align:center;font-family:var(--disp);font-size:36px;font-weight:700;letter-spacing:.16em;outline:none;caret-color:var(--red-2);transition:border-color .15s,box-shadow .15s;-moz-appearance:textfield}
+.dnii::-webkit-outer-spin-button,.dnii::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.dnii::placeholder{color:var(--bk-3);letter-spacing:.3em}
+.dnii:focus{border-color:var(--red);box-shadow:0 0 0 5px var(--red-soft)}
+.pad{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.pad button{height:58px;border:none;border-radius:16px;background:var(--bk-2);color:var(--tx);font-family:var(--disp);font-size:28px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:background .1s,transform .08s;touch-action:manipulation}
+.pad button:active{background:var(--bk-3);transform:scale(.97)}
+.pad .del{background:transparent;color:var(--tx-2)}
+.pad .go{background:var(--red);font-family:var(--ui);font-size:16px;font-weight:700}
+.pad .go:active{background:var(--red-dark)}
+.pad .go:disabled{opacity:.6}
+.dhnt{font-size:13px;color:var(--tx-3);text-align:center;margin-top:12px}
+.foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:18px}
+.lnk{display:inline-flex;align-items:center;gap:7px;color:var(--tx-2);font-size:14px;font-weight:600;text-decoration:none;background:none;border:none;padding:8px 4px}
+.lnk svg{width:17px;height:17px}
+.lnk:hover{color:var(--tx)}
 
-/* Success circle pop-in */
-@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
-.ocirc{width:90px;height:90px;animation:popIn .35s cubic-bezier(.34,1.56,.64,1)}
-.oscr h2{font-family:'Oswald',sans-serif;font-size:26px;letter-spacing:.02em}
+/* ── Avisos ── */
+.emsg,.yareg{display:none;border-radius:14px;padding:11px 14px;font-size:14px;margin:12px 0 0;text-align:center}
+.emsg{background:var(--red-soft);border:1px solid rgba(227,38,46,.35);color:#fca5a5}
+.yareg{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.35);color:#fcd34d}
+.aviso{border-radius:16px;padding:13px 15px;margin:14px 0 0;text-align:left}
+.aviso b{display:block;font-size:15px;margin-bottom:3px}
+.aviso span{font-size:14px;color:var(--tx-2)}
+.aviso.rojo{background:var(--red-soft);border:1px solid rgba(227,38,46,.35)}
+.aviso.rojo b{color:#fca5a5}
+.aviso.gris{background:var(--bk-1);border:1px solid var(--line)}
+.aviso a{color:#fff;font-weight:700;white-space:nowrap}
 
-/* Barra de countdown más estilizada */
-#confirm-bar{box-shadow:0 0 8px var(--red-glow)}
+/* ── Alumno (¿sos vos?) ── */
+.ring{border-radius:50%;padding:4px;flex-shrink:0;position:relative}
+.ring .av{width:100%;height:100%;border-radius:50%;background:#26262c;border:4px solid var(--bk);display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-weight:700;color:#e4e4e7;overflow:hidden}
+.ring .av img{width:100%;height:100%;object-fit:cover}
+.who{text-align:center;margin-top:10px}
+.who .ring{width:128px;height:128px;margin:0 auto}
+.who .ring .av{font-size:44px}
+.who h2{margin-top:16px;font-size:44px!important}
+.chips{display:flex;justify-content:center;gap:6px;margin-top:12px;flex-wrap:wrap}
+.chip{font-size:12px;font-weight:700;padding:5px 11px;border-radius:99px;background:var(--bk-2);color:var(--tx-2);border:1px solid var(--line);display:inline-flex;align-items:center;gap:6px}
+.chip i{width:8px;height:8px;border-radius:50%}
+.beltd{margin:22px auto 0;width:220px;height:22px;border-radius:5px;position:relative;box-shadow:inset 0 -3px 0 rgba(0,0,0,.22)}
+.beltd .tip{position:absolute;right:24px;top:0;bottom:0;width:50px;background:#111;display:flex;gap:4px;align-items:center;justify-content:flex-start;padding-left:6px}
+.beltd.negro .tip{background:#c81e1e}
+.beltd .tip b{width:5px;height:14px;background:#fff;border-radius:1px}
+.cls{margin-top:20px;background:var(--bk-1);border:1px solid var(--line);border-radius:18px;padding:13px 15px;display:flex;align-items:center;gap:12px;text-align:left}
+.cls .ic{width:42px;height:42px;border-radius:12px;background:var(--red-soft);color:var(--red-2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cls.tarde .ic{background:rgba(245,158,11,.14);color:var(--warn)}
+.cls b{display:block;font-size:15px}
+.cls span{font-size:13px;color:var(--tx-2)}
+.cls.tarde span{color:#fcd34d}
 
-/* Shimmer loader (reemplaza dots) */
+/* ── Botones ── */
+.bok,.btn-guardar-ficha{width:100%;height:58px;border:none;border-radius:18px;background:var(--red);color:#fff;font-size:17px;font-weight:700;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden;transition:background .15s,transform .08s}
+.bok:active,.btn-guardar-ficha:active{transform:scale(.99)}
+.bok:hover,.btn-guardar-ficha:hover{background:var(--red-dark)}
+.bok:disabled,.btn-guardar-ficha:disabled{opacity:.6}
+.bok.org{background:#d97706}
+.bok.org:hover{background:#b45309}
+.bok #confirm-bar{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.16);width:100%;transition:width 3s linear}
+.bok .lbl-t{position:relative}
+.bok em{position:relative;font-style:normal;font-family:var(--disp);font-size:16px;background:rgba(0,0,0,.25);min-width:28px;height:28px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center}
+.bsec,.btn-back-ficha,.bvlv{width:100%;height:52px;border-radius:16px;border:1px solid var(--line-2);background:transparent;color:var(--tx-2);font-size:15px;font-weight:600;margin-top:10px}
+.bsec:hover,.btn-back-ficha:hover,.bvlv:hover{background:var(--bk-1);color:var(--tx)}
+.btn-ficha{width:100%;height:52px;border-radius:16px;border:none;background:var(--bk-2);color:var(--tx);font-size:15px;font-weight:600;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-ficha:hover{background:var(--bk-3)}
+.stop{display:block;margin:10px auto 0;background:none;border:none;color:var(--tx-3);font-size:13px;text-decoration:underline}
+
+/* ── Selección de clase ── */
+.clase-opts{display:flex;flex-direction:column;gap:9px;margin-top:16px}
+.clase-opt{display:flex;align-items:center;gap:12px;padding:15px 16px;border:1.5px solid var(--line);border-radius:18px;background:var(--bk-1);transition:border-color .15s,background .15s}
+.clase-opt.on{border-color:var(--red);background:var(--red-soft)}
+.clase-opt-info{flex:1}
+.clase-opt-nom{font-family:var(--disp);font-size:22px;font-weight:700;text-transform:uppercase;line-height:1}
+.clase-opt-sub{font-size:13px;color:var(--tx-2);margin-top:3px}
+.clase-opt-chk{color:var(--red-2);display:none}
+.clase-opt.on .clase-opt-chk{display:block}
+.acard{display:flex;align-items:center;gap:14px;margin-top:6px}
+.acard .ring{width:64px;height:64px;padding:3px}
+.acard .ring .av{font-size:22px;border-width:3px}
+.aname{font-family:var(--disp);font-size:28px;font-weight:800;text-transform:uppercase;line-height:1}
+.asub{font-size:13px;color:var(--tx-2);margin-top:4px}
+
+/* ── Sin clase / cronograma ── */
+.chi{display:flex;align-items:center;gap:12px;padding:13px 15px;background:var(--bk-1);border:1px solid var(--line);border-radius:16px;margin-bottom:8px}
+.cdot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.cdot.activa{background:var(--red-2)}.cdot.proxima{background:var(--warn)}.cdot.pasada{background:var(--bk-3)}
+.chi.pasada{opacity:.55}
+.chi-info{flex:1}
+.chi-nom{font-size:15px;font-weight:600}
+.chi-sub{font-size:13px;color:var(--tx-2);margin-top:1px}
+.chi-hr{font-family:var(--disp);font-size:18px;font-weight:700;color:var(--tx-2);font-variant-numeric:tabular-nums}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sdia{background:var(--bk-1);border:1px solid var(--line);border-radius:14px;padding:10px 9px}
+.sdia.hoy{border-color:rgba(227,38,46,.5)}
+.sdia-n{font-size:12px;font-weight:700;color:var(--tx-3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}
+.sdia.hoy .sdia-n{color:var(--red-2)}
+.scl{font-size:12px;color:var(--tx-2);line-height:1.35;margin-bottom:5px}
+.scl:last-child{margin-bottom:0}
+.scl .sh{font-weight:700;color:var(--tx)}
+
+/* ── Formularios (registro, completar ficha) ── */
+.ff{margin-bottom:14px}
+.fl{font-size:13px;font-weight:600;color:var(--tx-2);margin-bottom:6px;display:block}
+.fi{width:100%;height:50px;padding:0 14px;border:1px solid var(--line-2);border-radius:14px;font-size:16px;color:var(--tx);background:var(--bk-1);outline:none;transition:border-color .15s,box-shadow .15s;color-scheme:dark}
+.fi:focus{border-color:var(--red);box-shadow:0 0 0 4px var(--red-soft)}
+.fi:disabled{border-style:dashed;color:var(--tx-3);-webkit-text-fill-color:var(--tx-3);opacity:1}
+select.fi{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-size:18px;padding-right:38px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sxo{display:flex;gap:8px}
+.sxb{flex:1;height:48px;border:1px solid var(--line-2);border-radius:14px;font-size:14px;font-weight:600;background:var(--bk-1);color:var(--tx-2);transition:all .15s}
+.sxb.on{border-color:var(--red);background:var(--red-soft);color:#fff}
+.sep{border-top:1px solid var(--line);margin:16px 0}
+
+/* ── Llegada tarde ── */
+.tscr{padding:14px 20px 22px}
+.tmin{display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,.14);color:#fcd34d;font-size:13px;font-weight:700;padding:6px 12px;border-radius:99px;margin:14px 0 4px}
+.mlist{display:flex;flex-direction:column;gap:9px;margin:12px 0}
+.mi{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--line);border-radius:16px;background:var(--bk-1);transition:all .15s;cursor:pointer}
+.mi.on{border-color:var(--warn);background:rgba(245,158,11,.10)}
+.mi-ic{width:40px;height:40px;border-radius:12px;background:var(--bk-2);display:flex;align-items:center;justify-content:center;color:var(--tx-2);flex-shrink:0}
+.mi.on .mi-ic{background:rgba(245,158,11,.18);color:var(--warn)}
+.mi-t{font-size:15px;font-weight:600;flex:1}
+.mchk{color:var(--warn);display:none}
+.mi.on .mchk{display:block}
+.otro{width:100%;height:50px;padding:0 14px;border:1px solid var(--line-2);border-radius:14px;font-size:16px;color:var(--tx);background:var(--bk-1);outline:none;display:none}
+.otro.show{display:block}
+.otro:focus{border-color:var(--warn)}
+
+/* ── Éxito ── */
+.oscr{align-items:center;justify-content:center;text-align:center;padding:26px 24px 24px;background:radial-gradient(90% 45% at 50% 30%,rgba(34,197,94,.28),transparent 70%)}
+.oscr.late{background:radial-gradient(90% 45% at 50% 30%,rgba(245,158,11,.24),transparent 70%)}
+.ocirc{width:116px;height:116px;border-radius:50%;background:var(--ok);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 14px rgba(34,197,94,.14),0 0 0 30px rgba(34,197,94,.06);animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+.ocirc svg{width:56px;height:56px;stroke:#052e14;stroke-width:3.2}
+.oscr.late .ocirc{background:var(--warn);box-shadow:0 0 0 14px rgba(245,158,11,.14),0 0 0 30px rgba(245,158,11,.06)}
+.oscr.late .ocirc svg{stroke:#3b1d02}
+@keyframes popIn{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.oscr h2{font-family:var(--disp);font-size:46px;font-weight:800;font-style:italic;text-transform:uppercase;line-height:.92;margin-top:32px;word-break:break-word}
+.osub{font-size:15px;color:var(--tx-2);margin-top:10px}
+.otrd{font-size:14px;color:#fcd34d;margin-top:6px;display:none}
+.ofis{font-size:14px;color:#86efac;margin-top:6px;display:none}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;width:100%;margin-top:26px}
+.stat{background:var(--bk-1);border:1px solid var(--line);border-radius:16px;padding:14px 6px}
+.stat b{display:block;font-family:var(--disp);font-size:32px;font-weight:800;line-height:1}
+.stat span{font-size:11px;color:var(--tx-3);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.stat.hot b{color:var(--red-2)}
+#odet{width:100%}
+.bvlv{max-width:220px;margin-top:26px}
+
+/* ── Ficha del alumno ── */
+.ficha-scr{overflow-y:auto}
+.ficha-hdr{display:flex;align-items:center;gap:14px;padding:14px 20px 16px}
+.ficha-av{width:78px;height:78px;border-radius:50%;padding:3px;flex-shrink:0;position:relative;cursor:pointer}
+.ficha-av .av{width:100%;height:100%;border-radius:50%;background:#26262c;border:3px solid var(--bk);display:flex;align-items:center;justify-content:center;font-family:var(--disp);font-size:26px;font-weight:700;overflow:hidden}
+.ficha-av .av img,.ficha-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.ficha-av .cam{position:absolute;right:-2px;bottom:-2px;width:26px;height:26px;border-radius:50%;background:var(--red);border:3px solid var(--bk);display:flex;align-items:center;justify-content:center}
+.ficha-av .cam svg{width:12px;height:12px;stroke:#fff;stroke-width:2.4}
+.ficha-name{font-family:var(--disp);font-size:30px;font-weight:800;text-transform:uppercase;line-height:1}
+.ficha-belt{font-size:13px;color:var(--tx-2);margin-top:4px}
+.ficha-foto-hint{font-size:12px;color:var(--tx-3);margin-top:3px}
+.foto-input{display:none}
+.ficha-body{padding:0 20px 24px;flex:1}
+.ftabs{display:flex;background:var(--bk-2);border-radius:14px;padding:4px;margin-bottom:6px;position:sticky;top:0;z-index:5}
+.ftab{flex:1;height:40px;border:none;background:none;border-radius:10px;font-size:14px;font-weight:600;color:var(--tx-2)}
+.ftab.on{background:var(--tx);color:var(--bk)}
+.ftab-panel{display:none}
+.ftab-panel.on{display:block}
+.grp-t,.fsec-title{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx-3);margin:20px 4px 8px}
+.grp{background:var(--bk-1);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.rw{display:flex;align-items:center;min-height:52px;padding:4px 16px;border-bottom:1px solid var(--line);gap:12px}
+.rw:last-child{border-bottom:none}
+.rw>label{font-size:14px;color:var(--tx-2);width:118px;flex-shrink:0}
+.rw input,.rw select{flex:1;min-width:0;height:44px;background:transparent;border:none;outline:none;color:var(--tx);font-size:15px;font-weight:600;text-align:right;color-scheme:dark}
+.rw select{appearance:none;-webkit-appearance:none;direction:rtl}
+.rw select option{direction:ltr;background:var(--bk-2)}
+.rw input::placeholder{color:var(--bk-3);font-weight:500}
+.rw input:focus{color:#fff}
+.rw:focus-within{background:rgba(255,255,255,.03)}
+.rw .lock{flex:1;text-align:right;color:var(--tx-3);font-size:15px;display:flex;justify-content:flex-end;align-items:center;gap:6px}
+.rw .lock svg{width:14px;height:14px}
+.rw.sw-row{cursor:pointer}
+.rw.sw-row>label{flex:1;width:auto;color:var(--tx)}
+input.sw{appearance:none;-webkit-appearance:none;width:46px;height:28px;border-radius:99px;background:var(--bk-3);position:relative;flex:0 0 46px;cursor:pointer;transition:background .15s}
+input.sw::after{content:'';position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .15s}
+input.sw:checked{background:var(--red)}
+input.sw:checked::after{transform:translateX(18px)}
+.nota{font-size:13px;color:var(--tx-3);margin:8px 4px 0}
+.belt-vis{display:flex;align-items:center;gap:14px;padding:16px}
+.belt-vis .beltd{margin:0;width:150px;height:18px}
+.belt-vis .beltd .tip{width:38px;right:16px}
+.belt-vis .beltd .tip b{height:11px;width:4px}
+.belt-vis span{font-size:15px;font-weight:600}
+.torneo-item{padding:13px 16px;border-bottom:1px solid var(--line)}
+.torneo-item:last-child{border-bottom:none}
+.torneo-nom{font-size:15px;font-weight:600}
+.torneo-sub{font-size:13px;color:var(--tx-2);margin-top:2px}
+.puesto-badge{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;margin-top:6px}
+.puesto-1{background:rgba(234,179,8,.18);color:#fde047}
+.puesto-2{background:rgba(255,255,255,.1);color:#e4e4e7}
+.puesto-3{background:rgba(234,88,12,.18);color:#fdba74}
+.vacio{padding:16px;font-size:14px;color:var(--tx-3)}
+.btn-add-torneo{width:100%;height:50px;border-radius:16px;border:1px dashed var(--line-2);background:transparent;color:var(--tx);font-size:15px;font-weight:600;margin-top:10px}
+#ficha-save-wrap{margin-top:8px}
+#foto-preview-bar{display:flex;gap:8px;margin:0 20px 12px}
+#foto-preview-bar button{flex:1;height:44px;border-radius:12px;border:none;font-size:14px;font-weight:700}
+#foto-preview-bar #btn-confirmar-foto{background:var(--red);color:#fff}
+#foto-preview-bar #btn-cancelar-foto{background:var(--bk-2);color:var(--tx-2)}
+
+/* ── Modal torneo ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--bk-1);border:1px solid var(--line);border-radius:26px 26px 0 0;padding:22px 20px 26px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;animation:scrIn .22s ease}
+.modal h3{font-family:var(--disp);font-size:28px;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:16px}
+.mfield{margin-bottom:12px}
+.mfield label{font-size:13px;font-weight:600;color:var(--tx-2);display:block;margin-bottom:6px}
+.mfield input,.mfield select{width:100%;height:50px;padding:0 14px;border:1px solid var(--line-2);border-radius:14px;font-size:16px;color:var(--tx);background:var(--bk);outline:none;color-scheme:dark}
+.mbts{display:flex;gap:8px;margin-top:18px}
+.mbts button{flex:1;height:52px;border:none;border-radius:16px;font-size:15px;font-weight:700}
+.mbts .bconf{background:var(--red);color:#fff}
+.mbts .bcanc{background:var(--bk-2);color:var(--tx-2)}
+
+/* ── Carga ── */
 @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-.ld-shimmer{height:80px;border-radius:14px;background:linear-gradient(90deg,var(--g2) 25%,var(--g1) 50%,var(--g2) 75%);background-size:200% 100%;animation:shimmer 1.4s ease infinite;margin-bottom:12px}
+.ld-shimmer{height:120px;border-radius:22px;background:linear-gradient(90deg,var(--bk-1) 25%,var(--bk-2) 50%,var(--bk-1) 75%);background-size:200% 100%;animation:shimmer 1.4s ease infinite;margin-bottom:12px}
 
-/* Class items más modernos */
-.chi{border-radius:14px;border:1px solid var(--g2)}
-.chi:active{transform:scale(.99)}
+.toastf{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--tx);color:var(--bk);padding:12px 20px;border-radius:99px;font-size:14px;font-weight:700;z-index:999;transition:opacity .3s;box-shadow:0 10px 30px rgba(0,0,0,.4)}
 
-/* Opciones de clase más modernas */
-.clase-opt{border-radius:14px}
-.mi{border-radius:14px}
-
-/* Motivos de tardanza más modernos */
-.mlist{gap:10px}
-
-/* Banner más prominente */
-.bnr{border-radius:16px;padding:15px 18px}
-
-/* Separador visual entre asistencia y ficha */
-.card > hr{border:none;border-top:1px solid var(--g2);margin:.8rem 0}
+@media(min-width:600px){
+  body{align-items:center}
+  .hdr,.card,.tscr,.oscr,.ficha-scr{width:100%;max-width:460px}
+  .hdr{padding-top:30px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <div class="hdr">
-  <img id="logo" class="logo" src="logo.jpg" width="50" height="50" alt="Kaizo BJJ" />
-  <div><h1>Kaizo BJJ</h1><p>Brazilian Jiu-Jitsu - Mataderos</p></div>
+  <img id="logo" class="logo" src="logo.jpg" width="38" height="38" alt="Kaizo BJJ" />
+  <div class="wm">KAIZO<small>BJJ · MATADEROS</small></div>
   <div class="clock"><div class="hr" id="hr">--:--</div><div class="dy" id="dy">--</div></div>
 </div>
 
 <div class="card" id="mc">
-  <div id="cp"><div class="ld-shimmer"></div><div class="ld-shimmer" style="height:56px;opacity:.6"></div></div>
+  <div id="cp"><div class="ld-shimmer"></div><div class="ld-shimmer" style="height:66px;opacity:.6"></div></div>
 </div>
 
 <div class="tscr" id="ts">
-  <div style="margin-bottom:1.25rem"><h2 style="font-size:19px;font-weight:700;margin-bottom:4px">Llegada tarde</h2><p style="font-size:14px;color:var(--g5)" id="tns"></p></div>
-  <div style="display:inline-block;background:#fff5e6;color:#854F0B;font-size:13px;font-weight:600;padding:4px 12px;border-radius:99px;margin-bottom:1rem" id="tmin"></div>
-  <p style="font-size:14px;color:#444;margin-bottom:4px">Cual fue el motivo?</p>
+  <h2 class="ttl md">Llegada tarde</h2>
+  <p class="sub" id="tns" style="margin-bottom:0"></p>
+  <div class="tmin" id="tmin"></div>
+  <div class="lbl" style="margin-top:14px">¿Cuál fue el motivo?</div>
   <div class="mlist">
-    <div class="mi" data-motivo="Llegue tarde por trabajo"><span style="font-size:18px">&#128188;</span><span style="font-size:14px;font-weight:500;flex:1">Llegue tarde por trabajo</span><svg class="mchk" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-    <div class="mi" data-motivo="Problema de transporte"><span style="font-size:18px">&#128652;</span><span style="font-size:14px;font-weight:500;flex:1">Problema de transporte</span><svg class="mchk" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-    <div class="mi" data-motivo="Motivo personal"><span style="font-size:18px">&#128591;</span><span style="font-size:14px;font-weight:500;flex:1">Motivo personal</span><svg class="mchk" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-    <div class="mi" data-motivo="otro"><span style="font-size:18px">&#9999;</span><span style="font-size:14px;font-weight:500;flex:1">Otro</span><svg class="mchk" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <div class="mi" data-motivo="Llegue tarde por trabajo"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="7" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span><span class="mi-t">Trabajo</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <div class="mi" data-motivo="Problema de transporte"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><path d="M8 6v6M15 6v6M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg></span><span class="mi-t">Transporte</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <div class="mi" data-motivo="Motivo personal"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></span><span class="mi-t">Motivo personal</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <div class="mi" data-motivo="otro"><span class="mi-ic"><svg class="i" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></span><span class="mi-t">Otro</span><svg class="i mchk" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
   </div>
-  <input type="text" id="otro" class="otro" placeholder="Contanos brevemente..." />
-  <div id="err-tarde" style="background:var(--red-light);border:1px solid #f09595;border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:8px;display:none"></div>
+  <input type="text" id="otro" class="otro" placeholder="Contanos brevemente…" />
+  <div class="emsg" id="err-tarde"></div>
   <button class="bok org" id="btn-tarde" style="display:none">Registrar asistencia</button>
 </div>
 
 <div class="oscr" id="os">
-  <div class="ocirc" id="oc"><svg width="38" height="38" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-  <h2 id="ot">Asistencia registrada!</h2>
+  <div class="ocirc" id="oc"><svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+  <h2 id="ot">¡Oss!</h2>
   <p class="osub" id="on"></p>
-  <div id="odet" style="background:var(--g1);border-radius:var(--rs);padding:12px 16px;margin:.75rem 0 0;text-align:left;width:100%;display:none"></div>
   <p class="otrd" id="otm"></p>
-  <p class="ofis" id="ofi">Con fisico registrado</p>
+  <p class="ofis" id="ofi">Con físico registrado</p>
+  <div id="odet"></div>
   <button class="bvlv" id="bvlv">Volver</button>
 </div>
 
 <div class="ficha-scr" id="fs">
   <div class="ficha-hdr">
-    <div class="ficha-av" id="fav" title="Tocar para cambiar foto">
-      <span id="fav-ini"></span>
+    <div class="ficha-av" id="fav-wrap" title="Tocá para cambiar la foto">
+      <div class="av" id="fav"><span id="fav-ini"></span></div>
+      <span class="cam"><svg class="i" viewBox="0 0 24 24"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg></span>
     </div>
     <input type="file" id="foto-inp" class="foto-input" accept="image/*" />
-    <div>
+    <div style="min-width:0">
       <div class="ficha-name" id="f-name"></div>
       <div class="ficha-belt" id="f-belt"></div>
-      <div class="ficha-foto-hint">Toca la foto para cambiarla</div>
+      <div class="ficha-foto-hint">Tocá la foto para cambiarla</div>
     </div>
   </div>
   <div class="ficha-body" id="ficha-body"></div>
@@ -293,12 +359,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 
 <div class="modal-bg" id="modal-torneo">
   <div class="modal">
-    <h3>Registrar participacion en torneo</h3>
+    <h3>Registrar participación</h3>
     <div class="mfield"><label>Torneo</label><select id="mt-torneo"></select></div>
     <div class="mfield"><label>Modalidad</label>
       <select id="mt-mod"><option value="Gi">Gi</option><option value="NoGi">NoGi</option></select>
     </div>
-    <div class="mfield"><label>División / Categoría</label>
+    <div class="mfield"><label>División / categoría</label>
       <select id="mt-cat">
         <option value="">Sin especificar</option>
         <option value="Infantil">Infantil</option>
@@ -312,10 +378,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
     <div class="mfield"><label>Peso (kg)</label><input type="number" id="mt-peso" placeholder="70" step="0.5" /></div>
     <div class="mfield"><label>Puesto obtenido</label>
       <select id="mt-puesto">
-        <option value="">No clasifique / participé</option>
-        <option value="1">1° puesto</option>
-        <option value="2">2° puesto</option>
-        <option value="3">3° puesto</option>
+        <option value="">No clasifiqué / participé</option>
+        <option value="1">1.º puesto</option>
+        <option value="2">2.º puesto</option>
+        <option value="3">3.º puesto</option>
       </select>
     </div>
     <div class="mbts">
@@ -356,8 +422,11 @@ var sexoSel = null;
 function tick() {
   ahora = new Date();
   document.getElementById('hr').textContent = pad(ahora.getHours())+':'+pad(ahora.getMinutes());
-  document.getElementById('dy').textContent = DL[ahora.getDay()];
+  document.getElementById('dy').textContent = DIAS_L[ahora.getDay()]+' '+ahora.getDate()+' '+MESES_C[ahora.getMonth()];
 }
+var DIAS_L = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+var DIAS_C = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+var MESES_C = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 function pad(n) { return n.toString().padStart(2,'0'); }
 setInterval(tick, 10000);
 tick();
@@ -397,51 +466,106 @@ function estadoClase(c) {
   return 'activa';
 }
 
+// ── Íconos (trazo, estilo Lucide) ──
+var IC = {
+  user:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>',
+  lock:'<svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  del:'<svg class="i" viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/><path d="m18 9-6 6M12 9l6 6"/></svg>',
+  clock:'<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  check:'<svg class="i" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>',
+  edit:'<svg class="i" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>'
+};
+
+function iniDe(a) {
+  return ((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
+}
+// Avatar con anillo del color del cinturón (la foto se pone después en .aav)
+function ringHTML(a) {
+  var c = BELT_COLORS[a.cinturon||'blanco']||'#e0e0e0';
+  var av = a.foto_url ? '<img src="'+escHTML(a.foto_url)+'" />' : iniDe(a);
+  return '<div class="ring" style="background:'+c+'"><div class="av aav">'+av+'</div></div>';
+}
+// Cinturón dibujado con sus grados
+function beltHTML(a) {
+  var b = a.cinturon||'blanco', n = Math.min(a.stripes||0, 6), s = '';
+  for(var i=0;i<n;i++) s += '<b></b>';
+  return '<div class="beltd '+escHTML(b)+'" style="background:'+(BELT_COLORS[b]||'#e0e0e0')+'"><div class="tip">'+s+'</div></div>';
+}
+function gradosTxt(a) {
+  var b = a.cinturon||'blanco'; b = b.charAt(0).toUpperCase()+b.slice(1);
+  return a.stripes ? b+' · '+a.stripes+(a.stripes>1?' grados':' grado') : b;
+}
+function liveHTML(c) {
+  var ini = toM(c.hi), fin = toM(c.hf), p = Math.max(0, Math.min(100, Math.round((mNow()-ini)/Math.max(1,fin-ini)*100)));
+  var antes = mNow() < ini;
+  return '<div class="live cat-'+escHTML(c.cat||'adulto')+'"><span class="pill-live"><i></i>'+(antes?'POR EMPEZAR':'EN CURSO')+'</span>'+
+    '<h3>'+escHTML(c.nom)+'</h3><div class="meta"><span>'+escHTML(c.pro||'')+'</span><span>'+escHTML(c.hi)+' – '+escHTML(c.hf)+'</span></div>'+
+    (c.fis?'<span class="fis">Físico hasta las '+escHTML(c.hff)+'</span>':'')+
+    '<div class="prog"><i style="width:'+p+'%"></i></div></div>';
+}
+// Pie con "Mi ficha" y el acceso discreto al panel del profe (protegido con login Google en admin.html)
+function mkFoot(idFicha) {
+  return '<div class="foot"><button class="lnk" id="'+idFicha+'">'+IC.user+'Mi ficha</button>'+
+    '<a class="lnk" href="admin.html">'+IC.lock+'Profe</a></div>';
+}
+function mkProfe() { return ''; }
+
 function mkCron() {
   var d=ahora.getDay();
   var sortHora=function(a,b){return a.hi.localeCompare(b.hi);};
   var ch=CLASES.filter(function(c){return c.dias.indexOf(d)>=0;}).sort(sortHora);
-  var h='<div class="noc-hdr"><h2>Sin clase activa ahora</h2><p>Clases de hoy:</p></div>';
+  var prox = ch.filter(function(c){ return estadoClase(c)==='proxima'; })[0];
+  var h='<div class="hola"><h2 class="ttl md">'+(prox?'Próxima clase<br>a las '+escHTML(prox.hi):'No hay clase<br>en este momento')+'</h2>'+
+    '<p class="sub">'+(ch.length?'Clases de hoy':'Hoy no hay clases')+'</p></div>';
   ch.forEach(function(c) {
     var e=estadoClase(c);
-    var f=c.fis?'<div class="ftag">Fisico hasta '+c.hff+'</div>':'';
-    h+='<div class="chi"><div class="cdot '+e+'"></div><div class="chi-info"><div class="chi-nom">'+c.nom+'</div><div class="chi-sub">'+c.pro+f+'</div></div><div class="chi-hr">'+c.hi+'-'+c.hf+'</div></div>';
+    var f=c.fis?' · Físico hasta '+escHTML(c.hff):'';
+    h+='<div class="chi '+e+'"><div class="cdot '+e+'"></div><div class="chi-info"><div class="chi-nom">'+escHTML(c.nom)+'</div><div class="chi-sub">'+escHTML(c.pro)+f+'</div></div><div class="chi-hr">'+escHTML(c.hi)+'</div></div>';
   });
-  if(!ch.length) h+='<div style="text-align:center;padding:1.5rem 0;color:var(--g5)">No hay clases BJJ hoy</div>';
-  h+='<div class="slbl" style="margin-top:1.5rem">Cronograma semanal</div><div class="sgrid">';
+  h+='<div class="lbl">Semana</div><div class="sgrid">';
   [1,2,3,4,5,6].forEach(function(dia) {
     var cs=CLASES.filter(function(c){return c.dias.indexOf(dia)>=0;}).sort(sortHora);
-    h+='<div class="sdia"><div class="sdia-n">'+DN[dia]+'</div>';
-    if(cs.length) cs.forEach(function(c){h+='<div class="scl"><span class="sh">'+c.hi+'</span> '+c.tur+'</div>';});
-    else h+='<div class="scl" style="color:var(--g5)">Sin clase</div>';
+    h+='<div class="sdia'+(dia===d?' hoy':'')+'"><div class="sdia-n">'+DIAS_C[dia]+'</div>';
+    if(cs.length) cs.forEach(function(c){h+='<div class="scl"><span class="sh">'+escHTML(c.hi)+'</span> '+escHTML(c.nom)+'</div>';});
+    else h+='<div class="scl">Sin clase</div>';
     h+='</div>';
   });
   return h+'</div>';
 }
 
-// Acceso discreto al panel del profe (protegido con login Google en admin.html)
-function mkProfe() {
-  return '<div class="profe-wrap"><a class="profe-link" href="admin.html"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Profe</a></div>';
+// Teclado numérico propio: el input usa inputmode="none" para que no aparezca el del celular
+function padHTML(idGo, txtGo) {
+  var k = '';
+  [1,2,3,4,5,6,7,8,9].forEach(function(n){ k += '<button type="button" data-k="'+n+'">'+n+'</button>'; });
+  k += '<button type="button" class="del" data-k="del" aria-label="Borrar">'+IC.del+'</button><button type="button" data-k="0">0</button>';
+  k += '<button type="button" class="go" id="'+idGo+'">'+txtGo+'</button>';
+  return '<div class="pad">'+k+'</div>';
+}
+function bindPad(inputId, onGo) {
+  var inp = document.getElementById(inputId);
+  document.querySelectorAll('.pad [data-k]').forEach(function(b){
+    b.onclick = function(){
+      var k = b.dataset.k;
+      if(k==='del') inp.value = inp.value.slice(0,-1);
+      else if(inp.value.length < 9) inp.value += k;
+    };
+  });
+  inp.addEventListener('keydown', function(e){ if(e.key==='Enter') onGo(); });
 }
 
 function mkDNI(clases) {
-  var bnnrs = clases.map(function(c) {
-    var f=c.fis?'<div class="fbdg">Fisico hasta '+c.hff+'</div>':'';
-    return '<div class="bnr" style="margin-bottom:8px"><div class="bdot"></div><div class="binfo"><div class="bnom">'+c.nom+'</div><div class="bsub">'+c.pro+' '+f+'</div></div><div class="bhr">'+c.hi+'-'+c.hf+'</div></div>';
-  }).join('');
-  return bnnrs+
-    '<h2>Bienvenido!</h2><p class="sub">Ingresa tu DNI para registrar asistencia</p>'+
+  return clases.map(liveHTML).join('')+
+    '<div class="hola"><h2 class="ttl">¡A entrenar!</h2><p class="sub">Ingresá tu DNI para marcar asistencia</p></div>'+
+    '<input type="text" id="di" class="dnii" placeholder="········" inputmode="none" autocomplete="off" maxlength="9" />'+
     '<div class="yareg" id="yr">Ya registraste asistencia en esta clase hoy.</div>'+
     '<div class="emsg" id="em"></div>'+
-    '<div class="dniw"><input type="number" id="di" class="dnii" placeholder="12345678" inputmode="numeric" /><button class="bbsc" id="bbs">Buscar</button></div>'+
-    '<p class="dhnt">Si es tu primera vez te pediremos que completes tu ficha</p>'+
-    '<div style="border-top:1px solid var(--g2);margin:1rem 0"></div>'+
-    '<button class="btn-ficha" id="btn-ver-ficha">Ver / editar mi ficha</button>'+
-    mkProfe();
+    padHTML('bbs','Entrar')+
+    '<p class="dhnt">Si es tu primera vez, te pedimos unos datos.</p>'+
+    mkFoot('btn-ver-ficha');
 }
 
 function bindDNI() {
-  document.getElementById('di').addEventListener('keydown', function(e){ if(e.key==='Enter') buscarDNI(); });
+  bindPad('di', buscarDNI);
   document.getElementById('bbs').onclick = buscarDNI;
   var bf = document.getElementById('btn-ver-ficha');
   if(bf) bf.onclick = function(){ mkFichaFlow(); };
@@ -452,12 +576,7 @@ async function init() {
   clasesActivas = findClasesActivas();
   var cp = document.getElementById('cp');
   if(!clasesActivas.length) {
-    cp.innerHTML = mkCron()+
-      '<div style="padding:0 0 1.25rem">'+
-      '<div style="border-top:1px solid var(--g2);margin-bottom:1.25rem"></div>'+
-      '<button class="btn-ficha" id="btn-ver-ficha-cron">Ver / editar mi ficha</button>'+
-      mkProfe()+
-      '</div>';
+    cp.innerHTML = mkCron()+mkFoot('btn-ver-ficha-cron');
     var bfc=document.getElementById('btn-ver-ficha-cron');
     if(bfc) bfc.onclick=function(){ mkFichaFlow(); };
     return;
@@ -516,7 +635,7 @@ function achicarFoto(file) {
 async function buscarDNI() {
   var raw = document.getElementById('di').value;
   var dni = normDNI(raw);
-  if(dni.length < 6) { setErr('em','Ingresa un DNI valido'); return; }
+  if(dni.length < 6) { setErr('em','Ingresá un DNI válido'); return; }
   clrErr('em');
   var btn = document.getElementById('bbs');
   btn.textContent='...'; btn.disabled=true;
@@ -527,26 +646,26 @@ async function buscarDNI() {
       var aRef = r.data;
       cargarFotoAlu(aRef, function(f){
         if(alu !== aRef) return;
-        var av = document.querySelector('#cp .acard .aav'); if(av) ponerImg(av, f);
+        var av = document.querySelector('#cp .aav'); if(av) ponerImg(av, f);
       });
       // Solo las clases en curso de su categoría
       var opciones = clasesPara(r.data);
-      if(!opciones.length) { mkSinClase(r.data); btn.textContent='Buscar'; btn.disabled=false; return; }
+      if(!opciones.length) { mkSinClase(r.data); btn.textContent='Entrar'; btn.disabled=false; return; }
       if(opciones.length > 1) {
         mkSeleccionClase(r.data, opciones);
-        btn.textContent='Buscar'; btn.disabled=false;
+        btn.textContent='Entrar'; btn.disabled=false;
         return;
       }
       elegirClase(opciones[0]);
       var ya = await sb.rpc('kiosco_ya_registrado',{p_alumno_id:r.data.id,p_fecha:dHoy(),p_turno:claseSeleccionada.tur});
-      if(ya.data) { document.getElementById('yr').style.display='block'; btn.textContent='Buscar'; btn.disabled=false; return; }
+      if(ya.data) { document.getElementById('yr').style.display='block'; btn.textContent='Entrar'; btn.disabled=false; return; }
       var falta = !r.data.nombre||!r.data.apellido||!r.data.fecha_nac||!r.data.sexo;
       if(falta) mkFichaCompleta(r.data); else mkConfirm(r.data);
     } else {
       mkNuevo(dni);
     }
-  } catch(e) { console.error(e); setErr('em','Error al buscar. Intenta de nuevo.'); }
-  btn.textContent='Buscar'; btn.disabled=false;
+  } catch(e) { console.error(e); setErr('em','No pudimos buscar tu DNI. Probá de nuevo.'); }
+  btn.textContent='Entrar'; btn.disabled=false;
 }
 
 // Clases en curso a las que puede anotarse: las de su categoría y las abiertas.
@@ -563,41 +682,37 @@ function elegirClase(c) {
   minTarde = diff; esTarde = diff > tolMin;
 }
 
+function acardHTML(a, sub) {
+  return '<div class="acard">'+ringHTML(a)+'<div style="min-width:0"><div class="aname">'+escHTML(a.nombre)+'<br>'+escHTML(a.apellido)+'</div><div class="asub">'+sub+'</div></div></div>';
+}
+
 function mkSinClase(a) {
   cancelAutoConfirm();
-  var ini = ((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
   document.getElementById('cp').innerHTML =
-    '<div class="acard"><div class="aav">'+ini+'</div><div><div class="aname">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="asub">Grupo: '+escHTML(CAT_NOM[a.categoria]||'-')+'</div></div></div>'+
-    '<div style="background:var(--g1);border:1px solid var(--g2);border-radius:10px;padding:12px 14px;margin:12px 0;text-align:left">'+
-      '<div style="font-size:14px;font-weight:700;margin-bottom:4px">Ahora no hay clase de '+escHTML(CAT_NOM[a.categoria]||'tu grupo')+'</div>'+
-      '<div style="font-size:13px;color:var(--g5)">Las clases en curso son de otro grupo. Si creés que es un error, avisale al profe.</div>'+
-    '</div>'+
+    acardHTML(a, 'Grupo: '+escHTML(CAT_NOM[a.categoria]||'-'))+
+    '<div class="aviso gris"><b>Ahora no hay clase de '+escHTML(CAT_NOM[a.categoria]||'tu grupo')+'</b><span>Las clases en curso son de otro grupo. Si creés que es un error, avisale al profe.</span></div>'+
     '<button class="bsec" id="bni">Volver</button>'+
-    '<button class="btn-ficha" id="bvf" style="margin-top:8px">Ver / editar mi ficha</button>';
-  if(a.foto_url) ponerImg(document.querySelector('#cp .acard .aav'), a.foto_url);
+    '<button class="btn-ficha" id="bvf">'+IC.user+'Ver / editar mi ficha</button>';
   document.getElementById('bni').onclick = function(){ volverADNI(); };
   document.getElementById('bvf').onclick = function(){ mostrarFicha(a); };
 }
 
 function mkSeleccionClase(a, opciones) {
   opciones = opciones || clasesPara(a);
-  var ini = ((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
-  var h = '<div class="acard"><div class="aav">'+ini+'</div><div><div class="aname">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="asub">Selecciona la clase</div></div></div>';
+  var h = acardHTML(a, 'Elegí tu clase');
   h += '<div class="clase-opts">';
   opciones.forEach(function(c,i) {
-    h += '<div class="clase-opt" data-idx="'+i+'"><div class="clase-opt-info"><div class="clase-opt-nom">'+escHTML(c.nom)+'</div><div class="clase-opt-sub">'+escHTML(c.pro)+' - '+escHTML(c.hi)+' a '+escHTML(c.hf)+'</div></div><svg class="clase-opt-chk" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>';
+    h += '<div class="clase-opt" data-idx="'+i+'"><div class="clase-opt-info"><div class="clase-opt-nom">'+escHTML(c.nom)+'</div><div class="clase-opt-sub">'+escHTML(c.pro)+' · '+escHTML(c.hi)+' a '+escHTML(c.hf)+'</div></div><span class="clase-opt-chk">'+IC.check+'</span></div>';
   });
-  h += '</div><button class="bok" id="bcnf-clase" style="display:none">Confirmar asistencia</button>';
+  h += '</div><button class="bok" id="bcnf-clase" style="display:none">Continuar</button>';
   document.getElementById('cp').innerHTML = h;
-  if(a.foto_url) ponerImg(document.querySelector('#cp .acard .aav'), a.foto_url);
   document.querySelectorAll('.clase-opt').forEach(function(el) {
     el.onclick = function() {
       document.querySelectorAll('.clase-opt').forEach(function(x){x.classList.remove('on');});
       el.classList.add('on');
       elegirClase(opciones[parseInt(el.dataset.idx)]);
       var bc = document.getElementById('bcnf-clase');
-      bc.style.display = 'block';
-      bc.className = 'bok'+(esTarde?' org':'');
+      bc.style.display = 'flex';
     };
   });
   document.getElementById('bcnf-clase').onclick = function() { mkConfirm(alu); };
@@ -606,21 +721,16 @@ function mkSeleccionClase(a, opciones) {
 var ADMIN_TEL = '+54 9 11 7817-6900';
 var ADMIN_WA = 'https://wa.me/5491178176900';
 function avisoAdmin(titulo) {
-  return '<div style="background:#fdecec;border:1px solid #f3c2c4;border-radius:10px;padding:12px 14px;margin:12px 0;text-align:left">'+
-    '<div style="font-size:14px;font-weight:700;color:#c0392b;margin-bottom:4px">'+titulo+'</div>'+
-    '<div style="font-size:13px;color:#555">Comunicate con administración: <a href="'+ADMIN_WA+'" target="_blank" rel="noopener" style="color:#c0392b;font-weight:700;white-space:nowrap">'+ADMIN_TEL+'</a></div>'+
-  '</div>';
+  return '<div class="aviso rojo"><b>'+titulo+'</b><span>Comunicate con administración: <a href="'+ADMIN_WA+'" target="_blank" rel="noopener">'+ADMIN_TEL+'</a></span></div>';
 }
 
 function mkBloqueado(a) {
   cancelAutoConfirm();
-  var ini=((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
   document.getElementById('cp').innerHTML=
-    '<div class="acard"><div class="aav">'+ini+'</div><div><div class="aname">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="asub">No se puede registrar la asistencia</div></div></div>'+
+    acardHTML(a, 'No se puede registrar la asistencia')+
     avisoAdmin('Tenés que hablar con administración')+
     '<button class="bsec" id="bni">Volver</button>'+
-    '<button class="btn-ficha" id="bvf" style="margin-top:8px">Ver / editar mi ficha</button>';
-  if(a.foto_url) ponerImg(document.querySelector('#cp .acard .aav'), a.foto_url);
+    '<button class="btn-ficha" id="bvf">'+IC.user+'Ver / editar mi ficha</button>';
   document.getElementById('bni').onclick = function(){ volverADNI(); };
   document.getElementById('bvf').onclick = function(){ mostrarFicha(a); };
 }
@@ -628,34 +738,37 @@ function mkBloqueado(a) {
 function mkConfirm(a) {
   if(a.bloqueado) { mkBloqueado(a); return; }
   cancelAutoConfirm();
-  var ini=((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
-  var belt=a.cinturon||'blanco';
-  var bc=BELT_COLORS[belt]||'#e0e0e0';
-  var warn=esTarde?'<div style="background:#fff5e6;border-radius:8px;padding:8px 12px;font-size:13px;color:#854F0B;margin-bottom:12px">Llegaste +'+minTarde+' min tarde</div>':'';
-  var avHTML = a.foto_url ? '<img src="'+escHTML(a.foto_url)+'" />' : ini;
   var hayClase = !!claseSeleccionada;
+  var cat = CAT_NOM[a.categoria] ? '<span class="chip">'+escHTML({kinder:'Kinder',infantil:'Infantil',adulto:'Adulto'}[a.categoria])+'</span>' : '';
+  var hs = pad(ahora.getHours())+':'+pad(ahora.getMinutes());
+  var clsHTML = hayClase ?
+    '<div class="cls'+(esTarde?' tarde':'')+'"><div class="ic">'+IC.clock+'</div><div><b>'+escHTML(claseSeleccionada.nom)+'</b><span>'+
+      (esTarde ? 'Llegaste '+minTarde+' min tarde · '+hs : 'Llegaste a tiempo · '+hs)+'</span></div></div>' : '';
   document.getElementById('cp').innerHTML=
-    '<div class="acard"><div class="aav">'+avHTML+'</div><div><div class="aname">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+'</div><div class="asub"><span style="display:inline-block;width:24px;height:8px;background:'+bc+';border-radius:2px;vertical-align:middle;margin-right:4px"></span>'+escHTML(belt)+(a.stripes?' - '+a.stripes+' grados':'')+'</div></div></div>'+
-    warn+
+    '<div class="who">'+ringHTML(a)+
+      '<h2>'+escHTML(a.nombre)+'<br>'+escHTML(a.apellido)+'</h2>'+
+      '<div class="chips">'+cat+'<span class="chip">'+escHTML(gradosTxt(a))+'</span>'+(a.es_competidor?'<span class="chip">Competidor</span>':'')+'</div>'+
+    '</div>'+
+    beltHTML(a)+
+    clsHTML+
     (hayClase?
-      '<button class="bok'+(esTarde?' org':'')+'" id="bcnf">Confirmar asistencia</button>'+
-      '<div style="margin-top:.75rem;padding:.6rem .8rem;background:var(--g1);border-radius:var(--rs)">'+
-        '<div style="height:3px;background:var(--g2);border-radius:3px;overflow:hidden"><div id="confirm-bar" style="height:100%;background:var(--red);border-radius:3px;width:100%;transition:width 3s linear"></div></div>'+
-        '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px">'+
-          '<span style="font-size:12px;color:var(--g5)">Confirmando en <strong id="confirm-count">3</strong>s...</span>'+
-          '<button id="btn-cancel-auto" style="font-size:12px;color:var(--g5);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0">Cancelar</button>'+
-        '</div>'+
-      '</div>'+
-      '<button class="bsec" id="bni" style="margin-top:8px">No soy yo</button>'
+      '<button class="bok'+(esTarde?' org':'')+'" id="bcnf"><span id="confirm-bar"></span><span class="lbl-t">Confirmar asistencia</span><em id="confirm-count">3</em></button>'+
+      '<button class="bsec" id="bni">No soy yo</button>'+
+      '<button class="stop" id="btn-cancel-auto">Esperar, no confirmar todavía</button>'
     : '')+
-    '<button class="'+(hayClase?'btn-ficha':'bok')+'" id="bvf" style="margin-top:8px">Ver / editar mi ficha</button>';
+    '<button class="btn-ficha" id="bvf">'+IC.user+'Ver / editar mi ficha</button>';
 
   if(hayClase) {
     document.getElementById('bcnf').onclick = function(){ cancelAutoConfirm(); confirmarAsistencia(); };
     document.getElementById('bni').onclick = function(){ volverADNI(); };
-    document.getElementById('btn-cancel-auto').onclick = function(){ cancelAutoConfirm(); };
+    document.getElementById('btn-cancel-auto').onclick = function(){
+      cancelAutoConfirm();
+      var bar=document.getElementById('confirm-bar'); if(bar){ bar.style.transition='none'; bar.style.width='0'; }
+      var cc=document.getElementById('confirm-count'); if(cc) cc.style.display='none';
+      this.style.display='none';
+    };
 
-    // Iniciar countdown de 3s
+    // Confirmación automática en 3 s (la barra del botón se vacía)
     setTimeout(function(){
       var bar = document.getElementById('confirm-bar');
       if(bar) bar.style.width = '0%';
@@ -678,7 +791,7 @@ function mkConfirm(a) {
 function mkFichaCompleta(a) {
   sexoSel = a.sexo || null;
   var fN=!a.nombre||!a.apellido, fF=!a.fecha_nac, fS=!a.sexo;
-  var h='<h2>Completa tu ficha</h2><p class="sub">Faltan algunos datos obligatorios</p>';
+  var h='<h2 class="ttl md">Completá<br>tu ficha</h2><p class="sub">Nos faltan algunos datos</p>';
   h+='<div class="emsg" id="ef"></div>';
   if(fN) h+='<div class="frow"><div class="ff"><label class="fl">Nombre *</label><input type="text" class="fi" id="fn" placeholder="Matias" value="'+escHTML(a.nombre||'')+'" /></div><div class="ff"><label class="fl">Apellido *</label><input type="text" class="fi" id="fa" placeholder="Garcia" value="'+escHTML(a.apellido||'')+'" /></div></div>';
   if(fF) h+='<div class="ff"><label class="fl">Fecha de nacimiento *</label><input type="date" class="fi" id="ff" /></div>';
@@ -694,7 +807,7 @@ async function guardarFichaCompleta() {
   var fn=document.getElementById('fn'), fa=document.getElementById('fa'), ff=document.getElementById('ff');
   if(fn){ if(!fn.value.trim()||!fa.value.trim()){setErr('ef','Nombre y apellido son obligatorios');return;} u.nombre=fn.value.trim(); u.apellido=fa.value.trim(); }
   if(ff){ if(!ff.value){setErr('ef','La fecha de nacimiento es obligatoria');return;} u.fecha_nac=ff.value; }
-  if(!alu.sexo&&!sexoSel){setErr('ef','Selecciona el sexo');return;}
+  if(!alu.sexo&&!sexoSel){setErr('ef','Seleccioná el sexo');return;}
   if(sexoSel) u.sexo=sexoSel;
   var r=await sb.rpc('kiosco_actualizar_alumno',{p_id:alu.id,p_dni:alu.dni,p_datos:u});
   if(r.error){setErr('ef','Error al guardar');return;}
@@ -704,7 +817,7 @@ async function guardarFichaCompleta() {
 
 function mkNuevo(dni) {
   sexoSel=null;
-  var h='<h2>Registrate</h2><p class="sub">Primera vez. DNI: '+dni+'</p>';
+  var h='<h2 class="ttl md">¡Bienvenido<br>a Kaizo!</h2><p class="sub">Es tu primera vez. DNI '+escHTML(dni)+'</p>';
   h+='<div class="emsg" id="er"></div>';
   h+='<div class="frow"><div class="ff"><label class="fl">Nombre *</label><input type="text" class="fi" id="rn" placeholder="Matias" /></div><div class="ff"><label class="fl">Apellido *</label><input type="text" class="fi" id="ra" placeholder="Garcia" /></div></div>';
   h+='<div class="ff"><label class="fl">Fecha de nacimiento *</label><input type="date" class="fi" id="rf" /></div>';
@@ -717,7 +830,7 @@ function mkNuevo(dni) {
     '<div class="ff"><label class="fl">Teléfono *</label><input type="tel" class="fi" id="rtt" placeholder="11 1234-5678" inputmode="tel" /></div>'+
   '</div>';
   h+='<button class="bok" id="brn">Registrarme y marcar asistencia</button>';
-  h+='<button class="bsec" id="bat">Atras</button>';
+  h+='<button class="bsec" id="bat">Atrás</button>';
   document.getElementById('cp').innerHTML=h;
   document.getElementById('rf').onchange = function(){
     document.getElementById('rtut').style.display = esMenorFecha(this.value) ? 'block' : 'none';
@@ -739,7 +852,7 @@ async function regNuevo(dni) {
   var n=document.getElementById('rn').value.trim(), a=document.getElementById('ra').value.trim(), f=document.getElementById('rf').value;
   if(!n||!a){setErr('er','Nombre y apellido son obligatorios');return;}
   if(!f){setErr('er','La fecha de nacimiento es obligatoria');return;}
-  if(!sexoSel){setErr('er','Selecciona el sexo');return;}
+  if(!sexoSel){setErr('er','Seleccioná el sexo');return;}
   var datos={nombre:n,apellido:a,dni:normDNI(dni),fecha_nac:f,sexo:sexoSel};  // la categoría la asigna el profe ("Sin categoría" en el panel)
   if(esMenorFecha(f)){
     datos.tutor_nombre=document.getElementById('rtn').value.trim();
@@ -748,7 +861,7 @@ async function regNuevo(dni) {
     if(!datos.tutor_nombre||!datos.tutor_relacion||!datos.tutor_telefono){setErr('er','Completá los datos del padre, madre o tutor');return;}
   }
   var r=await sb.rpc('kiosco_registrar_alumno',{p_datos:datos});
-  if(r.error){if(r.error.code==='23505')setErr('er','Ese DNI ya esta registrado.');else setErr('er','Error al registrar.');return;}
+  if(r.error){if(r.error.code==='23505')setErr('er','Ese DNI ya está registrado.');else setErr('er','No pudimos registrarte. Probá de nuevo.');return;}
   alu=r.data;
   if(_postRegFicha){ _postRegFicha=false; mostrarFicha(r.data); }
   else {
@@ -783,7 +896,7 @@ async function confirmarAsistencia() {
   if(!alu||!claseSeleccionada||_asistRegistrando) return;
   _asistRegistrando = true;
   cancelAutoConfirm();
-  var btn=document.getElementById('bcnf'); if(btn){btn.disabled=true;btn.textContent='Verificando...';}
+  var btn=document.getElementById('bcnf'); if(btn){btn.disabled=true;btn.textContent='Verificando…';}
 
   // Chequeo de duplicado — cubre TODOS los caminos (incluso multi-clase)
   try {
@@ -792,7 +905,7 @@ async function confirmarAsistencia() {
       _asistRegistrando=false;
       if(btn){btn.disabled=false;btn.textContent='Confirmar asistencia';}
       var msg=document.createElement('div');
-      msg.style.cssText='background:var(--red-light);border:1px solid #f09595;border-radius:var(--rs);padding:10px 14px;font-size:13px;color:var(--red);margin-top:10px;text-align:center;font-weight:600';
+      msg.className='yareg'; msg.style.display='block';
       msg.textContent='Ya registraste asistencia en esta clase hoy.';
       if(btn) btn.insertAdjacentElement('afterend',msg);
       setTimeout(function(){ volverADNI(); },2500);
@@ -800,12 +913,12 @@ async function confirmarAsistencia() {
     }
   } catch(e) { console.error(e); _asistRegistrando=false; if(btn){btn.disabled=false;btn.textContent='Confirmar asistencia';} return; }
 
-  if(btn) btn.textContent='Registrando...';
+  if(btn) btn.textContent='Registrando…';
   if(esTarde) {
     document.getElementById('mc').classList.add('hide');
     var tsEl=document.getElementById('ts'); tsEl.classList.add('show'); tsEl.classList.add('card-anim'); setTimeout(function(){tsEl.classList.remove('card-anim');},300);
     document.getElementById('tns').textContent=(alu.nombre||'')+' '+(alu.apellido||'');
-    document.getElementById('tmin').textContent='+'+minTarde+' min sobre el horario';
+    document.getElementById('tmin').textContent='Llegaste '+minTarde+' min después del inicio';
   } else { await registrar(false,null); }
 }
 
@@ -827,9 +940,9 @@ async function confirmarTarde() {
   var btnT=document.getElementById('btn-tarde');
   if(btnT&&btnT.disabled) return;
   var m=motivoSel;
-  if(!m){var t=document.getElementById('otro').value.trim();if(!t){var e=document.getElementById('err-tarde');if(e){e.textContent='Escribi el motivo para continuar';e.style.display='block';}return;}m=t;}
+  if(!m){var t=document.getElementById('otro').value.trim();if(!t){var e=document.getElementById('err-tarde');if(e){e.textContent='Escribí el motivo para continuar';e.style.display='block';}return;}m=t;}
   var e=document.getElementById('err-tarde');if(e)e.style.display='none';
-  if(btnT){btnT.disabled=true;btnT.textContent='Registrando...';}
+  if(btnT){btnT.disabled=true;btnT.textContent='Registrando…';}
   await registrar(true,m);
 }
 
@@ -844,63 +957,62 @@ async function registrar(est,mot) {
     if(r.error && r.error.message==='CATEGORIA') { _asistRegistrando=false; mkSinClase(alu); return; }
     if(r.error) throw r.error;
     mostrarOk(est,mot,cf,hs);
-  } catch(e) { console.error(e); _asistRegistrando=false; var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} var btnT2=document.getElementById('btn-tarde');if(btnT2){btnT2.disabled=false;btnT2.textContent='Registrar asistencia';} alert('Error al registrar. Intenta de nuevo.'); }
+  } catch(e) { console.error(e); _asistRegistrando=false; var btn2=document.getElementById('bcnf'); if(btn2){btn2.disabled=false;btn2.textContent='Confirmar asistencia';} var btnT2=document.getElementById('btn-tarde');if(btnT2){btnT2.disabled=false;btnT2.textContent='Registrar asistencia';} alert('No pudimos registrar la asistencia. Probá de nuevo.'); }
 }
 
 function mostrarOk(est,mot,cf,hs) {
   document.getElementById('mc').classList.add('hide');
   document.getElementById('ts').classList.add('hide');
-  var osEl=document.getElementById('os'); osEl.classList.add('show'); osEl.classList.add('card-anim'); setTimeout(function(){osEl.classList.remove('card-anim');},300);
-  var oc=document.getElementById('oc');
-  oc.className='ocirc '+(est?'org':'green');
-  oc.querySelector('svg').style.color=est?'#e67e22':'#27ae60';
-  document.getElementById('ot').textContent=est?'Asistencia registrada':'Asistencia registrada!';
-  document.getElementById('on').textContent=(alu.nombre||'')+' '+(alu.apellido||'');
-  var det=document.getElementById('odet');
-  det.style.display='block';
-  det.innerHTML=
-    '<div style="margin-bottom:8px">'+
-      '<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em">Clase</div>'+
-      '<div style="font-size:14px;font-weight:600;margin-top:2px">'+escHTML(claseSeleccionada.nom||'')+'</div>'+
-    '</div>'+
-    '<div style="display:flex;gap:16px">'+
-      '<div><div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em">Horario</div>'+
-      '<div style="font-size:13px;font-weight:600;margin-top:2px">'+escHTML(claseSeleccionada.hi||'')+' - '+escHTML(claseSeleccionada.hf||'')+'</div></div>'+
-      '<div><div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em">Llegada</div>'+
-      '<div style="font-size:13px;font-weight:600;margin-top:2px;color:'+(est?'var(--orange)':'var(--green)')+'">'+escHTML(hs)+(est?' (+'+minTarde+' min)':' ✓')+'</div></div>'+
-    '</div>'+
-    (alu.estado==='discontinuado' ? avisoAdmin('Tenés que hablar con administración') : '');
+  var osEl=document.getElementById('os');
+  osEl.classList.toggle('late', !!est);
+  osEl.classList.add('show'); osEl.classList.add('card-anim'); setTimeout(function(){osEl.classList.remove('card-anim');},300);
+  var nombre = (alu.nombre||'').split(' ')[0];
+  document.getElementById('ot').textContent = '¡Oss, '+nombre+'!';
+  document.getElementById('on').textContent = 'Asistencia registrada · '+(claseSeleccionada.nom||'')+' · '+hs+(est?' (+'+minTarde+' min)':'');
   var otm=document.getElementById('otm'); otm.textContent=est&&mot?'Motivo: '+mot:''; otm.style.display=(est&&mot)?'block':'none';
   document.getElementById('ofi').style.display=cf?'block':'none';
+  var det=document.getElementById('odet');
+  det.innerHTML = '<div class="stats" id="ostats" style="visibility:hidden"><div class="stat"><b>–</b><span>Este mes</span></div><div class="stat hot"><b>–</b><span>Semanas seguidas</span></div><div class="stat"><b>–</b><span>Total</span></div></div>'+
+    (alu.estado==='discontinuado' ? avisoAdmin('Tenés que hablar con administración') : '');
+  cargarStats(alu);
 
-  // Auto-reset en 5s
+  // Vuelve solo a los 5 s (15 s si tiene que leer el aviso)
   if(_volverTimer) clearInterval(_volverTimer);
-  var vsecs = alu.estado==='discontinuado' ? 15 : 5; // más tiempo para leer el aviso
+  var vsecs = alu.estado==='discontinuado' ? 15 : 5;
   var vBtn = document.getElementById('bvlv');
   if(vBtn) {
-    vBtn.textContent = 'Volver ('+vsecs+'s)';
+    vBtn.textContent = 'Volver ('+vsecs+')';
     vBtn.onclick = function(){ if(_volverTimer){clearInterval(_volverTimer);_volverTimer=null;} volver(); };
   }
   _volverTimer = setInterval(function(){
     vsecs--;
     var b = document.getElementById('bvlv');
-    if(b) b.textContent = vsecs>0 ? 'Volver ('+vsecs+'s)' : 'Volviendo...';
+    if(b) b.textContent = vsecs>0 ? 'Volver ('+vsecs+')' : 'Volviendo…';
     if(vsecs <= 0){ clearInterval(_volverTimer); _volverTimer=null; volver(); }
   }, 1000);
 
-  // Cumpleaños — Jackrabbit style
+  // Cumpleaños
   if(alu && alu.fecha_nac && esCumple(alu.fecha_nac)) {
-    document.getElementById('ot').textContent = '&#127874; &#161;Feliz cumplea&#241;os!';
-    document.getElementById('on').textContent = (alu.nombre||'')+' '+(alu.apellido||'') + ' &#127881;';
-    oc.className='ocirc green';
-    oc.querySelector('svg').style.color='#27ae60';
+    document.getElementById('ot').textContent = '¡Feliz cumple, '+nombre+'!';
     if(typeof confetti!=='undefined') {
-      var c=['#d61f26','#ffffff','#ff6b6b','#ffcc00'];
+      var c=['#e3262e','#ffffff','#ff6b6b','#ffcc00'];
       confetti({particleCount:90,spread:75,origin:{y:0.5},colors:c});
       setTimeout(function(){confetti({angle:60,particleCount:55,spread:55,origin:{x:0},colors:c});},280);
       setTimeout(function(){confetti({angle:120,particleCount:55,spread:55,origin:{x:1},colors:c});},420);
     }
   }
+}
+
+// Clases del mes, semanas seguidas y total (función kiosco_stats; si no está, no se muestran)
+async function cargarStats(a) {
+  try {
+    var r = await sb.rpc('kiosco_stats', {p_id: a.id, p_dni: a.dni});
+    var el = document.getElementById('ostats');
+    if(r.error || !r.data || !el || alu !== a) return;
+    var b = el.querySelectorAll('b');
+    b[0].textContent = r.data.mes; b[1].textContent = r.data.racha; b[2].textContent = r.data.total;
+    el.style.visibility = 'visible';
+  } catch(e) {}
 }
 
 function esCumple(fecha_nac) {
@@ -913,7 +1025,7 @@ function volver() {
   cancelAutoConfirm();
   if(_volverTimer){ clearInterval(_volverTimer); _volverTimer=null; }
   alu=null;motivoSel=null;sexoSel=null;esTarde=false;minTarde=0;claseSeleccionada=null;_asistRegistrando=false;
-  var det=document.getElementById('odet'); if(det){det.style.display='none';det.innerHTML='';}
+  var det=document.getElementById('odet'); if(det) det.innerHTML='';
   document.getElementById('mc').classList.remove('hide');
   document.getElementById('ts').classList.remove('show');
   document.getElementById('ts').classList.remove('hide');
@@ -928,26 +1040,28 @@ function volver() {
 // ── FICHA ────────────────────────────────────────────────
 function mkFichaFlow() {
   document.getElementById('cp').innerHTML =
-    '<h2>Ver mi ficha</h2><p class="sub">Ingresa tu DNI para acceder</p>'+
+    '<div class="hola"><h2 class="ttl">Mi ficha</h2><p class="sub">Ingresá tu DNI para ver y editar tus datos</p></div>'+
+    '<input type="text" id="di-f" class="dnii" placeholder="········" inputmode="none" autocomplete="off" maxlength="9" />'+
     '<div class="emsg" id="em-f"></div>'+
-    '<div class="dniw"><input type="number" id="di-f" class="dnii" placeholder="12345678" inputmode="numeric" /><button class="bbsc" id="bbs-f">Buscar</button></div>'+
-    '<button class="bsec" id="bat-f">Atras</button>';
-  document.getElementById('bbs-f').onclick = async function() {
+    padHTML('bbs-f','Ver')+
+    '<button class="bsec" id="bat-f">Atrás</button>';
+  var buscar = async function() {
     var dni = normDNI(document.getElementById('di-f').value);
-    if(dni.length < 6) { setErr('em-f','Ingresa un DNI valido'); return; }
+    if(dni.length < 6) { setErr('em-f','Ingresá un DNI válido'); return; }
     var r = await sb.rpc('kiosco_buscar_alumno',{p_dni:dni});
     if(r.data) { alu = r.data; mostrarFicha(r.data); }
     else {
       var dniVal = dni;
       document.getElementById('em-f').innerHTML =
-        '<strong>DNI no registrado.</strong><br>'+
-        '<button class="bok" style="margin-top:10px;font-size:14px;padding:12px" onclick="_postRegFicha=true;mkNuevo(\''+dniVal+'\')">Registrarme &#8250;</button>';
+        '<b>Ese DNI no está registrado.</b>'+
+        '<button class="bok" style="height:48px;font-size:15px;margin-top:10px" onclick="_postRegFicha=true;mkNuevo(\''+dniVal+'\')">Registrarme</button>';
       document.getElementById('em-f').style.display='block';
     }
   };
+  bindPad('di-f', buscar);
+  document.getElementById('bbs-f').onclick = buscar;
   document.getElementById('bat-f').onclick = init;
 }
-
 async function mostrarFicha(a) {
   document.getElementById('mc').classList.add('hide');
   var fs = document.getElementById('fs');
@@ -955,7 +1069,8 @@ async function mostrarFicha(a) {
   var ini = ((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
   var belt = a.cinturon||'blanco';
   var bc = BELT_COLORS[belt]||'#e0e0e0';
-  var gradosStr = a.stripes ? belt+' - '+a.stripes+' grado'+(a.stripes>1?'s':'') : belt;
+  var gradosStr = gradosTxt(a)+(CAT_NOM[a.categoria]?' · '+CAT_NOM[a.categoria]:'');
+  document.getElementById('fav-wrap').style.background = bc;
   document.getElementById('f-name').textContent = (a.nombre||'')+' '+(a.apellido||'');
   document.getElementById('f-belt').textContent = gradosStr;
   var fav = document.getElementById('fav');
@@ -968,7 +1083,7 @@ async function mostrarFicha(a) {
   if(a.foto_url === undefined) cargarFotoAlu(a, function(f){
     if(alu === a && document.getElementById('fs').classList.contains('show') && !document.getElementById('foto-preview-bar')) ponerImg(fav, f);
   });
-  fav.onclick = function() { document.getElementById('foto-inp').click(); };
+  document.getElementById('fav-wrap').onclick = function() { document.getElementById('foto-inp').click(); };
   document.getElementById('foto-inp').onchange = async function(e) {
     var file = e.target.files[0];
     if(!file) return;
@@ -978,10 +1093,9 @@ async function mostrarFicha(a) {
       if(prev) prev.remove();
       var bar = document.createElement('div');
       bar.id = 'foto-preview-bar';
-      bar.style.cssText = 'display:flex;gap:8px;margin:10px 1.25rem 0;';
       bar.innerHTML =
-        '<button style="flex:1;padding:9px;background:linear-gradient(180deg,#e2262d,#bb171d);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer" id="btn-confirmar-foto">Confirmar foto</button>'+
-        '<button style="flex:1;padding:9px;background:var(--g1);border:1.5px solid var(--g2);border-radius:var(--rs);font-size:14px;cursor:pointer" id="btn-cancelar-foto">Cancelar</button>';
+        '<button id="btn-confirmar-foto">Confirmar foto</button>'+
+        '<button id="btn-cancelar-foto">Cancelar</button>';
       fav.closest('.ficha-hdr').insertAdjacentElement('afterend', bar);
       document.getElementById('btn-confirmar-foto').onclick = async function() {
         bar.remove();
@@ -1017,119 +1131,83 @@ async function mostrarFicha(a) {
     listaTorneos = lr.data || [];
   } catch(e) {}
 
-  var torneosHTML = '<div class="fsec-title">Competencias</div>';
-  if(torneos.length) {
-    torneos.forEach(function(t) {
-      var pClass = t.puesto===1?'puesto-1':t.puesto===2?'puesto-2':t.puesto===3?'puesto-3':'';
-      var pText = t.puesto?t.puesto+'° puesto':'Participé';
-      torneosHTML += '<div class="torneo-item"><div class="torneo-nom">'+escHTML(t.torneos?t.torneos.nombre:'Torneo')+'</div><div class="torneo-sub">'+escHTML(t.torneos?t.torneos.fecha:'')+' - '+escHTML(t.modalidad)+' - '+escHTML(String(t.peso||''))+'kg</div>'+(pClass?'<span class="puesto-badge '+pClass+'">'+pText+'</span>':'')+'</div>';
-    });
-  } else {
-    torneosHTML += '<div style="font-size:13px;color:var(--g5);padding:8px 0">Sin participaciones registradas</div>';
-  }
-  if(listaTorneos.length) {
-    torneosHTML += '<button class="btn-add-torneo" id="badd-torneo">+ Registrar participacion</button>';
-  }
-
-  var tutorHTML = '';
-  if(esMenor) {
-    tutorHTML = '<div class="fsec"><div class="fsec-title">Datos del tutor</div>'+
-      '<div class="frow2">'+
-      '<div class="fitem"><label>Nombre</label><input type="text" class="fi" id="f-tn" value="'+escHTML(a.tutor_nombre||'')+'" placeholder="Nombre" /></div>'+
-      '<div class="fitem"><label>Relacion</label><select class="fi" id="f-tr"><option value="">-</option><option '+(a.tutor_relacion==='padre'?'selected':'')+'>padre</option><option '+(a.tutor_relacion==='madre'?'selected':'')+'>madre</option><option '+(a.tutor_relacion==='tutor'?'selected':'')+'>tutor</option></select></div>'+
-      '</div>'+
-      '<div class="frow2">'+
-      '<div class="fitem"><label>Telefono</label><input type="tel" class="fi" id="f-ttel" value="'+escHTML(a.tutor_telefono||'')+'" placeholder="+54..." /></div>'+
-      '<div class="fitem"><label>Email</label><input type="email" class="fi" id="f-tem" value="'+escHTML(a.tutor_email||'')+'" placeholder="email@..." /></div>'+
-      '</div></div>';
-  }
+  // Filas estilo lista: etiqueta a la izquierda, campo a la derecha
+  function rw(label, campo) { return '<div class="rw"><label>'+label+'</label>'+campo+'</div>'; }
+  function inp(id, tipo, val, ph, extra) { return '<input type="'+tipo+'" id="'+id+'" value="'+escHTML(val==null?'':String(val))+'" placeholder="'+(ph||'')+'"'+(extra||'')+' />'; }
+  function sel(id, ops, val) { return '<select id="'+id+'">'+ops.map(function(o){ return '<option value="'+escHTML(o[0])+'"'+((val||'')===o[0]?' selected':'')+'>'+escHTML(o[1])+'</option>'; }).join('')+'</select>'; }
+  function sw(id, label, on) { return '<label class="rw sw-row" for="'+id+'"><label for="'+id+'">'+label+'</label><input type="checkbox" class="sw" id="'+id+'"'+(on?' checked':'')+' /></label>'; }
+  function lock(v) { return '<div class="lock">'+IC.lock+escHTML(v)+'</div>'; }
 
   var torneosContent = torneos.length
     ? torneos.map(function(t){
         var pC=t.puesto===1?'puesto-1':t.puesto===2?'puesto-2':t.puesto===3?'puesto-3':'';
-        var pT=t.puesto?t.puesto+'° puesto':'Participe';
-        return '<div class="torneo-item"><div class="torneo-nom">'+escHTML(t.torneos?t.torneos.nombre:'Torneo')+'</div><div class="torneo-sub">'+escHTML(t.torneos?t.torneos.fecha:'')+' - '+escHTML(t.modalidad)+(t.peso?' - '+escHTML(String(t.peso))+'kg':'')+'</div>'+(pC?'<span class="puesto-badge '+pC+'">'+pT+'</span>':'')+'</div>';
+        var pT=t.puesto?t.puesto+'.º puesto':'Participé';
+        return '<div class="torneo-item"><div class="torneo-nom">'+escHTML(t.torneos?t.torneos.nombre:'Torneo')+'</div><div class="torneo-sub">'+escHTML(t.torneos?t.torneos.fecha:'')+' · '+escHTML(t.modalidad)+(t.peso?' · '+escHTML(String(t.peso))+' kg':'')+'</div>'+(pC?'<span class="puesto-badge '+pC+'">'+pT+'</span>':'')+'</div>';
       }).join('')
-    : '<div style="font-size:13px;color:var(--g5);padding:8px 0">Sin participaciones registradas</div>';
+    : '<div class="vacio">Todavía no cargaste torneos.</div>';
 
+  var REL = [['','Elegí…'],['padre','Padre'],['madre','Madre'],['tutor','Tutor/a']];
   var tutorContent = esMenor
-    ? '<div style="margin-top:1rem"><div class="fsec-title" style="margin-bottom:10px">Datos del tutor</div>'+
-      '<div class="frow2">'+
-      '<div class="fitem"><label>Nombre</label><input type="text" class="fi" id="f-tn" value="'+escHTML(a.tutor_nombre||'')+'" placeholder="Nombre" /></div>'+
-      '<div class="fitem"><label>Relacion</label><select class="fi" id="f-tr"><option value="">-</option><option '+(a.tutor_relacion==='padre'?'selected':'')+' value="padre">Padre</option><option '+(a.tutor_relacion==='madre'?'selected':'')+' value="madre">Madre</option><option '+(a.tutor_relacion==='tutor'?'selected':'')+' value="tutor">Tutor</option></select></div>'+
-      '</div>'+
-      '<div class="frow2">'+
-      '<div class="fitem"><label>Telefono</label><input type="tel" class="fi" id="f-ttel" value="'+escHTML(a.tutor_telefono||'')+'" placeholder="+54..." /></div>'+
-      '<div class="fitem"><label>Email</label><input type="email" class="fi" id="f-tem" value="'+escHTML(a.tutor_email||'')+'" placeholder="email@..." /></div>'+
-      '</div></div>'
+    ? '<div class="grp-t">Padre, madre o tutor</div><div class="grp">'+
+      rw('Nombre', inp('f-tn','text',a.tutor_nombre,'Nombre y apellido'))+
+      rw('Relación', sel('f-tr', REL, a.tutor_relacion))+
+      rw('Teléfono', inp('f-ttel','tel',a.tutor_telefono,'11 1234-5678'))+
+      rw('Email', inp('f-tem','email',a.tutor_email,'email@…'))+
+      '</div>'
     : '';
 
   document.getElementById('ficha-body').innerHTML =
-    // ── Tab bar
     '<div class="ftabs">'+
-    '<button class="ftab on" id="ftb-info" onclick="fichaTabSwitch(\'info\')">Mi info</button>'+
+    '<button class="ftab on" id="ftb-info" onclick="fichaTabSwitch(\'info\')">Mis datos</button>'+
     '<button class="ftab" id="ftb-emerg" onclick="fichaTabSwitch(\'emerg\')">Emergencia</button>'+
-    '<button class="ftab" id="ftb-comp" onclick="fichaTabSwitch(\'comp\')">Competencias</button>'+
+    '<button class="ftab" id="ftb-comp" onclick="fichaTabSwitch(\'comp\')">Torneos</button>'+
     '</div>'+
 
-    // ── Tab 1: Mi info
+    // ── Mis datos
     '<div id="ftab-info" class="ftab-panel on">'+
-    '<div class="fsec-title" style="margin-bottom:10px">Datos personales</div>'+
-    '<div class="frow2">'+
-    '<div class="fitem"><label>Nombre *</label><input type="text" class="fi" id="f-nom" value="'+escHTML(a.nombre||'')+'" /></div>'+
-    '<div class="fitem"><label>Apellido *</label><input type="text" class="fi" id="f-ape" value="'+escHTML(a.apellido||'')+'" /></div>'+
+    '<div class="grp-t">Datos personales</div><div class="grp">'+
+      rw('Nombre', inp('f-nom','text',a.nombre,'Nombre'))+
+      rw('Apellido', inp('f-ape','text',a.apellido,'Apellido'))+
+      rw('Nacimiento', inp('f-fnac','date',a.fecha_nac))+
+      rw('Sexo', sel('f-sexo', [['','Elegí…'],['masculino','Masculino'],['femenino','Femenino'],['otro','Otro']], a.sexo))+
+      rw('Turno', '<select id="f-turno">'+opcionesTurno(a.turno)+'</select>')+
+      rw('Entreno desde', inp('f-finicio','date',a.fecha_inicio))+
+      rw('DNI', lock(a.dni||''))+
+      rw('Grupo', lock(CAT_NOM[a.categoria]||'Sin asignar'))+
     '</div>'+
-    '<div class="frow2">'+
-    '<div class="fitem"><label>Fecha de nacimiento *</label><input type="date" class="fi" id="f-fnac" value="'+escHTML(a.fecha_nac||'')+'" /></div>'+
-    '<div class="fitem"><label>Sexo *</label><select class="fi" id="f-sexo">'+
-      [['','Elegí...'],['masculino','Masculino'],['femenino','Femenino'],['otro','Otro']].map(function(o){ return '<option value="'+o[0]+'"'+((a.sexo||'')===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join('')+
-    '</select></div>'+
+    '<p class="nota">El DNI, el grupo y el cinturón los cambia el profe.</p>'+
+    '<div class="grp-t">Contacto</div><div class="grp">'+
+      rw('Teléfono', inp('f-tel','tel',a.telefono,'11 1234-5678'))+
+      rw('Email', inp('f-email','email',a.email,'email@…'))+
+      rw('Domicilio', inp('f-dom','text',a.domicilio,'Calle y número'))+
+      rw('Instagram', inp('f-ig','text',a.instagram,'@usuario'))+
     '</div>'+
-    '<div class="frow2">'+
-    '<div class="fitem"><label>Turno habitual</label><select class="fi" id="f-turno">'+opcionesTurno(a.turno)+'</select></div>'+
-    '<div class="fitem"><label>Entreno desde</label><input type="date" class="fi" id="f-finicio" value="'+escHTML(a.fecha_inicio||'')+'" /></div>'+
+    '<div class="grp-t">Físico</div><div class="grp">'+
+      rw('Peso (kg)', inp('f-peso','number',a.peso,'70',' step="0.5" inputmode="decimal"'))+
+      rw('Altura (cm)', inp('f-alt','number',a.altura,'175',' inputmode="numeric"'))+
+      sw('f-apto','Tengo apto físico vigente',a.apto_fisico)+
+      rw('Vence el apto', inp('f-aptov','date',a.apto_vencimiento))+
+      sw('f-comp','Compito o quiero competir',a.es_competidor)+
     '</div>'+
-    '<div class="frow2">'+
-    '<div class="fitem"><label>DNI</label><input type="text" class="fi" value="'+escHTML(a.dni||'')+'" disabled /></div>'+
-    '<div class="fitem"><label>Grupo</label><input type="text" class="fi" value="'+escHTML(CAT_NOM[a.categoria]||'Sin asignar')+'" disabled /></div>'+
-    '</div>'+
-    '<div style="font-size:12px;color:var(--g5);margin:-4px 0 14px">El DNI, el grupo y el cinturón los cambia el profe.</div>'+
-    '<div class="fsec-title" style="margin-bottom:10px">Contacto y físico</div>'+
-    '<div class="frow2">'+
-    '<div class="fitem"><label>Telefono</label><input type="tel" class="fi" id="f-tel" value="'+escHTML(a.telefono||'')+'" placeholder="+54..." /></div>'+
-    '<div class="fitem"><label>Email</label><input type="email" class="fi" id="f-email" value="'+escHTML(a.email||'')+'" placeholder="email@..." /></div>'+
-    '</div>'+
-    '<div class="fitem"><label>Domicilio</label><input type="text" class="fi" id="f-dom" value="'+escHTML(a.domicilio||'')+'" placeholder="Calle, numero, piso" /></div>'+
-    '<div class="fitem"><label>Instagram</label><input type="text" class="fi" id="f-ig" value="'+escHTML(a.instagram||'')+'" placeholder="@usuario" /></div>'+
-    '<div class="frow2" style="margin-top:4px">'+
-    '<div class="fitem"><label>Peso (kg)</label><input type="number" class="fi" id="f-peso" value="'+escHTML(String(a.peso||''))+'" placeholder="70" step="0.5" /></div>'+
-    '<div class="fitem"><label>Altura (cm)</label><input type="number" class="fi" id="f-alt" value="'+escHTML(String(a.altura||''))+'" placeholder="175" /></div>'+
-    '</div>'+
-    '<div class="chk-row"><input type="checkbox" id="f-apto" '+(a.apto_fisico?'checked':'')+' /><label for="f-apto">Tengo apto fisico vigente</label></div>'+
-    '<div class="fitem"><label>Vencimiento apto</label><input type="date" class="fi" id="f-aptov" value="'+escHTML(a.apto_vencimiento||'')+'" /></div>'+
-    '<div class="chk-row"><input type="checkbox" id="f-comp" '+(a.es_competidor?'checked':'')+' /><label for="f-comp">Soy competidor / quiero competir</label></div>'+
     '</div>'+
 
-    // ── Tab 2: Emergencia
+    // ── Emergencia
     '<div id="ftab-emerg" class="ftab-panel">'+
-    '<div class="frow2">'+
-    '<div class="fitem"><label>Nombre</label><input type="text" class="fi" id="f-en" value="'+escHTML(a.emerg_nombre||'')+'" placeholder="Nombre" /></div>'+
-    '<div class="fitem"><label>Relacion</label><input type="text" class="fi" id="f-er" value="'+escHTML(a.emerg_relacion||'')+'" placeholder="Esposa, padre..." /></div>'+
+    '<div class="grp-t">Contacto de emergencia</div><div class="grp">'+
+      rw('Nombre', inp('f-en','text',a.emerg_nombre,'Nombre'))+
+      rw('Relación', inp('f-er','text',a.emerg_relacion,'Pareja, padre…'))+
+      rw('Teléfono', inp('f-etel','tel',a.emerg_telefono,'11 1234-5678'))+
     '</div>'+
-    '<div class="fitem"><label>Telefono de emergencia</label><input type="tel" class="fi" id="f-etel" value="'+escHTML(a.emerg_telefono||'')+'" placeholder="+54..." /></div>'+
     tutorContent+
     '</div>'+
 
-    // ── Tab 3: Competencias
+    // ── Torneos
     '<div id="ftab-comp" class="ftab-panel">'+
-    '<div class="fsec-title" style="margin-bottom:8px">Cinturon</div>'+
-    '<div class="belt-vis" style="margin-bottom:1.25rem"><div class="belt-bar" style="background:'+(BELT_COLORS[a.cinturon||'blanco']||'#e0e0e0')+';width:50px"></div><span style="font-size:14px">'+escHTML(a.cinturon||'blanco')+(a.stripes?' - '+a.stripes+' grado'+(a.stripes>1?'s':''): '')+'</span></div>'+
-    '<div class="fsec-title" style="margin-bottom:8px">Torneos</div>'+
-    torneosContent+
-    (listaTorneos.length?'<button class="btn-add-torneo" id="badd-torneo">+ Registrar participacion</button>':'')+
+    '<div class="grp-t">Cinturón</div><div class="grp"><div class="belt-vis">'+beltHTML(a)+'<span>'+escHTML(gradosTxt(a))+'</span></div></div>'+
+    '<div class="grp-t">Torneos</div><div class="grp">'+torneosContent+'</div>'+
+    (listaTorneos.length?'<button class="btn-add-torneo" id="badd-torneo">+ Registrar participación</button>':'')+
     '</div>'+
 
-    // ── Botones
     '<div id="ficha-save-wrap">'+
     '<button class="btn-guardar-ficha" id="bgficha">Guardar cambios</button>'+
     '</div>'+
@@ -1209,15 +1287,14 @@ async function guardarFicha(a, onDone) {
     }
   }
   var r = await sb.rpc('kiosco_actualizar_alumno',{p_id:a.id,p_dni:a.dni,p_datos:updates});
-  if(r.error){ if(btn){btn.disabled=false;btn.textContent='Guardar cambios';} alert('Error al guardar'); return; }
+  if(r.error){ if(btn){btn.disabled=false;btn.textContent='Guardar cambios';} alert('No pudimos guardar los cambios. Probá de nuevo.'); return; }
   alu = Object.assign({},a,updates);
   var body = document.getElementById('ficha-body');
   if(body) body.innerHTML =
-    '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem 1rem;text-align:center">'+
-    '<div style="width:64px;height:64px;border-radius:50%;background:#e8f8ef;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">'+
-    '<svg width="32" height="32" fill="none" stroke="#27ae60" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>'+
-    '<div style="font-size:18px;font-weight:700;margin-bottom:6px">Cambios guardados</div>'+
-    '<div style="font-size:14px;color:var(--g5)">Volviendo...</div>'+
+    '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3.5rem 1rem;text-align:center">'+
+    '<div class="ocirc" style="width:84px;height:84px;margin-bottom:22px"><svg class="i" viewBox="0 0 24 24" style="width:40px;height:40px"><path d="M20 6 9 17l-5-5"/></svg></div>'+
+    '<div class="ttl md">Cambios<br>guardados</div>'+
+    '<div class="sub">Volviendo…</div>'+
     '</div>';
   setTimeout(function(){ if(onDone) onDone(); }, 1500);
 }
@@ -1239,11 +1316,11 @@ function abrirModalTorneo(a, listaTorneos) {
     var dup = await sb.from('torneos_participantes').select('id,modalidad').eq('torneo_id',torneoId).eq('alumno_id',a.id);
     var existing = dup.data || [];
     if(existing.some(function(x){ return x.modalidad===mod; })) {
-      alert('Ya estas inscripto en '+mod+' para este torneo.'); return;
+      alert('Ya estás inscripto en '+mod+' para este torneo.'); return;
     }
     // Máximo 3 categorías por torneo (Gi + NoGi + Absoluto)
     if(existing.length >= 3) {
-      alert('Ya estas inscripto en 3 categorias para este torneo (maximo).'); return;
+      alert('Ya estás inscripto en 3 categorías para este torneo (es el máximo).'); return;
     }
 
     var r = await sb.from('torneos_participantes').insert({
@@ -1252,14 +1329,14 @@ function abrirModalTorneo(a, listaTorneos) {
     });
     if(r.error) { alert('Error: '+r.error.message); return; }
     document.getElementById('modal-torneo').classList.remove('show');
-    showToastF('Participacion registrada!');
+    showToastF('¡Participación registrada!');
     mostrarFicha(a);
   };
 }
 
 function showToastF(msg) {
   var t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#27ae60;color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;z-index:999;transition:opacity .3s';
+  t.className = 'toastf';
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); },300); },2500);
