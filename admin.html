@@ -396,7 +396,28 @@ button,input,select,textarea{font-family:inherit}
 [data-theme="dark"] .eb-les{background:rgba(249,115,22,.16);color:#fdba74}
 [data-theme="dark"] .eb-disc{background:rgba(255,255,255,.08);color:#a1a1aa}
 [data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{color-scheme:dark}
-.btn-editar-clase{background:var(--g7)!important;color:var(--white)!important}
+/* Configuración */
+.cfg-seg{margin:0 2px 14px}
+.cfg-seg button{font-size:14px;padding:10px 6px}
+.cfg-dia{font-family:var(--disp);font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--g5);margin:16px 4px 8px}
+.cfg-dia:first-child{margin-top:0}
+.cfg-sec{margin-bottom:0}
+.cfg-clase{cursor:pointer}
+.cfg-hora{font-family:var(--disp);font-size:22px;font-weight:800;line-height:1;min-width:58px;color:var(--black)}
+.cfg-hora small{display:block;font-family:var(--ui);font-size:12px;font-weight:600;color:var(--g5);margin-top:3px}
+.cfg-ayuda{font-size:13px;color:var(--g5);margin:0 4px 10px}
+.cfg-belt{width:34px;height:10px;border-radius:2px;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.stp{display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative}
+.stp button{width:38px;height:38px;border-radius:12px;border:1px solid var(--g2);background:var(--white);color:var(--black);font-size:20px;font-weight:600;line-height:1;cursor:pointer}
+.stp button:active{background:var(--g1)}
+.stp b{min-width:74px;text-align:center;font-family:var(--disp);font-size:22px;font-weight:800;color:var(--black)}
+.stp b small{font-family:var(--ui);font-size:12px;font-weight:600;color:var(--g5)}
+.stp-ok{position:absolute;right:-16px;font-size:14px;font-weight:800;color:var(--green);opacity:0;transition:opacity .2s}
+.stp-ok.show{opacity:1}.stp-ok.err{opacity:1;color:var(--red);font-size:11px;right:auto;top:100%;left:0}
+.mc-ayuda{font-size:12px;color:var(--g5);margin-top:5px;line-height:1.4}
+.btn-disc-clase{display:block;width:100%;margin-top:10px;padding:12px;border:none;background:none;color:var(--red);font-size:14px;font-weight:700;cursor:pointer;border-radius:12px}
+.btn-disc-clase:hover{background:var(--red-light)}
+@media(max-width:600px){.stp b{min-width:62px;font-size:20px}.stp button{width:36px;height:36px}}
 .fe-foot button{font-size:15px;white-space:nowrap}
 .sidebar-btn{position:relative}
 /* Varios */
@@ -538,7 +559,7 @@ button,input,select,textarea{font-family:inherit}
     <label>Nombre *</label><input type="text" id="mc-nombre" placeholder="BJJ Adultos - Noche" />
     <label>Categoría *</label>
     <select id="mc-categoria"><option value="kinder">Kinder</option><option value="infantil">Infantil</option><option value="adulto">Adulto</option><option value="todas">Abierta a todos</option></select>
-    <label>Dia *</label>
+    <label>Día *</label>
     <select id="mc-dia">
       <option value="1">Lunes</option><option value="2">Martes</option>
       <option value="3">Miércoles</option><option value="4">Jueves</option>
@@ -549,7 +570,8 @@ button,input,select,textarea{font-family:inherit}
       <div><label>Hora fin *</label><input type="time" id="mc-hf" value="22:00" /></div>
     </div>
     <label>Profe</label><select id="mc-profe"><option value="">Sin asignar</option></select>
-    <label>ID turno *</label><input type="text" id="mc-turno" placeholder="noche" />
+    <label>Código del turno *</label><input type="text" id="mc-turno" placeholder="noche" />
+    <div class="mc-ayuda">Se guarda en cada asistencia y evita que alguien marque dos veces el mismo turno. Ej: manana, noche, sabado.</div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
       <input type="checkbox" id="mc-fis" style="width:auto" onchange="document.getElementById('mc-fis-wrap').style.display=this.checked?'block':'none'" />
       <label for="mc-fis" style="margin:0">Tiene físico</label>
@@ -561,6 +583,7 @@ button,input,select,textarea{font-family:inherit}
       <button class="btn-cancel" onclick="cerrarModal('clase')">Cancelar</button>
       <button class="btn-save" onclick="guardarClase()">Guardar</button>
     </div>
+    <button class="btn-disc-clase" id="mc-disc" style="display:none" onclick="discontinuarClase(editClaseId)">Discontinuar clase</button>
   </div>
 </div>
 
@@ -995,7 +1018,7 @@ function mesIni(ym){ return ym+'-01'; }
 function mesFinEx(ym){ return mesShift(ym,1)+'-01'; }
 function mesShift(ym,delta){ var p=ym.split('-'),y=+p[0],m0=(+p[1])-1+delta; y+=Math.floor(m0/12); m0=((m0%12)+12)%12; return y+'-'+(m0+1<10?'0'+(m0+1):(m0+1)); }
 function mesLabel(ym){ var p=ym.split('-'); return MESES[(+p[1])-1]+' '+p[0]; }
-function capTxt(s){ var m={manana:'Mañana',sabado:'Sábado',miercoles:'Miércoles'}; s=String(s||''); if(m[s.toLowerCase()]) return m[s.toLowerCase()]; s=s.replace(/-/g,' '); return s.charAt(0).toUpperCase()+s.slice(1); }
+function capTxt(s){ var m={manana:'Mañana',sabado:'Sábado',miercoles:'Miércoles',marron:'Marrón'}; s=String(s||''); if(m[s.toLowerCase()]) return m[s.toLowerCase()]; s=s.replace(/-/g,' '); return s.charAt(0).toUpperCase()+s.slice(1); }
 function toggleRanking(){ var b=document.getElementById('rank-body'); if(!b) return; var a=document.getElementById('arr-ranking'); var hid=b.style.display==='none'; b.style.display=hid?'block':'none'; if(a) a.innerHTML=hid?CH_U:CH_D; }
 
 async function renderMes(){
@@ -1998,70 +2021,120 @@ async function _guardarTorneo() {
 }
 
 // ── CONFIG ───────────────────────────────────────────────────
+// Tres pestañas: Clases (agenda semanal), Tardanza y Cinturones.
+// Tardanza y stripes se guardan solos al tocar − / + (sin botón Guardar).
+var cfgTab = 'clases';
+var cfgData = { turnos: [], cints: [], clases: [] };
+var CFG_TABS = [['clases','Clases'],['tardanza','Tardanza'],['cinturones','Cinturones']];
+var DIAS_ORDEN = [1,2,3,4,5,6,0];
+
 async function renderConfig() {
   getMain().innerHTML =
-    '<div class="section" style="margin-bottom:1.25rem">'+
-    '<div class="section-header section-header--sm" data-sec="s-turnos"><div class="section-title">Tolerancia de tardanza</div><span id="arr-turnos">'+CH_D+'</span></div>'+
-    '<div id="s-turnos" style="display:none"><div id="lista-tolerancias"><div class="empty-state">Cargando...</div></div></div>'+
-    '</div>'+
-    '<div class="section" style="margin-bottom:1.25rem">'+
-    '<div class="section-header section-header--sm" data-sec="s-cinturones"><div class="section-title">Stripes máximos</div><span id="arr-cinturones">'+CH_D+'</span></div>'+
-    '<div id="s-cinturones" style="display:none"><div id="lista-stripes"><div class="empty-state">Cargando...</div></div></div>'+
-    '</div>'+
-    '<div class="section">'+
-    '<div class="section-header section-header--sm" data-sec="s-clases"><div class="section-title">Turnos y clases</div>'+
-    '<div style="display:flex;align-items:center;gap:8px">'+
-    '<button class="btn-red" id="btn-agregar-clase" style="font-size:11px;padding:5px 10px">+ Agregar</button>'+
-    '<span id="arr-clases">'+CH_D+'</span></div></div>'+
-    '<div id="s-clases" style="display:none"><div id="lista-clases"><div class="empty-state">Cargando...</div></div></div>'+
-    '</div>';
-
+    '<div class="page-h"><div><h2>Configuración</h2><p>Clases, tardanza y cinturones</p></div>'+
+    '<button class="btn-red" id="btn-agregar-clase" onclick="abrirAgregarClase()">+ Agregar</button></div>'+
+    '<div class="seg cfg-seg" id="cfg-seg">'+CFG_TABS.map(function(t){
+      return '<button type="button" data-cfg="'+t[0]+'">'+t[1]+'</button>';
+    }).join('')+'</div>'+
+    '<div id="cfg-panel"><div class="section"><div class="empty-state">Cargando…</div></div></div>';
+  document.querySelectorAll('#cfg-seg button').forEach(function(b){
+    b.onclick = function(){ cfgTab = b.dataset.cfg; pintarConfig(); };
+  });
   var [rt, rc, rcl] = await Promise.all([
     sb.from('config_turnos').select('*').eq('activo',true).order('id'),
     sb.from('config_cinturones').select('*').order('orden'),
     sb.from('config_clases').select('*').eq('activo',true).order('dia').order('hora_inicio')
   ]);
-  var DIAS = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
+  if(rt.error || rc.error || rcl.error) {
+    var p = document.getElementById('cfg-panel');
+    if(p) p.innerHTML = '<div class="section"><div class="empty-state">No se pudo cargar la configuración. Probá de nuevo.</div></div>';
+    return;
+  }
+  // config_turnos guarda el día como texto ("Miércoles"): se ordena en el orden de la semana
+  var DL = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+  var diaIdx = function(t){ var i = DL.indexOf(normTxtCfg(t.dia)); return i<0 ? 99 : DIAS_ORDEN.indexOf(i); };
+  cfgData.turnos = (rt.data||[]).sort(function(a,b){ return diaIdx(a)-diaIdx(b) || String(a.horario).localeCompare(String(b.horario)); });
+  cfgData.cints = (rc.data||[]).filter(function(c){ return c.cinturon!=='negro'; });
+  cfgData.clases = rcl.data||[];
+  pintarConfig();
+}
+function normTxtCfg(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
 
-  var elT = document.getElementById('lista-tolerancias');
-  if(elT) elT.innerHTML = (rt.data||[]).map(function(t){
-    return '<div class="config-row">'+
-      '<div class="config-label">'+escHTML(t.dia)+' - '+escHTML(t.horario)+'</div>'+
-      '<input type="number" class="config-input" id="tol-'+escHTML(String(t.id))+'" value="'+escHTML(String(t.tolerancia_min))+'" min="0" max="120" />'+
-      '<span style="font-size:12px;color:var(--g5)">min</span>'+
-      '<button class="btn-save-cfg btn-saveTol" data-tid="'+escHTML(String(t.id))+'">Guardar</button>'+
-    '</div>';
-  }).join('') || '<div class="empty-state">Sin turnos</div>';
+function pintarConfig() {
+  document.querySelectorAll('#cfg-seg button').forEach(function(b){ b.classList.toggle('on', b.dataset.cfg===cfgTab); });
+  var bac = document.getElementById('btn-agregar-clase'); if(bac) bac.style.visibility = cfgTab==='clases' ? 'visible' : 'hidden';
+  var p = document.getElementById('cfg-panel'); if(!p) return;
+  if(cfgTab==='clases') p.innerHTML = cfgClasesHTML();
+  else if(cfgTab==='tardanza') p.innerHTML = cfgTardanzaHTML();
+  else p.innerHTML = cfgCinturonesHTML();
+  p.querySelectorAll('[data-clase]').forEach(function(row){ row.onclick = function(){ abrirEditarClase(parseInt(row.dataset.clase)); }; });
+  p.querySelectorAll('.stp button').forEach(function(b){ b.onclick = function(){ cfgPaso(b); }; });
+}
 
-  var elC = document.getElementById('lista-stripes');
-  if(elC) elC.innerHTML = (rc.data||[]).filter(function(c){return c.cinturon!=='negro';}).map(function(c){
-    return '<div class="config-row">'+
-      '<div style="display:flex;align-items:center;gap:10px;flex:1">'+
-      '<div style="background:'+( BELT_COLORS[c.cinturon]||'#e0e0e0')+';width:36px;height:12px;border-radius:3px"></div>'+
-      '<div class="config-label">'+escHTML(c.cinturon)+'</div></div>'+
-      '<input type="number" class="config-input" id="str-'+escHTML(String(c.id))+'" value="'+escHTML(String(c.max_stripes))+'" min="1" max="10" />'+
-      '<span style="font-size:12px;color:var(--g5)">max</span>'+
-      '<button class="btn-save-cfg btn-saveStr" data-sid="'+escHTML(String(c.id))+'">Guardar</button>'+
-    '</div>';
+function cfgClasesHTML() {
+  var porDia = {};
+  cfgData.clases.forEach(function(c){ (porDia[c.dia] = porDia[c.dia] || []).push(c); });
+  var h = DIAS_ORDEN.filter(function(d){ return porDia[d]; }).map(function(d){
+    return '<div class="cfg-dia">'+DIAS_LARGO[d]+'</div><div class="section cfg-sec">'+
+      porDia[d].map(function(c){
+        var sub = [c.profe||'Sin profe', c.tiene_fisico ? 'Físico hasta '+(c.hora_fisico||'') : ''].filter(Boolean).join(' · ');
+        return '<div class="row-item cfg-clase" data-clase="'+escHTML(String(c.id))+'">'+
+          '<div class="cfg-hora">'+escHTML(c.hora_inicio)+'<small>'+escHTML(c.hora_fin)+'</small></div>'+
+          '<div style="flex:1;min-width:0"><div class="row-name">'+escHTML(c.nombre)+'</div><div class="row-sub">'+escHTML(sub)+'</div></div>'+
+          catPill(c.categoria)+
+          '<svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>'+
+        '</div>';
+      }).join('')+'</div>';
   }).join('');
+  return h || '<div class="section"><div class="empty-state">Todavía no hay clases. Tocá “+ Agregar”.</div></div>';
+}
 
-  var elCl = document.getElementById('lista-clases');
-  if(elCl) elCl.innerHTML = (rcl.data||[]).map(function(c){
-    return '<div class="config-row">'+
-      '<div style="flex:1;min-width:120px"><div class="config-label">'+escHTML(DIAS[c.dia])+' · '+escHTML(c.hora_inicio)+' - '+escHTML(c.hora_fin)+'</div>'+
-      '<div class="config-sub">'+catPill(c.categoria)+' '+escHTML(c.nombre)+' · '+escHTML(c.profe||'Sin profe')+(c.tiene_fisico?' · Físico hasta '+escHTML(c.hora_fisico):'')+'</div></div>'+
-      '<div style="display:flex;gap:4px;flex-shrink:0">'+
-      '<button class="btn-save-cfg btn-editar-clase" data-cid="'+escHTML(String(c.id))+'" style="background:#555">Editar</button>'+
-      '<button class="btn-save-cfg btn-discontinuar" data-cid="'+escHTML(String(c.id))+'" style="background:#999">&#10005;</button>'+
-      '</div>'+
-    '</div>';
-  }).join('') || '<div class="empty-state">Sin clases cargadas</div>';
+function stpHTML(tabla, id, campo, val, min, max, paso, unidad) {
+  return '<div class="stp" data-tabla="'+tabla+'" data-id="'+escHTML(String(id))+'" data-campo="'+campo+'" data-min="'+min+'" data-max="'+max+'" data-paso="'+paso+'" data-unidad="'+escHTML(unidad)+'">'+
+    '<button type="button" data-d="-1" aria-label="Menos">−</button>'+
+    '<b>'+escHTML(String(val))+'<small> '+escHTML(unidad)+'</small></b>'+
+    '<button type="button" data-d="1" aria-label="Más">+</button>'+
+    '<span class="stp-ok" aria-live="polite"></span></div>';
+}
 
-  document.querySelectorAll('.btn-saveTol').forEach(function(b){ b.onclick=function(){ saveTol(parseInt(b.dataset.tid)); }; });
-  document.querySelectorAll('.btn-saveStr').forEach(function(b){ b.onclick=function(){ saveStr(parseInt(b.dataset.sid)); }; });
-  document.querySelectorAll('.btn-discontinuar').forEach(function(b){ b.onclick=function(){ discontinuarClase(parseInt(b.dataset.cid)); }; });
-  document.querySelectorAll('.btn-editar-clase').forEach(function(b){ b.onclick=function(){ abrirEditarClase(parseInt(b.dataset.cid)); }; });
-  var bac = document.getElementById('btn-agregar-clase'); if(bac) bac.onclick=function(e){ e.stopPropagation(); abrirAgregarClase(); };
+function cfgTardanzaHTML() {
+  if(!cfgData.turnos.length) return '<div class="section"><div class="empty-state">Sin horarios cargados</div></div>';
+  return '<p class="cfg-ayuda">Minutos después del inicio de la clase en los que todavía se cuenta como a tiempo.</p>'+
+    '<div class="section cfg-sec">'+cfgData.turnos.map(function(t){
+      return '<div class="row-item"><div style="flex:1;min-width:0"><div class="row-name">'+escHTML(t.dia)+'</div><div class="row-sub">'+escHTML(t.horario)+'</div></div>'+
+        stpHTML('config_turnos', t.id, 'tolerancia_min', t.tolerancia_min==null?15:t.tolerancia_min, 0, 120, 5, 'min')+'</div>';
+    }).join('')+'</div>';
+}
+
+function cfgCinturonesHTML() {
+  if(!cfgData.cints.length) return '<div class="section"><div class="empty-state">Sin cinturones cargados</div></div>';
+  return '<p class="cfg-ayuda">Cantidad máxima de stripes antes de pasar al siguiente cinturón.</p>'+
+    '<div class="section cfg-sec">'+cfgData.cints.map(function(c){
+      return '<div class="row-item"><div class="cfg-belt" style="background:'+(BELT_COLORS[c.cinturon]||'#e0e0e0')+'"></div>'+
+        '<div class="row-name" style="flex:1;min-width:0">'+escHTML(capTxt(c.cinturon))+'</div>'+
+        stpHTML('config_cinturones', c.id, 'max_stripes', c.max_stripes, 1, 10, 1, 'stripes')+'</div>';
+    }).join('')+'</div>';
+}
+
+// − / +: cambia el número al instante y guarda medio segundo después del último toque
+var _cfgTimers = {};
+function cfgPaso(btn) {
+  var s = btn.closest('.stp'), d = s.dataset;
+  var b = s.querySelector('b');
+  var val = parseInt(b.textContent) || 0;
+  val = Math.min(+d.max, Math.max(+d.min, val + (+btn.dataset.d) * (+d.paso)));
+  b.innerHTML = val+'<small> '+escHTML(d.unidad)+'</small>';
+  var ok = s.querySelector('.stp-ok'); ok.className = 'stp-ok'; ok.textContent = '';
+  var clave = d.tabla+':'+d.id;
+  clearTimeout(_cfgTimers[clave]);
+  _cfgTimers[clave] = setTimeout(async function(){
+    var upd = {}; upd[d.campo] = val;
+    var r = await sb.from(d.tabla).update(upd).eq('id', parseInt(d.id));
+    if(r.error) { ok.className = 'stp-ok err'; ok.textContent = 'Error'; showToast('No se pudo guardar'); return; }
+    var lista = d.tabla==='config_turnos' ? cfgData.turnos : cfgData.cints;
+    lista.forEach(function(x){ if(String(x.id)===d.id) x[d.campo] = val; });
+    ok.className = 'stp-ok show'; ok.textContent = '✓';
+    setTimeout(function(){ ok.classList.remove('show'); }, 1500);
+  }, 500);
 }
 
 function toggleSec(id) {
@@ -2074,34 +2147,16 @@ function toggleSec(id) {
   if(arr) arr.innerHTML = hidden ? CH_U : CH_D;
 }
 
-async function saveTol(id) {
-  var el = document.getElementById('tol-'+id);
-  if(!el) return;
-  var val = parseInt(el.value);
-  if(isNaN(val)||val<0) { alert('Valor inválido'); return; }
-  var r = await sb.from('config_turnos').update({tolerancia_min:val}).eq('id',id);
-  if(r.error) { alert('Error: '+r.error.message); return; }
-  showToast('Tolerancia guardada');
-}
-
-async function saveStr(id) {
-  var el = document.getElementById('str-'+id);
-  if(!el) return;
-  var val = parseInt(el.value);
-  if(isNaN(val)||val<1) { alert('Valor inválido'); return; }
-  var r = await sb.from('config_cinturones').update({max_stripes:val}).eq('id',id);
-  if(r.error) { alert('Error: '+r.error.message); return; }
-  showToast('Stripes guardados');
-}
-
 var editClaseId = null;
 
 async function cargarProfesSelect(selected){
   var profes = await sb.from('alumnos').select('id,nombre,apellido').eq('es_profe',true).eq('activo',true).order('apellido');
   var sel = document.getElementById('mc-profe');
   if(!sel) return;
-  sel.innerHTML = '<option value="">Sin asignar</option>' + (profes.data||[]).map(function(p){
-    var n=(p.nombre||'')+' '+(p.apellido||'');
+  var nombres = (profes.data||[]).map(function(p){ return (p.nombre||'')+' '+(p.apellido||''); });
+  // si la clase tiene un profe escrito a mano (ej: "Prof. Leo"), se conserva como opción para no borrarlo al guardar
+  if(selected && nombres.indexOf(selected) === -1) nombres.unshift(selected);
+  sel.innerHTML = '<option value="">Sin asignar</option>' + nombres.map(function(n){
     return '<option value="'+escHTML(n)+'">'+escHTML(n)+'</option>';
   }).join('');
   if(selected) sel.value = selected;
@@ -2109,7 +2164,8 @@ async function cargarProfesSelect(selected){
 
 async function abrirAgregarClase() {
   editClaseId = null;
-  var t=document.getElementById('mc-titulo'); if(t) t.textContent='Agregar turno';
+  var t=document.getElementById('mc-titulo'); if(t) t.textContent='Agregar clase';
+  document.getElementById('mc-disc').style.display='none';
   await cargarProfesSelect('');
   ['mc-nombre','mc-turno'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var dd=document.getElementById('mc-dia'); if(dd) dd.value='1';
@@ -2123,10 +2179,11 @@ async function abrirAgregarClase() {
 
 async function abrirEditarClase(id) {
   var r = await sb.from('config_clases').select('*').eq('id',id).single();
-  if(r.error || !r.data){ alert('No se pudo cargar el turno'); return; }
+  if(r.error || !r.data){ alert('No se pudo cargar la clase'); return; }
   var c = r.data;
   editClaseId = id;
-  var t=document.getElementById('mc-titulo'); if(t) t.textContent='Editar turno';
+  var t=document.getElementById('mc-titulo'); if(t) t.textContent='Editar clase';
+  document.getElementById('mc-disc').style.display='block';
   await cargarProfesSelect(c.profe||'');
   document.getElementById('mc-nombre').value = c.nombre||'';
   document.getElementById('mc-categoria').value = c.categoria||'adulto';
@@ -2162,7 +2219,7 @@ async function _guardarClase() {
   }
   if(r.error) { alert('Error: '+r.error.message); return; }
   cerrarModal('clase');
-  showToast(editClaseId ? 'Turno actualizado' : 'Turno agregado');
+  showToast(editClaseId ? 'Clase actualizada' : 'Clase agregada');
   editClaseId = null;
   renderConfig();
 }
@@ -2171,6 +2228,8 @@ async function discontinuarClase(id) {
   if(!confirm('¿Discontinuar esta clase? Los registros históricos se mantienen.')) return;
   var r = await sb.from('config_clases').update({activo:false}).eq('id',id);
   if(r.error) { alert('No se pudo discontinuar la clase: '+r.error.message); return; }
+  cerrarModal('clase');
+  editClaseId = null;
   showToast('Clase discontinuada');
   renderConfig();
 }
