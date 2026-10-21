@@ -59,7 +59,7 @@ svg.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke
 .live{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:var(--r);padding:15px 17px;margin-bottom:10px}
 .pill-live{display:inline-flex;align-items:center;gap:7px;background:var(--red-soft);color:var(--red-2);font-weight:700;font-size:11px;letter-spacing:.12em;padding:4px 10px;border-radius:99px}
 .pill-live i{width:7px;height:7px;border-radius:50%;background:var(--red-2);animation:pl 1.6s infinite}
-@keyframes pl{0%{box-shadow:0 0 0 0 rgba(255,59,67,.5)}100%{box-shadow:0 0 0 8px rgba(255,59,67,0)}}
+@keyframes pl{0%,100%{opacity:1}50%{opacity:.35}}
 .live h3{font-family:var(--disp);font-size:28px;font-weight:800;text-transform:uppercase;line-height:1;margin:9px 0 4px}
 .live .meta{display:flex;justify-content:space-between;gap:10px;color:var(--tx-2);font-size:13px}
 .live .fis{display:inline-block;margin-top:8px;font-size:12px;font-weight:600;color:var(--warn)}
@@ -490,7 +490,7 @@ function iniDe(a) {
 // Avatar con anillo del color del cinturón (la foto se pone después en .aav)
 function ringHTML(a) {
   var c = BELT_COLORS[a.cinturon||'blanco']||'#e0e0e0';
-  var av = a.foto_url ? '<img src="'+escHTML(a.foto_url)+'" />' : iniDe(a);
+  var av = a.foto_url ? '<img src="'+escHTML(a.foto_url)+'" />' : escHTML(iniDe(a));
   return '<div class="ring" style="background:'+c+'"><div class="av aav">'+av+'</div></div>';
 }
 // Cinturón dibujado con sus grados
@@ -604,12 +604,19 @@ function enInicio() {
   return !alu && !visible('fs') && !visible('ts') && !visible('os') && !visible('modal-torneo') &&
     !!(document.getElementById('di') || document.getElementById('btn-ver-ficha-cron'));
 }
+var _cfgTs = Date.now();
 function claveClases(cs){ return cs.map(function(c){ return c.hi+c.hf+c.tur+c.cat; }).join('|'); }
 setInterval(function(){
   ahora = new Date();
   if(enInicio()) {
     var di = document.getElementById('di');
     if(di && di.value) return;
+    // Si arrancó sin conexión reintenta enseguida; si no, cada 30 min trae los cambios hechos en el panel
+    if(!CLASES.length || Date.now() - _cfgTs > 30*60000) {
+      _cfgTs = Date.now();
+      Promise.all([cargarClases(), cargarTolerancias()]).then(function(){ if(enInicio()) init(); });
+      return;
+    }
     if(claveClases(findClasesActivas()) !== claveClases(clasesActivas)) { init(); return; }
     document.querySelectorAll('#cp .live').forEach(function(el, i){
       if(clasesActivas[i]) el.outerHTML = liveHTML(clasesActivas[i]);
@@ -677,12 +684,16 @@ async function buscarDNI() {
   var dni = normDNI(raw);
   if(dni.length < 6) { setErr('em','Ingresá un DNI válido'); return; }
   clrErr('em');
+  var yr0 = document.getElementById('yr'); if(yr0) yr0.style.display='none';   // aviso del alumno anterior
   var btn = document.getElementById('bbs');
   btn.textContent='...'; btn.disabled=true;
   try {
     var r = await sb.rpc('kiosco_buscar_alumno',{p_dni:dni});
+    // Sin conexión no es "alumno nuevo": se avisa y se puede reintentar
+    if(r.error) { setErr('em','No pudimos buscar tu DNI. Revisá la conexión y probá de nuevo.'); btn.textContent='Entrar'; btn.disabled=false; return; }
     if(r.data) {
       alu = r.data;
+      if(r.data.bloqueado) { mkBloqueado(r.data); btn.textContent='Entrar'; btn.disabled=false; return; }
       var aRef = r.data;
       cargarFotoAlu(aRef, function(f){
         if(alu !== aRef) return;
@@ -698,7 +709,7 @@ async function buscarDNI() {
       }
       elegirClase(opciones[0]);
       var ya = await sb.rpc('kiosco_ya_registrado',{p_alumno_id:r.data.id,p_fecha:dHoy(),p_turno:claseSeleccionada.tur});
-      if(ya.data) { document.getElementById('yr').style.display='block'; btn.textContent='Entrar'; btn.disabled=false; return; }
+      if(ya.data) { alu=null; document.getElementById('yr').style.display='block'; btn.textContent='Entrar'; btn.disabled=false; return; }
       seguirAConfirmar(r.data);
     } else {
       mkNuevo(dni);
@@ -721,7 +732,7 @@ var TOLS = [];
 async function cargarTolerancias() {
   try {
     var r = await sb.from('config_turnos').select('dia,horario,tolerancia_min').eq('activo',true);
-    TOLS = r.data || [];
+    if(!r.error) TOLS = r.data || [];   // sin conexión se quedan las que había
   } catch(e) {}
 }
 function normTxt(s) { return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
@@ -950,9 +961,12 @@ var _volverTimer = null;
 function cancelAutoConfirm() {
   if(_autoConfirmTimer) { clearInterval(_autoConfirmTimer); _autoConfirmTimer = null; }
 }
+// Vuelta automática después de "Ya registraste": se cancela si se sale antes por otro lado
+var _yaRegTimer = null;
+function cancelYaRegTimer() { if(_yaRegTimer) { clearTimeout(_yaRegTimer); _yaRegTimer = null; } }
 
 function volverADNI() {
-  cancelAutoConfirm();
+  cancelAutoConfirm(); cancelYaRegTimer();
   alu=null; claseSeleccionada=null; esTarde=false; minTarde=0; _asistRegistrando=false;
   if(clasesActivas && clasesActivas.length) {
     document.getElementById('cp').innerHTML = mkDNI(clasesActivas);
@@ -979,7 +993,9 @@ async function confirmarAsistencia() {
       msg.className='yareg'; msg.style.display='block';
       msg.textContent='Ya registraste asistencia en esta clase hoy.';
       if(btn) btn.insertAdjacentElement('afterend',msg);
-      setTimeout(function(){ volverADNI(); },2500);
+      if(btn) btn.disabled=true;   // no se apilan avisos ni temporizadores
+      cancelYaRegTimer();
+      _yaRegTimer = setTimeout(function(){ _yaRegTimer=null; volverADNI(); },2500);
       return;
     }
   } catch(e) { console.error(e); _asistRegistrando=false; if(btn){btn.disabled=false;btn.textContent='Confirmar asistencia';} return; }
@@ -1107,8 +1123,10 @@ function salirDeTarde() {
   document.getElementById('mc').classList.remove('hide');
 }
 function volver() {
-  cancelAutoConfirm();
+  cancelAutoConfirm(); cancelYaRegTimer();
   if(_volverTimer){ clearInterval(_volverTimer); _volverTimer=null; }
+  document.getElementById('modal-torneo').classList.remove('show');
+  document.getElementById('ficha-body').innerHTML = '';
   alu=null;motivoSel=null;sexoSel=null;esTarde=false;minTarde=0;claseSeleccionada=null;_asistRegistrando=false;_postRegFicha=false;_fichaVuelveA=null;
   var det=document.getElementById('odet'); if(det) det.innerHTML='';
   document.getElementById('mc').classList.remove('hide');
@@ -1136,8 +1154,10 @@ function mkFichaFlow() {
     var go = document.getElementById('bbs-f');
     if(go.disabled) return;
     go.disabled = true;
-    var r = await sb.rpc('kiosco_buscar_alumno',{p_dni:dni});
+    var r;
+    try { r = await sb.rpc('kiosco_buscar_alumno',{p_dni:dni}); } catch(e) { r = { error: e }; }
     go.disabled = false;
+    if(r.error) { setErr('em-f','No pudimos buscar tu DNI. Revisá la conexión y probá de nuevo.'); return; }
     if(r.data) { alu = r.data; mostrarFicha(r.data, null); }
     else {
       var dniVal = dni;
@@ -1153,11 +1173,14 @@ function mkFichaFlow() {
 }
 var _fichaVuelveA = null;
 async function mostrarFicha(a, vuelve) {
+  cancelYaRegTimer();
   _fichaVuelveA = vuelve || null;
   document.getElementById('mc').classList.add('hide');
   var fs = document.getElementById('fs');
   fs.classList.add('show');
-  var ini = ((a.nombre||'')+' '+(a.apellido||'')).trim().split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+  var ini = escHTML(iniDe(a));
+  // Hasta que se dibuje la ficha de este alumno no queda nada del anterior a la vista
+  document.getElementById('ficha-body').innerHTML = '';
   var belt = a.cinturon||'blanco';
   var bc = BELT_COLORS[belt]||'#e0e0e0';
   var gradosStr = gradosTxt(a)+(CAT_NOM[a.categoria]?' · '+CAT_NOM[a.categoria]:'');
@@ -1203,11 +1226,7 @@ async function mostrarFicha(a, vuelve) {
     }).catch(function(){ showToastF('No se pudo leer la imagen'); });
   };
 
-  var esMenor = false;
-  if(a.fecha_nac) {
-    var edad = Math.floor((new Date() - new Date(a.fecha_nac)) / (365.25*24*3600*1000));
-    esMenor = edad < 18;
-  }
+  var esMenor = esMenorFecha(a.fecha_nac);
 
   // Torneos del alumno y torneos abiertos para registrarse (en paralelo)
   var torneos = [], listaTorneos = [];

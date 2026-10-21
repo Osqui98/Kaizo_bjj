@@ -216,6 +216,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;backgrou
 .fe-tab.on{color:var(--red);border-bottom-color:var(--red)}
 .fe-tab-panel{display:none}
 .fe-tab-panel.on{display:block}
+/* Ficha → Asistencia */
+.fa-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.fa-kpi{background:var(--g1);border-radius:12px;padding:10px 12px;min-width:0}
+.fa-kpi b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;line-height:1.1;color:var(--black)}
+.fa-kpi span{font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.03em}
+.fa-desde{font-size:12px;color:var(--g5);margin:8px 0 12px}
+.fa-add{width:100%}
+.fa-form{border:1.5px solid var(--g2);border-radius:12px;padding:12px 12px 2px;margin-top:10px}
+.fa-form-btns{display:flex;gap:8px;margin-bottom:10px}
+.fa-form-btns button{flex:1}
+.fa-cancel{background:var(--g1);color:var(--g7);border:1px solid var(--g2);border-radius:12px;padding:10px 16px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.fa-dots{display:flex;flex-wrap:wrap;gap:3px}
+.fa-dots i{width:13px;height:13px;border-radius:3px;background:var(--g2);flex-shrink:0}
+.fa-dots i.ok{background:var(--green)}.fa-dots i.tarde{background:var(--orange)}
+.fa-mes{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--g2);cursor:pointer;user-select:none}
+.fa-mes-n{width:70px;flex-shrink:0;font-size:13px;font-weight:600;color:var(--black)}
+.fa-bar{flex:1;height:8px;background:var(--g1);border-radius:99px;overflow:hidden}
+.fa-bar i{display:block;height:100%;background:var(--red);border-radius:99px}
+.fa-mes b{width:28px;text-align:right;font-size:15px;color:var(--black)}
+.fa-mes .chev{width:16px;height:16px;flex-shrink:0}
+.fa-dias{padding:2px 0 8px 10px;border-bottom:1px solid var(--g2)}
+.fa-dia{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px;color:var(--g7);padding:6px 0}
+.fa-dia span.fa-cl{color:var(--g5)}
+.fa-tag{font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px;background:var(--g1);color:var(--g5)}
+.fa-tag.tarde{background:#fef3c7;color:#b45309}
+.fa-del{margin-left:auto;background:none;border:none;color:var(--red);font-size:12px;font-weight:700;cursor:pointer;padding:4px 6px;font-family:inherit}
+.fa-mas{width:100%;background:none;border:none;color:var(--red);font-size:13px;font-weight:700;padding:12px;cursor:pointer;font-family:inherit}
+.al-clases{color:var(--g5)}
 .fe-foot{padding:.9rem 1.3rem;border-top:1px solid var(--g2);display:flex;gap:10px;background:#fff;flex-shrink:0}
 .fe-foot button{flex:1;padding:13px;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .12s,box-shadow .12s}
 .fe-cancel{background:var(--g1);color:var(--g7);border:1.5px solid var(--g2)}
@@ -619,6 +647,7 @@ button,input,select,textarea{font-family:inherit}
         <button class="fe-tab on" id="fe-tb-datos" onclick="feTabSwitch('datos')">Datos</button>
         <button class="fe-tab" id="fe-tb-bjj" onclick="feTabSwitch('bjj')">BJJ</button>
         <button class="fe-tab" id="fe-tb-cont" onclick="feTabSwitch('cont')">Contactos</button>
+        <button class="fe-tab" id="fe-tb-asis" onclick="feTabSwitch('asis')">Asistencia</button>
       </div>
 
       <!-- Tab 1: Datos -->
@@ -706,6 +735,9 @@ button,input,select,textarea{font-family:inherit}
           </div>
         </div>
       </div>
+
+      <!-- Tab 4: Asistencia (se carga al abrir la pestaña) -->
+      <div id="fe-tp-asis" class="fe-tab-panel"><div id="fe-asis"></div></div>
     </div>
     <div class="fe-foot">
       <button class="fe-del" onclick="eliminarAlumno()" title="Eliminar definitivamente">Eliminar</button>
@@ -755,6 +787,11 @@ const fechaHoy = ymdLocal(hoy);
 const mesActual = ymdLocal(hoy).slice(0,7);
 
 document.getElementById('fecha-hoy').textContent = 'Panel del profe · '+hoy.getDate()+' de '+MESES[hoy.getMonth()].toLowerCase();
+// La fecha de hoy y el mes se fijan al abrir el panel: si quedó abierto de un día para otro, se recarga
+function cambioElDia(){ return ymdLocal(new Date()) !== fechaHoy; }
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden && cambioElDia() && !modalesAbiertos().length) location.reload();
+});
 
 // ── TABS ─────────────────────────────────────────────────────
 const TABS = [
@@ -830,6 +867,7 @@ function countUp(el, target, ms) {
 }
 
 function showTab(id) {
+  if(cambioElDia()) { location.reload(); return; }
   tabActual = id;
   buildNav();
   var mc = document.getElementById('main-content');
@@ -848,8 +886,11 @@ function showTab(id) {
 }
 
 function getMain() { return document.getElementById('main-content'); }
+// Si una consulta falla, se avisa en vez de mostrar una lista vacía que parece real
+function errorCargaHTML() { return '<div class="empty-state">No se pudo cargar. Revisá la conexión.<br><button type="button" class="fa-mas" style="width:auto" onclick="refrescarTab()">Reintentar</button></div>'; }
 // Vuelve a dibujar la pestaña actual (por ejemplo, después de guardar una ficha abierta desde Hoy)
-function refrescarTab() { showTab(tabActual); }
+// En Alumnos conserva búsqueda, filtros, página y scroll.
+function refrescarTab() { alEstadoPrevio = tabActual==='alumnos' ? estadoAlumnos() : null; showTab(tabActual); }
 // Evita que un doble toque en "Guardar" cree registros duplicados
 var _guardando = {};
 async function unaVez(clave, fn) {
@@ -947,6 +988,11 @@ async function cargarHoy() {
     alumnosTodos(),
     sb.from('config_clases').select('nombre,dia,hora_inicio,hora_fin,profe,turno_id').eq('activo',true)
   ]);
+  if(r.error) {
+    var le = document.getElementById('lista-hoy'), he = document.getElementById('hoy-hero');
+    if(he) he.innerHTML = ''; if(le) le.innerHTML = '<div class="section">'+errorCargaHTML()+'</div>';
+    return;
+  }
   var data = r.data || [];
   var porId = {}; (ra.data||[]).forEach(function(a){ porId[a.id] = a; });
   var total = data.length, tarde = data.filter(function(x){return x.tarde;}).length;
@@ -994,7 +1040,7 @@ async function cargarHoy() {
       var hora = '';
       try{ hora=new Date(reg.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}); }catch(e){}
       var cint = a.cinturon ? a.cinturon.charAt(0).toUpperCase()+a.cinturon.slice(1)+(a.stripes?' · '+a.stripes+(a.stripes>1?' grados':' grado'):'') : '';
-      var sub = reg.tarde && reg.motivo_tarde ? 'Tarde: '+escHTML(reg.motivo_tarde) : escHTML(cint);
+      var sub = reg.cargada_por==='profe' ? 'Cargada por el profe' : reg.tarde && reg.motivo_tarde ? 'Tarde: '+escHTML(reg.motivo_tarde) : escHTML(cint);
       return '<div class="row-item" style="cursor:pointer" data-edit-id="'+escHTML(String(reg.alumno_id||''))+'">'+
         avHTML(a)+
         '<div style="flex:1;min-width:0"><div class="row-name">'+escHTML(reg.nombre)+' '+escHTML(reg.apellido)+'</div>'+(sub?'<div class="row-sub">'+sub+'</div>':'')+'</div>'+
@@ -1037,19 +1083,26 @@ async function renderMes(){
   cargarInformes();
 }
 
+var _infTok = 0;
 async function cargarInformes(){
   var lbl=document.getElementById('mes-label'); if(lbl) lbl.textContent=mesLabel(mesInforme);
   var nb=document.getElementById('mes-next'); if(nb) nb.style.visibility=(mesInforme>=mesActual?'hidden':'visible');
   var iniMes=mesIni(mesInforme), fin=mesFinEx(mesInforme), prevYm=mesShift(mesInforme,-1);
   var desde6=mesShift(mesInforme,-5)+'-01';
   var corte14=ymdLocal(new Date(Date.now()-14*86400000));
+  var tok=++_infTok;   // si se cambia de mes antes de que responda, se descarta esta respuesta
+  var esActual=mesInforme===mesActual;
   var [rAsis,rAlum,rGrad,rRec]=await Promise.all([
     asistenciaDesde(desde6, 'alumno_id,fecha,turno,tarde,categoria', fin),
     alumnosActivos(),
     sb.from('graduaciones').select('nombre,tipo,cinturon_despues,stripes_despues,fecha').gte('fecha',iniMes).lt('fecha',fin).order('fecha',{ascending:false}),
-    asistenciaDesde(corte14, 'alumno_id,fecha')
+    // en el mes actual, los últimos 14 días ya vienen en rAsis
+    esActual ? null : asistenciaDesde(corte14, 'alumno_id,fecha')
   ]);
-  var asis=rAsis.data||[], alum=rAlum.data||[], grad=rGrad.data||[], rec=rRec.data||[];
+  if(tok!==_infTok) return;
+  if(rAsis.error||rAlum.error||rGrad.error||(rRec&&rRec.error)){ var ce=document.getElementById('informes-cont'); if(ce) ce.innerHTML='<div class="section">'+errorCargaHTML()+'</div>'; return; }
+  var asis=rAsis.data||[], alum=rAlum.data||[], grad=rGrad.data||[];
+  var rec=rRec ? (rRec.data||[]) : asis.filter(function(r){ return r.fecha>=corte14; });
   var DIAS=['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
   var mesRows=asis.filter(function(r){return r.fecha>=iniMes&&r.fecha<fin;});
   var prevRows=asis.filter(function(r){return r.fecha>=mesIni(prevYm)&&r.fecha<iniMes;});
@@ -1092,7 +1145,7 @@ async function cargarInformes(){
 
   // 4) Retencion
   var activos=alum.length;
-  var altas=alum.filter(function(a){ var c=(a.created_at||'').slice(0,10); return c>=iniMes&&c<fin; }).length;
+  var altas=alum.filter(function(a){ var c=a.created_at?ymdLocal(new Date(a.created_at)):''; return c>=iniMes&&c<fin; }).length;
   var ultima={}; rec.forEach(function(x){ if(!ultima[x.alumno_id]||x.fecha>ultima[x.alumno_id]) ultima[x.alumno_id]=x.fecha; });
   var enRiesgo=alum.filter(function(a){ var u=ultima[a.id]; if(!u) return true; return Math.floor((new Date(fechaHoy)-new Date(u))/86400000)>14; });
   var riesgoRows=enRiesgo.map(function(a){ var u=ultima[a.id]; var d=u?Math.floor((new Date(fechaHoy)-new Date(u))/86400000):999;
@@ -1144,6 +1197,7 @@ async function renderAusentes() {
     alumnosActivos(),
     asistenciaDesde(cutoff, 'alumno_id,fecha')
   ]);
+  if(ral.error || rr.error) { var la = document.getElementById('lista-aus'); if(la) la.innerHTML = errorCargaHTML(); return; }
   var ultima = {};
   (rr.data||[]).forEach(function(x){if(!ultima[x.alumno_id]||x.fecha>ultima[x.alumno_id])ultima[x.alumno_id]=x.fecha;});
   ausAllData = (ral.data||[]).map(function(a){
@@ -1200,6 +1254,11 @@ async function renderGraduaciones() {
     sb.from('graduaciones').select('alumno_id,fecha').order('fecha',{ascending:false}),
     asistenciaDesde(ymdLocal(new Date(Date.now()-180*86400000)), 'alumno_id,fecha')
   ]);
+  if(ral.error || rg.error || ras.error) {
+    var lc = document.getElementById('lista-cand'), cs = document.getElementById('cand-sub');
+    if(lc) lc.innerHTML = errorCargaHTML(); if(cs) cs.textContent = '';
+    return;
+  }
 
   var ultiGrad = {};
   (rg.data||[]).forEach(function(g){if(!ultiGrad[g.alumno_id])ultiGrad[g.alumno_id]=g.fecha;});
@@ -1213,7 +1272,7 @@ async function renderGraduaciones() {
     var dias = ultima ? Math.floor((new Date(fechaHoy)-new Date(ultima))/86400000) : 999;
     var hist = Object.values(conteoMes[a.id]||{});
     var prom = hist.length ? hist.reduce(function(s,v){return s+v;},0)/hist.length : 0;
-    var cm=conteoMes[a.id]; var ultm = [mesActual, ymdLocal(new Date(Date.now()-30*86400000)).slice(0,7)].map(function(m){return (cm&&cm[m])||0;});
+    var cm=conteoMes[a.id]; var ultm = [mesActual, mesShift(mesActual,-1)].map(function(m){return (cm&&cm[m])||0;});
     var promRec = (ultm[0]+ultm[1])/2;
     var caida = prom>0 && promRec<prom*0.6;
     if(dias>=180 && a.cinturon!=='negro') { if(caida) revisar.push(Object.assign({},a,{dias:dias})); else candidatos.push(Object.assign({},a,{dias:dias})); }
@@ -1343,6 +1402,7 @@ async function _guardarGrad() {
   var ru = await sb.from('alumnos').update({cinturon:cinturonNuevo,stripes:stripesNuevo,fecha_grad:fecha}).eq('id',alumnoId);
   if(ru.error) { alert('La graduación quedó registrada, pero no se pudo actualizar el cinturón del alumno: '+ru.error.message); }
   invalidarAlumnos();
+  checkAlertas();   // el aviso "N para graduar" de arriba
   cerrarModal('grad');
   showToast('Graduación registrada');
   renderGraduaciones();
@@ -1350,6 +1410,8 @@ async function _guardarGrad() {
 
 // ── ALUMNOS ──────────────────────────────────────────────────
 async function renderAlumnos() {
+  // Si se vuelve a dibujar después de guardar una ficha, se retoma donde estaba (ver refrescarTab)
+  var prev = alEstadoPrevio; alEstadoPrevio = null;
   getMain().innerHTML =
     '<div class="page-h"><div><h2>Alumnos</h2><p id="alumnos-sub">Cargando…</p></div><button class="btn-red" onclick="abrirAgregarAlumno()">+ Agregar</button></div>'+
     '<input type="text" id="srch-alumnos" class="srch" placeholder="Buscar por nombre, apellido o DNI" oninput="filtrarAlumnosDeb()" />'+
@@ -1362,27 +1424,54 @@ async function renderAlumnos() {
     '<select class="filter-select" id="fil-al-meses" onchange="cambiarMesesAct()" style="display:none">'+
       AL_MESES_OPC.map(function(m){ return '<option value="'+m+'"'+(m===alMeses?' selected':'')+'>'+(m===1?'en el último mes':m===12?'en el último año':'en los últimos '+m+' meses')+'</option>'; }).join('')+
     '</select>'+
+    '<select class="filter-select" id="fil-al-orden" onchange="filtrarAlumnos()"><option value="">A–Z</option><option value="mes">Más clases este mes</option><option value="mes-asc">Menos clases este mes</option><option value="total">Más clases en total</option></select>'+
     '</div>'+
     '<div class="section"><div id="lista-alumnos"><div class="empty-state">Cargando…</div></div>'+
     '<div id="pag-alumnos"></div>'+
     '</div>';
   // Una sola consulta de asistencia: sirve para el filtro "Vino / No vino" y para las tardanzas del mes
   var desde = desdeMeses(alMeses);
-  var [ral, ras] = await Promise.all([
+  var [ral, ras, rtot] = await Promise.all([
     alumnosTodos(),
-    asistenciaDesde(desde, 'alumno_id,fecha,tarde')
+    asistenciaDesde(desde, 'alumno_id,fecha,tarde'),
+    // Total desde siempre, contado en la base (sql/2026-10-21_asistencia_profe.sql). Si no está, no se muestra.
+    sb.rpc('admin_totales_asistencia').then(function(r){ return r; }, function(){ return { error: true }; })
   ]);
-  var tard = {}, iniMes = mesActual+'-01';
+  if(!document.getElementById('lista-alumnos')) return;
+  var tard = {}, mes = {}, iniMes = mesActual+'-01';
   alUltAsis = {}; alAsisDesde = desde;
   (ras.data||[]).forEach(function(x){
     if(!alUltAsis[x.alumno_id] || x.fecha>alUltAsis[x.alumno_id]) alUltAsis[x.alumno_id] = x.fecha;
-    if(x.tarde && x.fecha>=iniMes) tard[x.alumno_id]=(tard[x.alumno_id]||0)+1;
+    if(x.fecha>=iniMes) {
+      mes[x.alumno_id] = (mes[x.alumno_id]||0)+1;
+      if(x.tarde) tard[x.alumno_id] = (tard[x.alumno_id]||0)+1;
+    }
   });
-  alumnosAll = (ral.data||[]).map(function(a){ return Object.assign({},a,{_tard:tard[a.id]||0}); });
+  var tot = null;
+  if(rtot && !rtot.error && Array.isArray(rtot.data)) { tot = {}; rtot.data.forEach(function(x){ tot[x.alumno_id] = +x.total||0; }); }
+  alumnosAll = (ral.data||[]).map(function(a){
+    return Object.assign({}, a, { _tard: tard[a.id]||0, _mes: mes[a.id]||0, _total: tot ? (tot[a.id]||0) : null });
+  });
   alumnosAll.sort(function(a,b){ return (a.estado==='discontinuado')-(b.estado==='discontinuado'); });
-  alumnosFiltrados = alumnosAll.slice();
-  alumnoPagina = 0;
+  var ord = document.getElementById('fil-al-orden');
+  if(ord && !tot) ord.querySelector('option[value="total"]').remove();
+  if(prev) {
+    alCat = prev.cat;
+    AL_FILTROS.forEach(function(id, i){ var e = document.getElementById(id); if(e && prev.vals[i]) e.value = prev.vals[i]; });
+  }
   filtrarAlumnos();
+  if(prev) {
+    alumnoPagina = prev.pag; renderAlumnosPaginado();
+    window.scrollTo(0, prev.y); var m = getMain(); if(m) m.scrollTop = prev.my;
+  }
+}
+var AL_FILTROS = ['srch-alumnos','fil-al-turno','fil-al-cint','fil-al-est','fil-al-act','fil-al-orden'];
+var alEstadoPrevio = null;
+function estadoAlumnos() {
+  if(!document.getElementById('lista-alumnos')) return null;
+  var m = getMain();
+  return { pag: alumnoPagina, cat: alCat, y: window.scrollY, my: m ? m.scrollTop : 0,
+    vals: AL_FILTROS.map(function(id){ return (document.getElementById(id)||{}).value||''; }) };
 }
 
 // Filtro "Vino / No vino": ventana de meses elegible. Se guarda la última
@@ -1489,10 +1578,13 @@ function pintarFoto(el, foto) {
 async function hidratarFotos() {
   fotoTimer = null;
   var els = document.querySelectorAll('[data-av-id]');
-  var ids = [];
+  var ids = [], alto = window.innerHeight || 800;
   els.forEach(function(el){
     var id = el.getAttribute('data-av-id');
     if(fotoCache[id] !== undefined){ pintarFoto(el, fotoCache[id]); return; }
+    // solo las que están en pantalla (o cerca): en listas largas no se bajan todas juntas
+    var b = el.getBoundingClientRect();
+    if(!b.width || b.bottom < -300 || b.top > alto+300) return;
     if(!fotoPend[id] && ids.indexOf(id) === -1) ids.push(id);
   });
   if(!ids.length) return;
@@ -1507,9 +1599,11 @@ async function hidratarFotos() {
     if(fotoCache[id] !== undefined) pintarFoto(el, fotoCache[id]);
   });
 }
-new MutationObserver(function(){
-  if(!fotoTimer && document.querySelector('[data-av-id]')) fotoTimer = setTimeout(hidratarFotos, 30);
-}).observe(document.documentElement, { childList: true, subtree: true });
+function pedirFotos(ms){ if(!fotoTimer && document.querySelector('[data-av-id]')) fotoTimer = setTimeout(hidratarFotos, ms); }
+new MutationObserver(function(){ pedirFotos(30); }).observe(document.documentElement, { childList: true, subtree: true });
+// al scrollear (la lista o una ventana) o al desplegar algo, se piden las que van apareciendo
+document.addEventListener('scroll', function(){ pedirFotos(150); }, true);
+document.addEventListener('click', function(){ pedirFotos(80); }, true);
 
 function showNota(texto) {
   var old=document.getElementById('nota-pop'); if(old) old.remove();
@@ -1564,6 +1658,13 @@ function filtrarAlumnos() {
     else if(est && (a.estado||'activo')!==est) return false;
     return true;
   });
+  // Orden por cantidad de clases (si empatan, queda el orden por apellido)
+  var orden = (document.getElementById('fil-al-orden')||{}).value||'';
+  if(orden) {
+    var campo = orden==='total' ? '_total' : '_mes', sig = orden==='mes-asc' ? 1 : -1;
+    var pos = {}; alumnosAll.forEach(function(a, i){ pos[a.id] = i; });
+    alumnosFiltrados.sort(function(a,b){ return sig*((a[campo]||0)-(b[campo]||0)) || pos[a.id]-pos[b.id]; });
+  }
   alumnoPagina = 0;
   renderAlumnosPaginado();
 }
@@ -1586,7 +1687,8 @@ function renderAlumnosPaginado() {
       avHTML(a)+
       '<div style="flex:1;min-width:0"><div class="row-name">'+escHTML(a.nombre)+' '+escHTML(a.apellido)+cumpleBadge+'</div>'+
       '<div class="row-sub" style="display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;margin-top:3px">'+catPill(a.categoria)+(badge?badge:'')+(a._tard>1?punctBadge(a._tard):'')+
-        '<span>'+escHTML(capTxt(a.turno||''))+'</span></div></div>'+
+        '<span>'+escHTML(capTxt(a.turno||''))+'</span>'+
+        '<span class="al-clases">'+(a._mes||0)+' este mes'+(a._total!=null ? ' · '+a._total+' en total' : '')+'</span></div></div>'+
       '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">'+beltHTML(a.cinturon,a.stripes)+'</div>'+
       '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#a1a1aa" stroke-width="2" stroke-linecap="round" style="flex-shrink:0"><path d="m9 18 6-6-6-6"/></svg>'+
     '</div>';
@@ -1696,10 +1798,11 @@ var candAllData = []; var candFiltrados = []; var candPagina = 0; var CAND_PP = 
 var feHistId = null;
 
 function feTabSwitch(tab) {
-  ['datos','bjj','cont'].forEach(function(t){
+  ['datos','bjj','cont','asis'].forEach(function(t){
     document.getElementById('fe-tp-'+t).classList.toggle('on', t===tab);
     document.getElementById('fe-tb-'+t).classList.toggle('on', t===tab);
   });
+  if(tab==='asis' && feHistId && (!feAsis || feAsis.id!==feHistId)) cargarAsisFicha(feHistId);
 }
 
 function toggleHistorial() {
@@ -1714,20 +1817,11 @@ function toggleHistorial() {
 async function cargarHistorial(id) {
   var cont=document.getElementById('fe-hist-content'); if(!cont) return;
   cont.innerHTML='<div style="font-size:13px;color:var(--g5)">Cargando...</div>';
-  var corte=ymdLocal(new Date(Date.now()-60*86400000));
-  var [rAs,rGr,rTr]=await Promise.all([
-    sb.from('asistencia').select('fecha,tarde').eq('alumno_id',id).gte('fecha',corte).order('fecha'),
+  var [rGr,rTr]=await Promise.all([
     sb.from('graduaciones').select('tipo,cinturon_despues,stripes_despues,fecha').eq('alumno_id',id).order('fecha',{ascending:false}).limit(5),
     sb.from('torneos_participantes').select('puesto,categoria,modalidad,created_at,torneos(nombre,fecha)').eq('alumno_id',id).order('created_at',{ascending:false}).limit(5)
   ]);
-  var asSet={};
-  (rAs.data||[]).forEach(function(a){ asSet[a.fecha]=a.tarde?'tarde':'ok'; });
-  var today=new Date(fechaHoy), dots='';
-  for(var i=29;i>=0;i--){
-    var d=new Date(today.getTime()-i*86400000), k=ymdLocal(d);
-    var color=asSet[k]==='ok'?'#27ae60':asSet[k]==='tarde'?'#e67e22':'#e9e9ec';
-    dots+='<div title="'+k+'" style="width:13px;height:13px;border-radius:3px;background:'+color+';flex-shrink:0"></div>';
-  }
+  if(feHistId!==id) return;
   var gradHTML=(rGr.data||[]).map(function(g){
     var tipo=g.tipo==='cinturon'?('Cinturón '+escHTML(g.cinturon_despues)):('Stripe '+g.stripes_despues);
     return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--g2);font-size:13px"><span>'+tipo+'</span><span style="color:var(--g5)">'+escHTML(g.fecha)+'</span></div>';
@@ -1736,13 +1830,178 @@ async function cargarHistorial(id) {
     var p=t.puesto?t.puesto+'.º puesto':'Participó';
     return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--g2);font-size:13px"><span>'+escHTML((t.torneos&&t.torneos.nombre)||'Torneo')+(t.modalidad?' · '+escHTML(t.modalidad):'')+'</span><span style="color:var(--g5)">'+p+'</span></div>';
   }).join('');
-  var total=(rAs.data||[]).length;
-  var aTiempo=(rAs.data||[]).filter(function(x){return !x.tarde;}).length;
+  if(!gradHTML && !tornHTML){ cont.innerHTML='<div style="font-size:13px;color:var(--g5)">Sin graduaciones ni torneos. La asistencia está en la pestaña Asistencia.</div>'; return; }
   cont.innerHTML=
-    '<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Asistencia de los últimos 30 días &nbsp;<span style="font-weight:400">('+total+(total===1?' presencia':' presencias')+', '+aTiempo+' a tiempo)</span></div>'+
-    '<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:1.1rem">'+dots+'</div>'+
     (gradHTML?'<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Ultimas graduaciones</div>'+gradHTML+'<div style="margin-bottom:.8rem"></div>':'')+
     (tornHTML?'<div style="font-size:11px;font-weight:700;color:var(--g5);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Torneos</div>'+tornHTML:'');
+}
+
+// ── FICHA → ASISTENCIA ───────────────────────────────────────
+// Clases por mes, total y carga/borrado a mano. Se pide recién al abrir la pestaña.
+var feAsis = null;      // {id, filas, abierto:{ym:true}, todos, form}
+var feAsisAlu = null;   // {id, nombre, apellido, categoria} del alumno abierto
+var faClases = null;    // config_clases activas (una vez por sesión)
+var DIAS_C = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+function fmtDM(f){ var p=String(f).slice(0,10).split('-'); return p[2]+'/'+p[1]; }
+function fmtDMA(f){ return fmtDM(f)+'/'+String(f).slice(0,4); }
+function diaSem(f){ return DIAS_C[new Date(String(f).slice(0,10)+'T12:00:00').getDay()]; }
+function nombreClaseAsis(x){
+  var hi = String(x.horario||'').slice(0,5);
+  var c = (faClases||[]).filter(function(c){ return c.turno_id===x.turno && c.hora_inicio===hi; })[0];
+  return (c ? c.nombre : capTxt(x.turno||'Clase'))+(hi ? ' · '+hi : '');
+}
+
+async function cargarAsisFicha(id) {
+  var el = document.getElementById('fe-asis'); if(!el) return;
+  feAsis = { id: id, filas: null, abierto: {}, todos: false, form: false };
+  el.innerHTML = '<div class="empty-state">Cargando…</div>';
+  var [ra, rc] = await Promise.all([
+    asistenciaAlumno(id),
+    faClases ? Promise.resolve({ data: faClases, error: null })
+             : sb.from('config_clases').select('nombre,dia,hora_inicio,hora_fin,turno_id,categoria').eq('activo',true).order('hora_inicio')
+  ]);
+  if(!feAsis || feAsis.id !== id) return;
+  if(ra.error){ el.innerHTML = '<div class="empty-state">No se pudo cargar la asistencia. Probá de nuevo.</div>'; feAsis = null; return; }
+  if(!rc.error) faClases = rc.data||[];
+  feAsis.filas = ra.data;
+  pintarAsisFicha();
+}
+// Todas las asistencias del alumno, de la más nueva a la más vieja (por tandas de 1000)
+async function asistenciaAlumno(id) {
+  var filas = [], PAG = 1000;
+  for(var i=0;;i+=PAG){
+    var r = await sb.from('asistencia').select('*').eq('alumno_id',id)
+      .order('fecha',{ascending:false}).order('id',{ascending:false}).range(i, i+PAG-1);
+    if(r.error) return { data: filas, error: r.error };
+    filas = filas.concat(r.data||[]);
+    if(!r.data || r.data.length < PAG) return { data: filas, error: null };
+  }
+}
+
+function pintarAsisFicha() {
+  var el = document.getElementById('fe-asis');
+  if(!el || !feAsis || !feAsis.filas) return;
+  var filas = feAsis.filas, porMes = {};
+  filas.forEach(function(x){ var ym = String(x.fecha).slice(0,7); (porMes[ym] = porMes[ym]||[]).push(x); });
+  var n = function(ym){ return (porMes[ym]||[]).length; };
+  var primera = filas.length ? String(filas[filas.length-1].fecha).slice(0,10) : '';
+  var h = '<div class="fa-kpis">'+
+      '<div class="fa-kpi"><b>'+n(mesActual)+'</b><span>Este mes</span></div>'+
+      '<div class="fa-kpi"><b>'+n(mesShift(mesActual,-1))+'</b><span>Mes pasado</span></div>'+
+      '<div class="fa-kpi"><b>'+filas.length+'</b><span>Total</span></div></div>'+
+    '<div class="fa-desde">'+(primera ? 'Registradas desde el '+fmtDMA(primera) : 'Todavía no tiene asistencias registradas')+'</div>'+
+    (feAsis.form ? faFormHTML() : '<button type="button" class="btn-red fa-add" id="fa-add">+ Cargar asistencia</button>');
+  // Últimos 30 días: verde a tiempo, naranja tarde
+  var dia = {};
+  filas.forEach(function(x){ var k = String(x.fecha).slice(0,10); if(dia[k]!=='ok') dia[k] = x.tarde ? 'tarde' : 'ok'; });
+  var dots = '';
+  for(var i=29;i>=0;i--){ var d = new Date(hoy); d.setDate(d.getDate()-i); var k = ymdLocal(d); dots += '<i class="'+(dia[k]||'')+'" title="'+fmtDM(k)+'"></i>'; }
+  h += '<div class="fe-sec"><div class="fe-sec-t">Últimos 30 días</div><div class="fa-dots">'+dots+'</div></div>';
+  // Un renglón por mes, del actual al primero (los meses en 0 también, para ver los huecos)
+  var meses = [], ym = mesActual, fin = primera ? primera.slice(0,7) : mesActual;
+  while(ym >= fin){ meses.push(ym); ym = mesShift(ym,-1); }
+  var max = Math.max.apply(null, meses.map(n).concat([1]));
+  var vis = feAsis.todos ? meses : meses.slice(0,12);
+  h += '<div class="fe-sec"><div class="fe-sec-t">Clases por mes</div>'+vis.map(function(ym){
+      var c = n(ym), ab = !!feAsis.abierto[ym], p = ym.split('-');
+      return '<div class="fa-mes" data-ym="'+ym+'"><span class="fa-mes-n">'+MESES[(+p[1])-1].slice(0,3)+' '+p[0]+'</span>'+
+          '<div class="fa-bar"><i style="width:'+Math.round(c/max*100)+'%"></i></div><b>'+c+'</b>'+(ab?CH_U:CH_D)+'</div>'+
+        (ab ? '<div class="fa-dias">'+((porMes[ym]||[]).map(faDiaHTML).join('') || '<div class="fa-dia">Sin clases este mes</div>')+'</div>' : '');
+    }).join('')+
+    (meses.length > vis.length ? '<button type="button" class="fa-mas" id="fa-mas">Ver los '+meses.length+' meses</button>' : '')+'</div>';
+  el.innerHTML = h;
+
+  var b;
+  if((b = document.getElementById('fa-add'))) b.onclick = function(){ feAsis.form = true; pintarAsisFicha(); };
+  if((b = document.getElementById('fa-mas'))) b.onclick = function(){ feAsis.todos = true; pintarAsisFicha(); };
+  if((b = document.getElementById('fa-cancel'))) b.onclick = function(){ feAsis.form = false; pintarAsisFicha(); };
+  if((b = document.getElementById('fa-ok'))) b.onclick = guardarAsisManual;
+  if((b = document.getElementById('fa-fecha'))) { b.onchange = faOpcionesClase; faOpcionesClase(); }
+  el.querySelectorAll('.fa-mes').forEach(function(m){
+    m.onclick = function(){ var k = m.dataset.ym; feAsis.abierto[k] = !feAsis.abierto[k]; pintarAsisFicha(); };
+  });
+  el.querySelectorAll('[data-del]').forEach(function(x){ x.onclick = function(){ borrarAsis(x.dataset.del); }; });
+}
+function faDiaHTML(x) {
+  return '<div class="fa-dia"><b>'+diaSem(x.fecha)+' '+fmtDM(x.fecha)+'</b><span class="fa-cl">'+escHTML(nombreClaseAsis(x))+'</span>'+
+    (x.tarde ? '<span class="fa-tag tarde">tarde</span>' : '')+
+    (x.cargada_por==='profe' ? '<span class="fa-tag">a mano</span>' : '')+
+    '<button type="button" class="fa-del" data-del="'+escHTML(String(x.id))+'">Borrar</button></div>';
+}
+function faFormHTML() {
+  return '<div class="fa-form"><div class="fe-grid">'+
+      '<div class="fe-f full"><label>Fecha</label><input type="date" id="fa-fecha" max="'+fechaHoy+'" value="'+fechaHoy+'"></div>'+
+      '<div class="fe-f full"><label>Clase</label><select id="fa-clase"></select></div></div>'+
+    '<div class="fa-form-btns"><button type="button" class="fa-cancel" id="fa-cancel">Cancelar</button><button type="button" class="btn-red" id="fa-ok">Guardar</button></div></div>';
+}
+// Clases del día elegido; si ese día no hay ninguna, todas (con el día adelante)
+function faOpcionesClase() {
+  var sel = document.getElementById('fa-clase'), f = (document.getElementById('fa-fecha')||{}).value;
+  if(!sel) return;
+  var todas = faClases||[];
+  var lista = f ? todas.filter(function(c){ return c.dia === new Date(f+'T12:00:00').getDay(); }) : [];
+  var conDia = !lista.length;
+  if(conDia) lista = todas.slice().sort(function(a,b){ return DIAS_ORDEN.indexOf(a.dia)-DIAS_ORDEN.indexOf(b.dia) || String(a.hora_inicio).localeCompare(String(b.hora_inicio)); });
+  var cat = feAsisAlu && feAsisAlu.categoria;
+  var pref = lista.filter(function(c){ return c.categoria===cat; })[0];
+  sel.innerHTML = lista.length ? lista.map(function(c){
+    return '<option value="'+todas.indexOf(c)+'"'+(c===pref?' selected':'')+'>'+(conDia?DIAS_C[c.dia]+' · ':'')+escHTML(c.nombre)+' · '+escHTML(c.hora_inicio)+'</option>';
+  }).join('') : '<option value="">No hay clases cargadas</option>';
+}
+
+function guardarAsisManual() { return unaVez('asis-manual', _guardarAsisManual); }
+async function _guardarAsisManual() {
+  var f = (document.getElementById('fa-fecha')||{}).value;
+  var c = (faClases||[])[parseInt((document.getElementById('fa-clase')||{}).value)];
+  var a = feAsisAlu;
+  if(!a || !feAsis || a.id !== feAsis.id) return;
+  if(!f || f > fechaHoy) { alert('Elegí una fecha válida (hasta hoy)'); return; }
+  if(!c) { alert('Elegí la clase'); return; }
+  // Igual que el kiosco: en las clases abiertas queda el grupo del alumno
+  var cat = ['kinder','infantil','adulto'].indexOf(c.categoria)>=0 ? c.categoria : (a.categoria||'adulto');
+  var ts = new Date(f+'T'+c.hora_inicio+':00');
+  var fila = { alumno_id: a.id, nombre: a.nombre, apellido: a.apellido, fecha: f, turno: c.turno_id,
+    horario: c.hora_inicio+' - '+c.hora_fin, categoria: cat, tarde: false, con_fisico: null,
+    timestamp: (isNaN(ts) ? new Date() : ts).toISOString(), cargada_por: 'profe' };
+  var btn = document.getElementById('fa-ok'); if(btn){ btn.disabled = true; btn.textContent = 'Guardando…'; }
+  var r = await sb.from('asistencia').insert(fila).select().single();
+  // Si todavía no se agregó la columna cargada_por en la base, se guarda sin ella
+  if(r.error && (r.error.code==='PGRST204' || r.error.code==='42703')) { delete fila.cargada_por; r = await sb.from('asistencia').insert(fila).select().single(); }
+  if(btn){ btn.disabled = false; btn.textContent = 'Guardar'; }
+  if(r.error) { alert(r.error.code==='23505' ? 'Ya tiene asistencia en esa clase ese día.' : 'No se pudo cargar la asistencia: '+r.error.message); return; }
+  if(feAsis && feAsis.id === a.id) {
+    feAsis.filas.push(r.data || fila);
+    feAsis.filas.sort(function(x,y){ return String(y.fecha).localeCompare(String(x.fecha)) || (y.id||0)-(x.id||0); });
+    feAsis.form = false; feAsis.abierto[f.slice(0,7)] = true;
+    pintarAsisFicha();
+  }
+  showToast('Asistencia cargada');
+  asisCambio(a.id, f, 1);
+}
+
+async function borrarAsis(idAs) {
+  if(!feAsis) return;
+  var x = feAsis.filas.filter(function(f){ return String(f.id)===String(idAs); })[0];
+  if(!x || !confirm('¿Borrar la asistencia del '+fmtDM(x.fecha)+' ('+nombreClaseAsis(x)+')?')) return;
+  var alId = feAsis.id;
+  var r = await sb.from('asistencia').delete().eq('id', x.id).select('id');
+  if(r.error || !(r.data||[]).length) { alert('No se pudo borrar la asistencia'+(r.error ? ': '+r.error.message : '')); return; }
+  if(feAsis && feAsis.id === alId) { feAsis.filas = feAsis.filas.filter(function(f){ return f !== x; }); pintarAsisFicha(); }
+  showToast('Asistencia borrada');
+  asisCambio(alId, x.fecha, -1);
+}
+// Mantiene al día el encabezado de la ficha, la lista de Alumnos y Hoy sin volver a pedir todo
+function asisCambio(id, fecha, delta) {
+  if(feAsisAlu && feAsisAlu.id === id) cargarResumenAlumno(feAsisAlu);   // encabezado de la ficha
+  fecha = String(fecha).slice(0,10);
+  var a = alumnosAll.filter(function(x){ return x.id === id; })[0];
+  if(a) {
+    if(fecha.slice(0,7) === mesActual) a._mes = Math.max(0, (a._mes||0)+delta);
+    if(a._total != null) a._total = Math.max(0, a._total+delta);
+    if(delta > 0 && (!alUltAsis[id] || fecha > alUltAsis[id])) alUltAsis[id] = fecha;
+    if(document.getElementById('lista-alumnos')) renderAlumnosPaginado();
+  }
+  if(fecha === fechaHoy && document.getElementById('lista-hoy')) cargarHoy();
 }
 var feFoto = undefined; // undefined = sin cambios; string = foto nueva
 function feVal(id){var e=document.getElementById(id);return e?e.value:'';}
@@ -1757,6 +2016,8 @@ async function abrirEditarAlumno(id){
   document.getElementById('fe-av').innerHTML = '';
   feFoto = undefined;
   feHistId = id;
+  feAsis = null; feAsisAlu = null;
+  var fa = document.getElementById('fe-asis'); if(fa) fa.innerHTML = '';
   feTabSwitch('datos');
   var fhb=document.getElementById('fe-hist-body'), arrH=document.getElementById('arr-hist');
   if(fhb){fhb.style.display='none'; document.getElementById('fe-hist-content').innerHTML='<div style="font-size:13px;color:var(--g5)">Cargando...</div>';}
@@ -1764,6 +2025,8 @@ async function abrirEditarAlumno(id){
   var r = await sb.from('alumnos').select('*').eq('id',id).single();
   if(r.error || !r.data){ alert('No se pudo cargar el alumno'); cerrarModal('editar'); return; }
   var a = r.data;
+  if(feHistId !== id) return;
+  feAsisAlu = { id: a.id, nombre: a.nombre, apellido: a.apellido, categoria: a.categoria, fecha_grad: a.fecha_grad };
   fotoCache[a.id] = a.foto_url || '';
   document.getElementById('fe-id').value = a.id;
   feSet('fe-nombre',a.nombre); feSet('fe-apellido',a.apellido); feSet('fe-dni',a.dni);
@@ -1886,6 +2149,7 @@ async function guardarEditarAlumno(){
   if(feFoto!==undefined) fotoCache[id] = feFoto || '';
   cerrarModal('editar');
   showToast('Ficha actualizada');
+  checkAlertas();
   refrescarTab();
 }
 
@@ -1952,20 +2216,22 @@ async function renderTorneos() {
     '<div class="section"><div class="section-header"><div class="section-title">Resultados</div></div><div id="lista-resultados"><div class="empty-state">Seleccioná un torneo para ver los resultados</div></div></div>';
 
   document.getElementById('btn-nt2') && (document.getElementById('btn-nt2').onclick=function(){ abrirModal('torneo'); });
-  var [rt, rp] = await Promise.all([
+  // Medallero: la base cuenta (sin bajar filas ni cortarse en 1000)
+  var cuenta = function(p){ return sb.from('torneos_participantes').select('id',{count:'exact',head:true}).eq('puesto',p); };
+  var [rt, r1, r2, r3] = await Promise.all([
     sb.from('torneos').select('*').order('fecha',{ascending:false}),
-    sb.from('torneos_participantes').select('puesto')
+    cuenta(1), cuenta(2), cuenta(3)
   ]);
-  var torneos = rt.data || [], parts = rp.data || [];
-  var oro=0,plata=0,bronce=0;
-  parts.forEach(function(p){ if(p.puesto===1)oro++; else if(p.puesto===2)plata++; else if(p.puesto===3)bronce++; });
+  if(rt.error) { var lt = document.getElementById('lista-torneos'); if(lt) lt.innerHTML = errorCargaHTML(); }
+  var torneos = rt.error ? null : (rt.data || []);
+  var oro = r1.error ? '–' : (r1.count||0), plata = r2.error ? '–' : (r2.count||0), bronce = r3.error ? '–' : (r3.count||0);
   var med = document.getElementById('medallero');
   if(med) med.innerHTML =
     '<div class="stat-card"><div class="stat-label">&#129351; Oro</div><div class="stat-num">'+oro+'</div></div>'+
     '<div class="stat-card"><div class="stat-label">&#129352; Plata</div><div class="stat-num">'+plata+'</div></div>'+
     '<div class="stat-card"><div class="stat-label">&#129353; Bronce</div><div class="stat-num">'+bronce+'</div></div>';
   var el = document.getElementById('lista-torneos');
-  if(!el) return;
+  if(!el || !torneos) return;
   el.innerHTML = torneos.length ? torneos.map(function(t){
     return '<div class="row-item" style="cursor:pointer" data-id="'+escHTML(String(t.id))+'" data-nom="'+escHTML(t.nombre||'')+'" data-torn="1">'+
       '<div style="flex:1"><div class="row-name">'+escHTML(t.nombre)+'</div><div class="row-sub">'+escHTML(t.fecha)+'</div></div>'+
@@ -1980,10 +2246,12 @@ var tornSel = {id:null, nom:''};
 async function verResultados(id, nom) {
   tornSel = {id:id, nom:nom};
   var r = await sb.from('torneos_participantes').select('*').eq('torneo_id',id).order('puesto');
-  var res = r.data || [];
-  var medc = res.filter(function(x){return x.puesto&&x.puesto<=3;}).length;
+  if(tornSel.id !== id) return;   // se tocó otro torneo mientras cargaba
   var lrEl = document.getElementById('lista-resultados');
   if(!lrEl) return;
+  if(r.error) { lrEl.innerHTML = errorCargaHTML(); return; }
+  var res = r.data || [];
+  var medc = res.filter(function(x){return x.puesto&&x.puesto<=3;}).length;
   lrEl.innerHTML = '<div style="padding:1rem 1.25rem;border-bottom:1px solid var(--g2);font-weight:600">'+escHTML(nom)+' · '+res.length+(res.length===1?' inscripto':' inscriptos')+' · '+medc+(medc===1?' medalla':' medallas')+'</div>'+
     (res.length ? res.map(function(p){
       var pT = p.puesto ? p.puesto+'° puesto' : 'Participo';
@@ -2248,8 +2516,29 @@ function descargarCSV(rows, nombre) {
 }
 
 // ── UTILS ────────────────────────────────────────────────────
-function abrirModal(id) { document.getElementById('modal-'+id).classList.add('show'); }
-function cerrarModal(id) { document.getElementById('modal-'+id).classList.remove('show'); }
+// El botón "atrás" del celular cierra la ventana abierta en vez de salir del panel
+// (y así la lista queda en la misma página y con los mismos filtros).
+var _histModal = false, _ignorarPop = false;
+function modalesAbiertos() { return document.querySelectorAll('.modal-bg.show,.fe-bg.show'); }
+function abrirModal(id) {
+  document.getElementById('modal-'+id).classList.add('show');
+  if(!_histModal) { _histModal = true; try { history.pushState({ kzModal: 1 }, ''); } catch(e) {} }
+}
+function cerrarModal(id) {
+  document.getElementById('modal-'+id).classList.remove('show');
+  // Se espera un instante: si enseguida se abre otra ventana, la entrada del historial se reusa
+  setTimeout(function(){
+    if(_histModal && !modalesAbiertos().length) { _histModal = false; _ignorarPop = true; history.back(); }
+  }, 0);
+}
+window.addEventListener('popstate', function(){
+  if(_ignorarPop) { _ignorarPop = false; return; }
+  _histModal = false;
+  var abiertos = modalesAbiertos();
+  if(!abiertos.length) return;
+  abiertos[abiertos.length-1].classList.remove('show');
+  if(modalesAbiertos().length) { _histModal = true; try { history.pushState({ kzModal: 1 }, ''); } catch(e) {} }
+});
 
 function showToast(msg) {
   var t = document.getElementById('toast');
@@ -2324,6 +2613,8 @@ async function gateCheck(){
     if(!user){ login(''); return; }
     var email = (user.email||'').toLowerCase();
     var chk = await sb.from('admins_autorizados').select('email').eq('email',email).maybeSingle();
+    // Un corte de red no es "cuenta no autorizada": con el panel abierto no se tapa nada
+    if(chk.error){ if(!gateBooted) login('No se pudo verificar la cuenta. Revisá la conexión y recargá la página.'); return; }
     if(chk.data){ if(ov) ov.style.display='none'; setAcct(user); bootApp(); }
     else { login('La cuenta '+email+' no está autorizada para el panel.'); }
   }catch(e){ login('Error de autenticacion: '+(e&&e.message?e.message:e)); }
@@ -2354,7 +2645,11 @@ document.addEventListener('click', function(e){
 
 function iniciarConGate(){
   if(location.protocol === 'file:'){ bootApp(); return; }   // bypass para testing local
-  sb.auth.onAuthStateChange(function(){ gateCheck(); });
+  // INITIAL_SESSION ya lo cubre la llamada directa; el refresco del token (cada hora) no vuelve a verificar
+  sb.auth.onAuthStateChange(function(ev){
+    if(ev==='INITIAL_SESSION' || (ev==='TOKEN_REFRESHED' && gateBooted)) return;
+    gateCheck();
+  });
   gateCheck();
 }
 iniciarConGate();
