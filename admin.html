@@ -2577,10 +2577,17 @@ function updateThemeIcon(theme) {
 }
 
 async function checkAlertas() {
-  var r = await alumnosActivos();
+  // mismo criterio que la pestaña Graduaciones: manda la última graduación registrada
+  var [r, rg] = await Promise.all([
+    alumnosActivos(),
+    sb.from('graduaciones').select('alumno_id,fecha').order('fecha',{ascending:false})
+  ]);
+  if(r.error || rg.error) return;
+  var ultiGrad = {};
+  (rg.data||[]).forEach(function(g){ if(!ultiGrad[g.alumno_id]) ultiGrad[g.alumno_id]=g.fecha; });
   var cand = (r.data||[]).filter(function(a){
     if(a.cinturon==='negro') return false;
-    var desde = a.fecha_grad || a.fecha_inicio || (a.created_at||'').slice(0,10);
+    var desde = ultiGrad[a.id] || a.fecha_grad || a.fecha_inicio || (a.created_at||'').slice(0,10);
     if(!desde) return true;
     return Math.floor((new Date(fechaHoy)-new Date(desde))/86400000)>=180;
   }).length;
