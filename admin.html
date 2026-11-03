@@ -429,6 +429,11 @@ button,input,select,textarea{font-family:inherit}
 .cfg-seg button{font-size:14px;padding:10px 6px}
 .cfg-dia{font-family:var(--disp);font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--g5);margin:16px 4px 8px}
 .cfg-dia:first-child{margin-top:0}
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;padding:12px 1.25rem 1rem}
+.dl-btn{text-align:left;padding:10px 12px;border:1px solid var(--g2);border-radius:12px;background:var(--white);color:var(--black);cursor:pointer;font-family:inherit}
+.dl-btn:active{background:var(--g1)}
+.dl-btn b{display:block;font-size:13px;font-weight:700}
+.dl-btn span{display:block;font-size:11px;color:var(--g5);margin-top:2px;line-height:1.3}
 .cfg-sec{margin-bottom:0}
 .cfg-clase{cursor:pointer}
 .cfg-hora{font-family:var(--disp);font-size:22px;font-weight:800;line-height:1;min-width:58px;color:var(--black)}
@@ -487,13 +492,13 @@ button,input,select,textarea{font-family:inherit}
       <svg id="theme-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
     </button>
     <a class="btn-ghost" href="index.html" target="_blank" rel="noopener" title="Abrir la pantalla de asistencia de alumnos"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>Asistencia</a>
-    <button class="btn-red" onclick="exportarCSV()">Exportar</button>
+    <button class="btn-red" onclick="exportarExcel()">Exportar</button>
     <div class="acct" id="acct">
       <button class="acct-btn" id="acct-btn" aria-haspopup="true" aria-expanded="false" onclick="toggleAcct(event)"><span class="acct-av" id="acct-av">?</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="acct-menu" id="acct-menu">
         <div class="acct-who"><span class="acct-av" id="acct-av2">?</span><div style="min-width:0"><b id="acct-name">Profe</b><span id="acct-email"></span></div></div>
         <button class="acct-item acct-only-m" onclick="toggleTheme()"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Cambiar tema</button>
-        <button class="acct-item acct-only-m" onclick="exportarCSV()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Exportar CSV</button>
+        <button class="acct-item acct-only-m" onclick="exportarExcel()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Exportar Excel</button>
         <a class="acct-item" href="index.html" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>Abrir Asistencia</a>
         <button class="acct-item out" onclick="authSignout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>Cerrar sesión</button>
       </div>
@@ -1076,12 +1081,15 @@ async function renderMes(){
     '<button class="btn-mes-nav" id="mes-prev">&#8249;</button>'+
     '<div class="section-title" id="mes-label" style="min-width:150px;text-align:center">Informe</div>'+
     '<button class="btn-mes-nav" id="mes-next">&#8250;</button>'+
-    '<button class="btn-save-cfg" id="mes-export" style="font-size:12px;padding:6px 14px">Exportar mes</button>'+
     '</div></div>'+
+    '<div class="section" id="dl-sec" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Descargar en Excel</div></div><div class="dl-grid">'+
+    Object.keys(XL_INFORMES).map(function(k){
+      return '<button type="button" class="dl-btn" data-xl="'+k+'"><b>'+XL_INFORMES[k].nom+'</b><span>'+XL_INFORMES[k].sub+'</span></button>';
+    }).join('')+'</div></div>'+
     '<div id="informes-cont"><div class="empty-state">Cargando informes...</div></div>';
+  document.querySelectorAll('.dl-btn').forEach(function(b){ b.onclick = function(){ descargarExcel(b.dataset.xl, mesInforme); }; });
   document.getElementById('mes-prev').onclick=function(){ mesInforme=mesShift(mesInforme,-1); cargarInformes(); };
   document.getElementById('mes-next').onclick=function(){ if(mesInforme>=mesActual) return; mesInforme=mesShift(mesInforme,1); cargarInformes(); };
-  document.getElementById('mes-export').onclick=function(){ exportarMes(mesInforme); };
   cargarInformes();
 }
 
@@ -2549,17 +2557,161 @@ async function reactivarClase(id) {
   renderConfig();
 }
 
-// ── EXPORT ───────────────────────────────────────────────────
-async function exportarCSV() { return exportarMes(mesActual); }
+// ── EXPORT A EXCEL (.xlsx) ───────────────────────────────────
+// Informes > "Descargar en Excel": Padrón, Contacto y salud, Clases mes a mes
+// y Asistencias del mes, cada uno en su propio archivo.
+// La librería se baja recién al exportar, para no hacer pesado el panel.
+// El botón Exportar de arriba lleva a las descargas de Informes
+function exportarExcel() { showTab('mes'); setTimeout(function(){ var d=document.getElementById('dl-sec'); if(d) d.scrollIntoView({behavior:'smooth'}); }, 50); }
 
-// CSV para Excel en español: separador ";", campos entre comillas y BOM para que se vean las tildes
-function descargarCSV(rows, nombre) {
-  var esc = function(v){ v = v==null ? '' : String(v); return /[";\n\r,]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; };
-  var csv = '﻿' + rows.map(function(r){ return r.map(esc).join(';'); }).join('\r\n');
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download = nombre;
-  a.click();
+var _xlsxP = null;
+function cargarXLSX() {
+  if(window.XLSX) return Promise.resolve();
+  if(!_xlsxP) _xlsxP = new Promise(function(ok, mal){
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = ok; s.onerror = function(){ _xlsxP = null; mal(new Error('sin conexión')); };
+    document.head.appendChild(s);
+  });
+  return _xlsxP;
+}
+
+// Celdas: fecha como fecha real de Excel, DNI y teléfonos como texto (sin notación científica)
+function xFecha(s) {
+  s = String(s||'').slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+  var p = s.split('-');
+  return { t:'n', v:(Date.UTC(+p[0], p[1]-1, +p[2]) - Date.UTC(1899,11,30))/86400000, z:'dd/mm/yyyy' };
+}
+function xTxt(v) { return { t:'s', v: v==null ? '' : String(v) }; }
+function edadEn(fnac, hoy) {
+  if(!fnac) return null;
+  var n = String(fnac).slice(0,10).split('-'), h = hoy.split('-');
+  var e = h[0]-n[0]; if(h[1]+h[2] < n[1]+n[2]) e--;
+  return isNaN(e) ? null : e;
+}
+function mesesEntre(ymA, ymB) { var a=ymA.split('-'), b=ymB.split('-'); return (b[0]-a[0])*12 + (b[1]-a[1]); }
+function hoja(filas, anchos) {
+  var ws = XLSX.utils.aoa_to_sheet(filas);
+  ws['!cols'] = anchos.map(function(w){ return {wch:w}; });
+  if(filas.length > 1) ws['!autofilter'] = { ref: XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:filas.length-1, c:filas[0].length-1}}) };
+  return ws;
+}
+
+// Cada informe se baja por separado y solo trae de la base lo que necesita
+var XL_INFORMES = {
+  padron:     { nom:'Padrón',              sub:'Datos, edad y clases de cada alumno' },
+  contacto:   { nom:'Contacto y salud',    sub:'Teléfonos, tutor, emergencia y apto' },
+  mesames:    { nom:'Clases mes a mes',    sub:'Cada alumno, mes por mes' },
+  asistencias:{ nom:'Asistencias del mes', sub:'Cada asistencia del mes elegido' }
+};
+var XL_ALU = 'id,nombre,apellido,dni,estado,bloqueado';
+
+function descargarExcel(tipo, ym) { return unaVez('excel', function(){ return _descargarExcel(tipo, ym||mesActual); }); }
+async function _descargarExcel(tipo, ym) {
+  var inf = XL_INFORMES[tipo];
+  showToast('Armando '+inf.nom+'…');
+  var pedidos = [cargarXLSX()];
+  if(tipo==='padron') pedidos.push(
+    sb.from('alumnos').select(XL_ALU+',fecha_nac,sexo,fecha_inicio,created_at,cinturon,stripes,fecha_grad,categoria,es_competidor,es_profe').eq('activo',true).order('apellido').order('nombre'),
+    asistenciaDesde('2000-01-01', 'alumno_id,fecha'),
+    sb.from('graduaciones').select('alumno_id,fecha').order('fecha',{ascending:false}));
+  else if(tipo==='contacto') pedidos.push(
+    sb.from('alumnos').select(XL_ALU+',fecha_nac,categoria,telefono,email,domicilio,apto_fisico,apto_vencimiento,tutor_nombre,tutor_relacion,tutor_telefono,emerg_nombre,emerg_relacion,emerg_telefono').eq('activo',true).order('apellido').order('nombre'));
+  else if(tipo==='mesames') pedidos.push(
+    sb.from('alumnos').select(XL_ALU).eq('activo',true).order('apellido').order('nombre'),
+    asistenciaDesde('2000-01-01', 'alumno_id,fecha'));
+  else pedidos.push(
+    sb.from('alumnos').select('id,dni').eq('activo',true),
+    asistenciaDesde(ym+'-01', 'alumno_id,fecha,nombre,apellido,categoria,turno,horario,tarde,motivo_tarde,con_fisico,timestamp', mesShift(ym,1)+'-01'));
+  var res;
+  try { res = await Promise.all(pedidos); }
+  catch(e) { alert('No se pudo bajar el generador de Excel. Revisá la conexión y probá de nuevo.'); return; }
+  var err = res.slice(1).map(function(r){ return r.error; }).filter(Boolean)[0];
+  if(err) { alert('No se pudo descargar: '+err.message); return; }
+
+  var alus = res[1].data || [];
+  var siNo = function(v){ return v ? 'Sí' : 'No'; };
+  var estadoTxt = function(a){ return capTxt(a.estado||'activo') + (a.bloqueado ? ' (bloqueado)' : ''); };
+  var mesCorto = function(m){ var p=m.split('-'); return MESES[(+p[1])-1].slice(0,3)+' '+p[0]; };
+  var base = function(a){ return [xTxt(a.apellido), xTxt(a.nombre), xTxt(a.dni)]; };
+  // por alumno: total, clases por mes, primera y última asistencia
+  var stats = function(filas){
+    var st = {}, pri = null;
+    filas.forEach(function(x){
+      if(x.alumno_id==null) return;
+      var s = st[x.alumno_id] || (st[x.alumno_id] = {total:0, mes:{}, pri:x.fecha, ult:x.fecha});
+      var m = x.fecha.slice(0,7);
+      s.total++; s.mes[m] = (s.mes[m]||0)+1;
+      if(x.fecha < s.pri) s.pri = x.fecha;
+      if(x.fecha > s.ult) s.ult = x.fecha;
+      if(!pri || m < pri) pri = m;
+    });
+    return { st:st, primerMes:pri || mesActual };
+  };
+  var filas, anchos, archivo;
+
+  if(tipo==='padron') {
+    var S = stats(res[2].data).st, ultGrad = {}, ymPrev = mesShift(mesActual,-1);
+    res[3].data.forEach(function(g){ if(!ultGrad[g.alumno_id]) ultGrad[g.alumno_id] = g.fecha; });
+    filas = [['Apellido','Nombre','DNI','Fecha de nacimiento','Edad','Sexo','Categoría','Cinturón','Stripes','Estado','Profe','Competidor',
+      'Inicio','Antigüedad (meses)','Clases '+mesCorto(mesActual),'Clases '+mesCorto(ymPrev),'Total de clases','Promedio por mes',
+      'Primera asistencia','Última asistencia','Días sin venir','Última graduación']];
+    alus.forEach(function(a){
+      var s = S[a.id] || {total:0, mes:{}, pri:null, ult:null};
+      var inicio = a.fecha_inicio || s.pri || (a.created_at||'').slice(0,10) || null;
+      var meses = s.pri ? mesesEntre(s.pri.slice(0,7), mesActual) + 1 : 0;
+      filas.push(base(a).concat([
+        xFecha(a.fecha_nac), edadEn(a.fecha_nac, fechaHoy), xTxt(capTxt(a.sexo||'')), xTxt(capTxt(a.categoria||'')), xTxt(capTxt(a.cinturon||'')),
+        a.stripes||0, xTxt(estadoTxt(a)), siNo(a.es_profe), siNo(a.es_competidor),
+        xFecha(inicio), inicio ? Math.max(0, mesesEntre(inicio.slice(0,7), mesActual)) : null,
+        s.mes[mesActual]||0, s.mes[ymPrev]||0, s.total, meses ? Math.round(s.total/meses*10)/10 : 0,
+        xFecha(s.pri), xFecha(s.ult), s.ult ? Math.round((new Date(fechaHoy)-new Date(s.ult))/86400000) : null,
+        xFecha(ultGrad[a.id] || a.fecha_grad)]));
+    });
+    anchos = [16,16,11,12,6,10,10,10,7,14,6,10,12,10,11,11,10,10,12,12,9,12];
+    archivo = 'Kaizo Padrón '+ymdLocal(new Date()).split('-').reverse().join('-');
+  }
+  else if(tipo==='contacto') {
+    filas = [['Apellido','Nombre','DNI','Edad','Categoría','Estado','Teléfono','Email','Domicilio','Apto físico','Vence apto',
+      'Tutor','Relación tutor','Teléfono tutor','Emergencia','Relación emergencia','Teléfono emergencia']];
+    alus.forEach(function(a){
+      filas.push(base(a).concat([edadEn(a.fecha_nac, fechaHoy), xTxt(capTxt(a.categoria||'')), xTxt(estadoTxt(a)),
+        xTxt(a.telefono), xTxt(a.email), xTxt(a.domicilio), siNo(a.apto_fisico), xFecha(a.apto_vencimiento),
+        xTxt(a.tutor_nombre), xTxt(a.tutor_relacion), xTxt(a.tutor_telefono), xTxt(a.emerg_nombre), xTxt(a.emerg_relacion), xTxt(a.emerg_telefono)]));
+    });
+    anchos = [16,16,11,6,10,14,15,24,24,10,12,18,12,15,18,12,15];
+    archivo = 'Kaizo Contacto y salud '+ymdLocal(new Date()).split('-').reverse().join('-');
+  }
+  else if(tipo==='mesames') {
+    var R = stats(res[2].data), mesesCol = [];
+    for(var m = R.primerMes; m <= mesActual; m = mesShift(m,1)) mesesCol.push(m);
+    filas = [['Apellido','Nombre','DNI','Estado'].concat(mesesCol.map(mesCorto), ['Total'])];
+    alus.forEach(function(a){
+      var s = R.st[a.id] || {mes:{}, total:0};
+      filas.push(base(a).concat([xTxt(estadoTxt(a))], mesesCol.map(function(m){ return s.mes[m]||0; }), [s.total]));
+    });
+    anchos = [16,16,11,14].concat(mesesCol.map(function(){ return 9; }), [8]);
+    archivo = 'Kaizo Clases mes a mes '+mesCorto(mesActual);
+  }
+  else {
+    var dniDe = {}; alus.forEach(function(a){ dniDe[a.id] = a.dni; });
+    var am = res[2].data.slice().sort(function(a,b){ return (a.fecha+(a.timestamp||'')).localeCompare(b.fecha+(b.timestamp||'')); });
+    if(!am.length) { showToast('Sin asistencias en '+mesLabel(ym)); return; }
+    filas = [['Fecha','Hora','Apellido','Nombre','DNI','Categoría','Turno','Horario','Tarde','Motivo','Con físico']];
+    am.forEach(function(x){
+      var hora = x.timestamp ? new Date(x.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false}) : '';
+      filas.push([xFecha(x.fecha), xTxt(hora), xTxt(x.apellido), xTxt(x.nombre), xTxt(dniDe[x.alumno_id]||''), xTxt(capTxt(x.categoria||'')),
+        xTxt(x.turno), xTxt(x.horario), siNo(x.tarde), xTxt(x.motivo_tarde), siNo(x.con_fisico)]);
+    });
+    anchos = [12,7,16,16,11,10,10,14,7,24,10];
+    archivo = 'Kaizo Asistencias '+mesLabel(ym);
+  }
+
+  var wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, hoja(filas, anchos), inf.nom);
+  XLSX.writeFile(wb, archivo+'.xlsx', {compression:true});
+  showToast('Descargado: '+inf.nom);
 }
 
 // ── UTILS ────────────────────────────────────────────────────
@@ -2640,18 +2792,6 @@ async function checkAlertas() {
   }).length;
   var b=document.getElementById('alerta-badge');
   if(b){ if(cand>0){b.textContent=cand+' para graduar';b.style.display='inline-block';}else b.style.display='none'; }
-}
-
-async function exportarMes(ym) {
-  var ini=ym+'-01', fin=mesShift(ym,1)+'-01';
-  var r=await asistenciaDesde(ini, 'fecha,nombre,apellido,categoria,turno,horario,tarde,motivo_tarde,con_fisico,timestamp', fin);
-  if(r.error){alert('No se pudo exportar: '+r.error.message);return;}
-  if(!r.data.length){showToast('Sin datos en '+mesLabel(ym));return;}
-  r.data.sort(function(a,b){ return (a.fecha+(a.timestamp||'')).localeCompare(b.fecha+(b.timestamp||'')); });
-  var rows=[['Fecha','Nombre','Apellido','Categoría','Turno','Horario','Tarde','Motivo','Con físico']];
-  r.data.forEach(function(x){rows.push([x.fecha,x.nombre||'',x.apellido||'',x.categoria||'',x.turno||'',x.horario||'',x.tarde?'Sí':'No',x.motivo_tarde||'',x.con_fisico?'Sí':'No']);});
-  descargarCSV(rows, 'kaizo-'+ym+'.csv');
-  showToast('CSV exportado: '+mesLabel(ym));
 }
 
 async function authGoogle(){ await sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.href.split('#')[0] } }); }
