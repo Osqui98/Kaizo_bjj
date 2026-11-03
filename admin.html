@@ -432,6 +432,7 @@ button,input,select,textarea{font-family:inherit}
 .dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;padding:12px 1.25rem 1rem}
 .dl-btn{text-align:left;padding:10px 12px;border:1px solid var(--g2);border-radius:12px;background:var(--white);color:var(--black);cursor:pointer;font-family:inherit}
 .dl-btn:active{background:var(--g1)}
+.dl-grupo{padding:7px 10px;border:1px solid var(--g2);border-radius:10px;font-size:13px;font-family:inherit;background:var(--white);color:var(--black);max-width:55%}
 .dl-btn b{display:block;font-size:13px;font-weight:700}
 .dl-btn span{display:block;font-size:11px;color:var(--g5);margin-top:2px;line-height:1.3}
 .cfg-sec{margin-bottom:0}
@@ -1082,7 +1083,10 @@ async function renderMes(){
     '<div class="section-title" id="mes-label" style="min-width:150px;text-align:center">Informe</div>'+
     '<button class="btn-mes-nav" id="mes-next">&#8250;</button>'+
     '</div></div>'+
-    '<div class="section" id="dl-sec" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Descargar en Excel</div></div><div class="dl-grid">'+
+    '<div class="section" id="dl-sec" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Descargar en Excel</div>'+
+    '<select id="dl-grupo" class="dl-grupo" aria-label="Grupo"><option value="">Todos los grupos</option>'+
+    ['kinder','infantil','adulto'].map(function(k){ return '<option value="'+k+'">'+CATS[k].lp+'</option>'; }).join('')+
+    '<option value="sin">Sin categoría</option></select></div><div class="dl-grid">'+
     Object.keys(XL_INFORMES).map(function(k){
       return '<button type="button" class="dl-btn" data-xl="'+k+'"><b>'+XL_INFORMES[k].nom+'</b><span>'+XL_INFORMES[k].sub+'</span></button>';
     }).join('')+'</div></div>'+
@@ -2605,7 +2609,7 @@ var XL_INFORMES = {
   mesames:    { nom:'Clases mes a mes',    sub:'Cada alumno, mes por mes' },
   asistencias:{ nom:'Asistencias del mes', sub:'Cada asistencia del mes elegido' }
 };
-var XL_ALU = 'id,nombre,apellido,dni,estado,bloqueado';
+var XL_ALU = 'id,nombre,apellido,dni,estado,bloqueado,categoria';
 
 function descargarExcel(tipo, ym) { return unaVez('excel', function(){ return _descargarExcel(tipo, ym||mesActual); }); }
 async function _descargarExcel(tipo, ym) {
@@ -2613,16 +2617,16 @@ async function _descargarExcel(tipo, ym) {
   showToast('Armando '+inf.nom+'…');
   var pedidos = [cargarXLSX()];
   if(tipo==='padron') pedidos.push(
-    sb.from('alumnos').select(XL_ALU+',fecha_nac,sexo,fecha_inicio,created_at,cinturon,stripes,fecha_grad,categoria,es_competidor,es_profe').eq('activo',true).order('apellido').order('nombre'),
+    sb.from('alumnos').select(XL_ALU+',fecha_nac,sexo,fecha_inicio,created_at,cinturon,stripes,fecha_grad,es_competidor,es_profe').eq('activo',true).order('apellido').order('nombre'),
     asistenciaDesde('2000-01-01', 'alumno_id,fecha'),
     sb.from('graduaciones').select('alumno_id,fecha').order('fecha',{ascending:false}));
   else if(tipo==='contacto') pedidos.push(
-    sb.from('alumnos').select(XL_ALU+',fecha_nac,categoria,telefono,email,domicilio,apto_fisico,apto_vencimiento,tutor_nombre,tutor_relacion,tutor_telefono,emerg_nombre,emerg_relacion,emerg_telefono').eq('activo',true).order('apellido').order('nombre'));
+    sb.from('alumnos').select(XL_ALU+',fecha_nac,telefono,email,domicilio,apto_fisico,apto_vencimiento,tutor_nombre,tutor_relacion,tutor_telefono,emerg_nombre,emerg_relacion,emerg_telefono').eq('activo',true).order('apellido').order('nombre'));
   else if(tipo==='mesames') pedidos.push(
     sb.from('alumnos').select(XL_ALU).eq('activo',true).order('apellido').order('nombre'),
     asistenciaDesde('2000-01-01', 'alumno_id,fecha'));
   else pedidos.push(
-    sb.from('alumnos').select('id,dni').eq('activo',true),
+    sb.from('alumnos').select('id,dni,categoria').eq('activo',true),
     asistenciaDesde(ym+'-01', 'alumno_id,fecha,nombre,apellido,categoria,turno,horario,tarde,motivo_tarde,con_fisico,timestamp', mesShift(ym,1)+'-01'));
   var res;
   try { res = await Promise.all(pedidos); }
@@ -2630,7 +2634,11 @@ async function _descargarExcel(tipo, ym) {
   var err = res.slice(1).map(function(r){ return r.error; }).filter(Boolean)[0];
   if(err) { alert('No se pudo descargar: '+err.message); return; }
 
-  var alus = res[1].data || [];
+  // grupo elegido en Informes (Todos, Kinders, Infantiles, Adultos o Sin categoría)
+  var grupo = (document.getElementById('dl-grupo')||{}).value||'';
+  var enGrupo = function(a){ return !grupo || (grupo==='sin' ? !CATS[a.categoria] : a.categoria===grupo); };
+  var alus = (res[1].data || []).filter(enGrupo);
+  var sufijo = grupo ? ' - '+(CATS[grupo] ? CATS[grupo].lp : 'Sin categoría') : '';
   var siNo = function(v){ return v ? 'Sí' : 'No'; };
   var estadoTxt = function(a){ return capTxt(a.estado||'activo') + (a.bloqueado ? ' (bloqueado)' : ''); };
   var mesCorto = function(m){ var p=m.split('-'); return MESES[(+p[1])-1].slice(0,3)+' '+p[0]; };
@@ -2696,8 +2704,9 @@ async function _descargarExcel(tipo, ym) {
   }
   else {
     var dniDe = {}; alus.forEach(function(a){ dniDe[a.id] = a.dni; });
-    var am = res[2].data.slice().sort(function(a,b){ return (a.fecha+(a.timestamp||'')).localeCompare(b.fecha+(b.timestamp||'')); });
-    if(!am.length) { showToast('Sin asistencias en '+mesLabel(ym)); return; }
+    var delGrupo = res[2].data.filter(function(x){ return !grupo || dniDe.hasOwnProperty(x.alumno_id); });
+    var am = delGrupo.sort(function(a,b){ return (a.fecha+(a.timestamp||'')).localeCompare(b.fecha+(b.timestamp||'')); });
+    if(!am.length) { showToast('Sin asistencias en '+mesLabel(ym)+(grupo ? ' para '+sufijo.slice(3) : '')); return; }
     filas = [['Fecha','Hora','Apellido','Nombre','DNI','Categoría','Turno','Horario','Tarde','Motivo','Con físico']];
     am.forEach(function(x){
       var hora = x.timestamp ? new Date(x.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false}) : '';
@@ -2710,7 +2719,7 @@ async function _descargarExcel(tipo, ym) {
 
   var wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, hoja(filas, anchos), inf.nom);
-  XLSX.writeFile(wb, archivo+'.xlsx', {compression:true});
+  XLSX.writeFile(wb, archivo+sufijo+'.xlsx', {compression:true});
   showToast('Descargado: '+inf.nom);
 }
 
