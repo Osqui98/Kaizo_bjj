@@ -2310,7 +2310,7 @@ async function renderConfig() {
   var [rt, rc, rcl] = await Promise.all([
     sb.from('config_turnos').select('*').eq('activo',true).order('id'),
     sb.from('config_cinturones').select('*').order('orden'),
-    sb.from('config_clases').select('*').eq('activo',true).order('dia').order('hora_inicio')
+    sb.from('config_clases').select('*').order('dia').order('hora_inicio')
   ]);
   if(rt.error || rc.error || rcl.error) {
     var p = document.getElementById('cfg-panel');
@@ -2322,7 +2322,8 @@ async function renderConfig() {
   var diaIdx = function(t){ var i = DL.indexOf(normTxtCfg(t.dia)); return i<0 ? 99 : DIAS_ORDEN.indexOf(i); };
   cfgData.turnos = (rt.data||[]).sort(function(a,b){ return diaIdx(a)-diaIdx(b) || String(a.horario).localeCompare(String(b.horario)); });
   cfgData.cints = (rc.data||[]).filter(function(c){ return c.cinturon!=='negro'; });
-  cfgData.clases = rcl.data||[];
+  cfgData.clases = (rcl.data||[]).filter(function(c){ return c.activo!==false; });
+  cfgData.clasesOff = (rcl.data||[]).filter(function(c){ return c.activo===false; });
   pintarConfig();
 }
 function normTxtCfg(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
@@ -2338,22 +2339,31 @@ function pintarConfig() {
   p.querySelectorAll('.stp button').forEach(function(b){ b.onclick = function(){ cfgPaso(b); }; });
 }
 
+function cfgClaseRow(c, conDia) {
+  var sub = [conDia ? DIAS_LARGO[c.dia] : '', c.profe||'Sin profe', c.tiene_fisico ? 'Físico hasta '+(c.hora_fisico||'') : ''].filter(Boolean).join(' · ');
+  return '<div class="row-item cfg-clase" data-clase="'+escHTML(String(c.id))+'">'+
+    '<div class="cfg-hora">'+escHTML(c.hora_inicio)+'<small>'+escHTML(c.hora_fin)+'</small></div>'+
+    '<div style="flex:1;min-width:0"><div class="row-name">'+escHTML(c.nombre)+'</div><div class="row-sub">'+escHTML(sub)+'</div></div>'+
+    catPill(c.categoria)+
+    '<svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>'+
+  '</div>';
+}
+var cfgVerOff = false;
 function cfgClasesHTML() {
   var porDia = {};
   cfgData.clases.forEach(function(c){ (porDia[c.dia] = porDia[c.dia] || []).push(c); });
   var h = DIAS_ORDEN.filter(function(d){ return porDia[d]; }).map(function(d){
     return '<div class="cfg-dia">'+DIAS_LARGO[d]+'</div><div class="section cfg-sec">'+
-      porDia[d].map(function(c){
-        var sub = [c.profe||'Sin profe', c.tiene_fisico ? 'Físico hasta '+(c.hora_fisico||'') : ''].filter(Boolean).join(' · ');
-        return '<div class="row-item cfg-clase" data-clase="'+escHTML(String(c.id))+'">'+
-          '<div class="cfg-hora">'+escHTML(c.hora_inicio)+'<small>'+escHTML(c.hora_fin)+'</small></div>'+
-          '<div style="flex:1;min-width:0"><div class="row-name">'+escHTML(c.nombre)+'</div><div class="row-sub">'+escHTML(sub)+'</div></div>'+
-          catPill(c.categoria)+
-          '<svg class="chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>'+
-        '</div>';
-      }).join('')+'</div>';
+      porDia[d].map(function(c){ return cfgClaseRow(c, false); }).join('')+'</div>';
   }).join('');
-  return h || '<div class="section"><div class="empty-state">Todavía no hay clases. Tocá “+ Agregar”.</div></div>';
+  if(!h) h = '<div class="section"><div class="empty-state">Todavía no hay clases. Tocá “+ Agregar”.</div></div>';
+  // discontinuadas: abajo y plegadas; al tocar una se abre para reactivarla
+  var off = (cfgData.clasesOff||[]).slice().sort(function(a,b){ return DIAS_ORDEN.indexOf(a.dia)-DIAS_ORDEN.indexOf(b.dia) || String(a.hora_inicio).localeCompare(String(b.hora_inicio)); });
+  if(off.length) {
+    h += '<div class="cfg-dia" style="cursor:pointer;display:flex;align-items:center;gap:6px" onclick="cfgVerOff=!cfgVerOff;pintarConfig()">Discontinuadas ('+off.length+') <span>'+(cfgVerOff?CH_U:CH_D)+'</span></div>';
+    if(cfgVerOff) h += '<div class="section cfg-sec" style="opacity:.6">'+off.map(function(c){ return cfgClaseRow(c, true); }).join('')+'</div>';
+  }
+  return h;
 }
 
 function stpHTML(tabla, id, campo, val, min, max, paso, unidad) {
@@ -2451,7 +2461,11 @@ async function abrirEditarClase(id) {
   var c = r.data;
   editClaseId = id;
   var t=document.getElementById('mc-titulo'); if(t) t.textContent='Editar clase';
-  document.getElementById('mc-disc').style.display='block';
+  var bd = document.getElementById('mc-disc');
+  bd.style.display='block';
+  bd.textContent = c.activo===false ? 'Reactivar clase' : 'Discontinuar clase';
+  bd.style.color = c.activo===false ? 'var(--green,#16a34a)' : '';
+  bd.onclick = function(){ c.activo===false ? reactivarClase(editClaseId) : discontinuarClase(editClaseId); };
   await cargarProfesSelect(c.profe||'');
   document.getElementById('mc-nombre').value = c.nombre||'';
   document.getElementById('mc-categoria').value = c.categoria||'adulto';
@@ -2498,7 +2512,18 @@ async function discontinuarClase(id) {
   if(r.error) { alert('No se pudo discontinuar la clase: '+r.error.message); return; }
   cerrarModal('clase');
   editClaseId = null;
+  faClases = null;
   showToast('Clase discontinuada');
+  renderConfig();
+}
+
+async function reactivarClase(id) {
+  var r = await sb.from('config_clases').update({activo:true}).eq('id',id).select('id');
+  if(r.error || !(r.data||[]).length) { alert('No se pudo reactivar la clase'+(r.error?': '+r.error.message:'')); return; }
+  cerrarModal('clase');
+  editClaseId = null;
+  faClases = null;   // la ficha vuelve a leer las clases activas
+  showToast('Clase reactivada');
   renderConfig();
 }
 
