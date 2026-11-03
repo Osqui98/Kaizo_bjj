@@ -600,6 +600,8 @@ button,input,select,textarea{font-family:inherit}
     <label>Profe</label><select id="mc-profe"><option value="">Sin asignar</option></select>
     <label>Código del turno *</label><input type="text" id="mc-turno" placeholder="noche" />
     <div class="mc-ayuda">Se guarda en cada asistencia y evita que alguien marque dos veces el mismo turno. Ej: manana, noche, sabado.</div>
+    <label>Tolerancia de llegada (min)</label><input type="number" id="mc-tol" min="0" max="120" step="5" value="15" />
+    <div class="mc-ayuda">Minutos después del inicio en los que todavía cuenta como a tiempo.</div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
       <input type="checkbox" id="mc-fis" style="width:auto" onchange="document.getElementById('mc-fis-wrap').style.display=this.checked?'block':'none'" />
       <label for="mc-fis" style="margin:0">Tiene físico</label>
@@ -2292,7 +2294,7 @@ async function _guardarTorneo() {
 // Tres pestañas: Clases (agenda semanal), Tardanza y Cinturones.
 // Tardanza y stripes se guardan solos al tocar − / + (sin botón Guardar).
 var cfgTab = 'clases';
-var cfgData = { turnos: [], cints: [], clases: [] };
+var cfgData = { cints: [], clases: [], clasesOff: [] };
 var CFG_TABS = [['clases','Clases'],['tardanza','Tardanza'],['cinturones','Cinturones']];
 var DIAS_ORDEN = [1,2,3,4,5,6,0];
 
@@ -2307,26 +2309,20 @@ async function renderConfig() {
   document.querySelectorAll('#cfg-seg button').forEach(function(b){
     b.onclick = function(){ cfgTab = b.dataset.cfg; pintarConfig(); };
   });
-  var [rt, rc, rcl] = await Promise.all([
-    sb.from('config_turnos').select('*').eq('activo',true).order('id'),
+  var [rc, rcl] = await Promise.all([
     sb.from('config_cinturones').select('*').order('orden'),
     sb.from('config_clases').select('*').order('dia').order('hora_inicio')
   ]);
-  if(rt.error || rc.error || rcl.error) {
+  if(rc.error || rcl.error) {
     var p = document.getElementById('cfg-panel');
     if(p) p.innerHTML = '<div class="section"><div class="empty-state">No se pudo cargar la configuración. Probá de nuevo.</div></div>';
     return;
   }
-  // config_turnos guarda el día como texto ("Miércoles"): se ordena en el orden de la semana
-  var DL = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
-  var diaIdx = function(t){ var i = DL.indexOf(normTxtCfg(t.dia)); return i<0 ? 99 : DIAS_ORDEN.indexOf(i); };
-  cfgData.turnos = (rt.data||[]).sort(function(a,b){ return diaIdx(a)-diaIdx(b) || String(a.horario).localeCompare(String(b.horario)); });
   cfgData.cints = (rc.data||[]).filter(function(c){ return c.cinturon!=='negro'; });
   cfgData.clases = (rcl.data||[]).filter(function(c){ return c.activo!==false; });
   cfgData.clasesOff = (rcl.data||[]).filter(function(c){ return c.activo===false; });
   pintarConfig();
 }
-function normTxtCfg(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
 
 function pintarConfig() {
   document.querySelectorAll('#cfg-seg button').forEach(function(b){ b.classList.toggle('on', b.dataset.cfg===cfgTab); });
@@ -2374,13 +2370,35 @@ function stpHTML(tabla, id, campo, val, min, max, paso, unidad) {
     '<span class="stp-ok" aria-live="polite"></span></div>';
 }
 
+function tolDe(c){ return c.tolerancia_min==null ? 15 : c.tolerancia_min; }
 function cfgTardanzaHTML() {
-  if(!cfgData.turnos.length) return '<div class="section"><div class="empty-state">Sin horarios cargados</div></div>';
-  return '<p class="cfg-ayuda">Minutos después del inicio de la clase en los que todavía se cuenta como a tiempo.</p>'+
-    '<div class="section cfg-sec">'+cfgData.turnos.map(function(t){
-      return '<div class="row-item"><div style="flex:1;min-width:0"><div class="row-name">'+escHTML(t.dia)+'</div><div class="row-sub">'+escHTML(t.horario)+'</div></div>'+
-        stpHTML('config_turnos', t.id, 'tolerancia_min', t.tolerancia_min==null?15:t.tolerancia_min, 0, 120, 5, 'min')+'</div>';
-    }).join('')+'</div>';
+  if(!cfgData.clases.length) return '<div class="section"><div class="empty-state">Todavía no hay clases cargadas</div></div>';
+  var porDia = {};
+  cfgData.clases.forEach(function(c){ (porDia[c.dia] = porDia[c.dia] || []).push(c); });
+  return '<p class="cfg-ayuda">Minutos después del inicio de cada clase en los que todavía se cuenta como a tiempo.</p>'+
+    '<div class="section cfg-sec"><div class="row-item"><div class="row-name" style="flex:1;min-width:0">Aplicar a todas</div>'+
+      '<input type="number" id="tol-todas" min="0" max="120" step="5" value="15" style="width:70px;padding:8px;border:1px solid var(--g2);border-radius:10px;font-size:15px;text-align:center;background:var(--white);color:var(--black)" />'+
+      '<button class="btn-red" type="button" onclick="aplicarTolTodas()">Aplicar</button></div></div>'+
+    DIAS_ORDEN.filter(function(d){ return porDia[d]; }).map(function(d){
+      return '<div class="cfg-dia">'+DIAS_LARGO[d]+'</div><div class="section cfg-sec">'+porDia[d].map(function(c){
+        return '<div class="row-item"><div class="cfg-hora">'+escHTML(c.hora_inicio)+'<small>'+escHTML(c.hora_fin)+'</small></div>'+
+          '<div style="flex:1;min-width:0"><div class="row-name">'+escHTML(c.nombre)+'</div></div>'+
+          stpHTML('config_clases', c.id, 'tolerancia_min', tolDe(c), 0, 120, 5, 'min')+'</div>';
+      }).join('')+'</div>';
+    }).join('');
+}
+
+function aplicarTolTodas() { return unaVez('tol-todas', _aplicarTolTodas); }
+async function _aplicarTolTodas() {
+  var v = parseInt((document.getElementById('tol-todas')||{}).value);
+  if(isNaN(v) || v<0 || v>120) { alert('Poné un número de minutos entre 0 y 120'); return; }
+  if(!confirm('¿Poner '+v+' min de tolerancia en todas las clases?')) return;
+  var ids = cfgData.clases.map(function(c){ return c.id; });
+  var r = await sb.from('config_clases').update({tolerancia_min:v}).in('id', ids);
+  if(r.error) { alert('No se pudo guardar: '+r.error.message); return; }
+  cfgData.clases.forEach(function(c){ c.tolerancia_min = v; });
+  showToast('Tolerancia actualizada');
+  pintarConfig();
 }
 
 function cfgCinturonesHTML() {
@@ -2408,7 +2426,7 @@ function cfgPaso(btn) {
     var upd = {}; upd[d.campo] = val;
     var r = await sb.from(d.tabla).update(upd).eq('id', parseInt(d.id));
     if(r.error) { ok.className = 'stp-ok err'; ok.textContent = 'Error'; showToast('No se pudo guardar'); return; }
-    var lista = d.tabla==='config_turnos' ? cfgData.turnos : cfgData.cints;
+    var lista = d.tabla==='config_clases' ? cfgData.clases : cfgData.cints;
     lista.forEach(function(x){ if(String(x.id)===d.id) x[d.campo] = val; });
     ok.className = 'stp-ok show'; ok.textContent = '✓';
     setTimeout(function(){ ok.classList.remove('show'); }, 1500);
@@ -2450,6 +2468,7 @@ async function abrirAgregarClase() {
   document.getElementById('mc-categoria').value='adulto';
   var hi=document.getElementById('mc-hi'); if(hi) hi.value='19:00';
   var hf=document.getElementById('mc-hf'); if(hf) hf.value='22:00';
+  document.getElementById('mc-tol').value = 15;
   var fis=document.getElementById('mc-fis'); if(fis) fis.checked=false;
   var fw=document.getElementById('mc-fis-wrap'); if(fw) fw.style.display='none';
   abrirModal('clase');
@@ -2473,6 +2492,7 @@ async function abrirEditarClase(id) {
   document.getElementById('mc-hi').value = c.hora_inicio||'';
   document.getElementById('mc-hf').value = c.hora_fin||'';
   document.getElementById('mc-turno').value = c.turno_id||'';
+  document.getElementById('mc-tol').value = tolDe(c);
   var fis=document.getElementById('mc-fis'); if(fis) fis.checked=!!c.tiene_fisico;
   var fw=document.getElementById('mc-fis-wrap'); if(fw) fw.style.display=c.tiene_fisico?'block':'none';
   var hff=document.getElementById('mc-hff'); if(hff) hff.value=c.hora_fisico||'20:00';
@@ -2489,9 +2509,11 @@ async function _guardarClase() {
   var turno = document.getElementById('mc-turno').value.trim().toLowerCase().replace(/\s+/g,'-');
   var fis = document.getElementById('mc-fis').checked;
   var hff = document.getElementById('mc-hff').value;
+  var tol = parseInt(document.getElementById('mc-tol').value);
   if(!nombre||!hi||!hf||!turno) { alert('Completá los campos obligatorios'); return; }
+  if(isNaN(tol) || tol<0 || tol>120) { alert('La tolerancia tiene que ser entre 0 y 120 minutos'); return; }
   if(fis&&hff&&(hff<=hi||hff>=hf)) { alert('La hora del físico debe estar entre '+hi+' y '+hf); return; }
-  var datos = {nombre:nombre,categoria:document.getElementById('mc-categoria').value,dia:dia,hora_inicio:hi,hora_fin:hf,profe:profe,turno_id:turno,tiene_fisico:fis,hora_fisico:fis?hff:null};
+  var datos = {nombre:nombre,categoria:document.getElementById('mc-categoria').value,dia:dia,hora_inicio:hi,hora_fin:hf,profe:profe,turno_id:turno,tiene_fisico:fis,hora_fisico:fis?hff:null,tolerancia_min:tol};
   var r;
   if(editClaseId){
     r = await sb.from('config_clases').update(datos).eq('id',editClaseId);
