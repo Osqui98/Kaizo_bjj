@@ -432,7 +432,8 @@ button,input,select,textarea{font-family:inherit}
 .dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;padding:12px 1.25rem 1rem}
 .dl-btn{text-align:left;padding:10px 12px;border:1px solid var(--g2);border-radius:12px;background:var(--white);color:var(--black);cursor:pointer;font-family:inherit}
 .dl-btn:active{background:var(--g1)}
-.dl-grupo{padding:7px 10px;border:1px solid var(--g2);border-radius:10px;font-size:13px;font-family:inherit;background:var(--white);color:var(--black);max-width:55%}
+.dl-filtros{display:flex;gap:8px;padding:12px 1.25rem 0}
+.dl-filtros select{flex:1;min-width:0;padding:8px 10px;border:1px solid var(--g2);border-radius:10px;font-size:13px;font-family:inherit;background:var(--white);color:var(--black)}
 .dl-btn b{display:block;font-size:13px;font-weight:700}
 .dl-btn span{display:block;font-size:11px;color:var(--g5);margin-top:2px;line-height:1.3}
 .cfg-sec{margin-bottom:0}
@@ -1083,10 +1084,12 @@ async function renderMes(){
     '<div class="section-title" id="mes-label" style="min-width:150px;text-align:center">Informe</div>'+
     '<button class="btn-mes-nav" id="mes-next">&#8250;</button>'+
     '</div></div>'+
-    '<div class="section" id="dl-sec" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Descargar en Excel</div>'+
-    '<select id="dl-grupo" class="dl-grupo" aria-label="Grupo"><option value="">Todos los grupos</option>'+
+    '<div class="section" id="dl-sec" style="margin-bottom:1.25rem"><div class="section-header"><div class="section-title">Descargar en Excel</div></div>'+
+    '<div class="dl-filtros"><select id="dl-grupo" aria-label="Grupo"><option value="">Todos los grupos</option>'+
     ['kinder','infantil','adulto'].map(function(k){ return '<option value="'+k+'">'+CATS[k].lp+'</option>'; }).join('')+
-    '<option value="sin">Sin categoría</option></select></div><div class="dl-grid">'+
+    '<option value="sin">Sin categoría</option></select>'+
+    '<select id="dl-disc" aria-label="Discontinuados"><option value="sin">Sin discontinuados</option><option value="con">Con discontinuados</option><option value="solo">Solo discontinuados</option></select></div>'+
+    '<div class="dl-grid">'+
     Object.keys(XL_INFORMES).map(function(k){
       return '<button type="button" class="dl-btn" data-xl="'+k+'"><b>'+XL_INFORMES[k].nom+'</b><span>'+XL_INFORMES[k].sub+'</span></button>';
     }).join('')+'</div></div>'+
@@ -2617,7 +2620,7 @@ async function _descargarExcel(tipo, ym) {
   showToast('Armando '+inf.nom+'…');
   var pedidos = [cargarXLSX()];
   if(tipo==='padron') pedidos.push(
-    sb.from('alumnos').select(XL_ALU+',fecha_nac,sexo,fecha_inicio,created_at,cinturon,stripes,fecha_grad,es_competidor,es_profe').eq('activo',true).order('apellido').order('nombre'),
+    sb.from('alumnos').select(XL_ALU+',fecha_nac,sexo,fecha_inicio,created_at,cinturon,stripes,fecha_grad,es_competidor').eq('activo',true).order('apellido').order('nombre'),
     asistenciaDesde('2000-01-01', 'alumno_id,fecha'),
     sb.from('graduaciones').select('alumno_id,fecha').order('fecha',{ascending:false}));
   else if(tipo==='contacto') pedidos.push(
@@ -2626,7 +2629,7 @@ async function _descargarExcel(tipo, ym) {
     sb.from('alumnos').select(XL_ALU).eq('activo',true).order('apellido').order('nombre'),
     asistenciaDesde('2000-01-01', 'alumno_id,fecha'));
   else pedidos.push(
-    sb.from('alumnos').select('id,dni,categoria').eq('activo',true),
+    sb.from('alumnos').select('id,dni,categoria,estado').eq('activo',true),
     asistenciaDesde(ym+'-01', 'alumno_id,fecha,nombre,apellido,categoria,turno,horario,tarde,motivo_tarde,con_fisico,timestamp', mesShift(ym,1)+'-01'));
   var res;
   try { res = await Promise.all(pedidos); }
@@ -2634,11 +2637,13 @@ async function _descargarExcel(tipo, ym) {
   var err = res.slice(1).map(function(r){ return r.error; }).filter(Boolean)[0];
   if(err) { alert('No se pudo descargar: '+err.message); return; }
 
-  // grupo elegido en Informes (Todos, Kinders, Infantiles, Adultos o Sin categoría)
+  // filtros elegidos en Informes: grupo y si van los discontinuados
   var grupo = (document.getElementById('dl-grupo')||{}).value||'';
+  var disc = (document.getElementById('dl-disc')||{}).value||'sin';
   var enGrupo = function(a){ return !grupo || (grupo==='sin' ? !CATS[a.categoria] : a.categoria===grupo); };
-  var alus = (res[1].data || []).filter(enGrupo);
-  var sufijo = grupo ? ' - '+(CATS[grupo] ? CATS[grupo].lp : 'Sin categoría') : '';
+  var enEstado = function(a){ var d = a.estado==='discontinuado'; return disc==='con' || (disc==='solo' ? d : !d); };
+  var alus = (res[1].data || []).filter(function(a){ return enGrupo(a) && enEstado(a); });
+  var sufijo = (grupo ? ' - '+(CATS[grupo] ? CATS[grupo].lp : 'Sin categoría') : '') + (disc==='solo' ? ' - Discontinuados' : '');
   var siNo = function(v){ return v ? 'Sí' : 'No'; };
   var estadoTxt = function(a){ return capTxt(a.estado||'activo') + (a.bloqueado ? ' (bloqueado)' : ''); };
   var mesCorto = function(m){ var p=m.split('-'); return MESES[(+p[1])-1].slice(0,3)+' '+p[0]; };
@@ -2662,7 +2667,7 @@ async function _descargarExcel(tipo, ym) {
   if(tipo==='padron') {
     var S = stats(res[2].data).st, ultGrad = {}, ymPrev = mesShift(mesActual,-1);
     res[3].data.forEach(function(g){ if(!ultGrad[g.alumno_id]) ultGrad[g.alumno_id] = g.fecha; });
-    filas = [['Apellido','Nombre','DNI','Fecha de nacimiento','Edad','Sexo','Categoría','Cinturón','Stripes','Estado','Profe','Competidor',
+    filas = [['Apellido','Nombre','DNI','Fecha de nacimiento','Edad','Sexo','Categoría','Cinturón','Stripes','Estado','Competidor',
       'Inicio','Antigüedad (meses)','Clases '+mesCorto(mesActual),'Clases '+mesCorto(ymPrev),'Total de clases','Promedio por mes',
       'Primera asistencia','Última asistencia','Días sin venir','Última graduación']];
     alus.forEach(function(a){
@@ -2671,13 +2676,13 @@ async function _descargarExcel(tipo, ym) {
       var meses = s.pri ? mesesEntre(s.pri.slice(0,7), mesActual) + 1 : 0;
       filas.push(base(a).concat([
         xFecha(a.fecha_nac), edadEn(a.fecha_nac, fechaHoy), xTxt(capTxt(a.sexo||'')), xTxt(capTxt(a.categoria||'')), xTxt(capTxt(a.cinturon||'')),
-        a.stripes||0, xTxt(estadoTxt(a)), siNo(a.es_profe), siNo(a.es_competidor),
+        a.stripes||0, xTxt(estadoTxt(a)), siNo(a.es_competidor),
         xFecha(inicio), inicio ? Math.max(0, mesesEntre(inicio.slice(0,7), mesActual)) : null,
         s.mes[mesActual]||0, s.mes[ymPrev]||0, s.total, meses ? Math.round(s.total/meses*10)/10 : 0,
         xFecha(s.pri), xFecha(s.ult), s.ult ? Math.round((new Date(fechaHoy)-new Date(s.ult))/86400000) : null,
         xFecha(ultGrad[a.id] || a.fecha_grad)]));
     });
-    anchos = [16,16,11,12,6,10,10,10,7,14,6,10,12,10,11,11,10,10,12,12,9,12];
+    anchos = [16,16,11,12,6,10,10,10,7,14,10,12,10,11,11,10,10,12,12,9,12];
     archivo = 'Kaizo Padrón '+ymdLocal(new Date()).split('-').reverse().join('-');
   }
   else if(tipo==='contacto') {
@@ -2704,9 +2709,9 @@ async function _descargarExcel(tipo, ym) {
   }
   else {
     var dniDe = {}; alus.forEach(function(a){ dniDe[a.id] = a.dni; });
-    var delGrupo = res[2].data.filter(function(x){ return !grupo || dniDe.hasOwnProperty(x.alumno_id); });
+    var delGrupo = res[2].data.filter(function(x){ return (!grupo && disc==='con') || dniDe.hasOwnProperty(x.alumno_id); });
     var am = delGrupo.sort(function(a,b){ return (a.fecha+(a.timestamp||'')).localeCompare(b.fecha+(b.timestamp||'')); });
-    if(!am.length) { showToast('Sin asistencias en '+mesLabel(ym)+(grupo ? ' para '+sufijo.slice(3) : '')); return; }
+    if(!am.length) { showToast('Sin asistencias en '+mesLabel(ym)+(sufijo ? ' para'+sufijo.replace(/ - /g,' ') : '')); return; }
     filas = [['Fecha','Hora','Apellido','Nombre','DNI','Categoría','Turno','Horario','Tarde','Motivo','Con físico']];
     am.forEach(function(x){
       var hora = x.timestamp ? new Date(x.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false}) : '';
