@@ -2708,8 +2708,19 @@ async function _descargarExcel(tipo, ym) {
     archivo = 'Kaizo Clases mes a mes '+mesCorto(mesActual);
   }
   else {
-    var dniDe = {}; alus.forEach(function(a){ dniDe[a.id] = a.dni; });
-    var delGrupo = res[2].data.filter(function(x){ return (!grupo && disc==='con') || dniDe.hasOwnProperty(x.alumno_id); });
+    // El grupo se mira en cada asistencia (el de la clase ese día), no en la ficha de hoy:
+    // así un chico que pasó de Infantil a Adulto a mitad de mes sale en los dos.
+    // "Sin categoría" no queda en la asistencia, ahí (y en filas viejas sin grupo) se mira la ficha.
+    var dniDe = {}, aluDe = {};
+    (res[1].data || []).forEach(function(a){ dniDe[a.id] = a.dni; aluDe[a.id] = a; });
+    var delGrupo = res[2].data.filter(function(x){
+      var a = aluDe[x.alumno_id];
+      if(!a) return !grupo && disc==='con';
+      if(!enEstado(a)) return false;
+      if(!grupo) return true;
+      if(grupo==='sin') return !CATS[a.categoria];
+      return (CATS[x.categoria] ? x.categoria : a.categoria) === grupo;
+    });
     var am = delGrupo.sort(function(a,b){ return (a.fecha+(a.timestamp||'')).localeCompare(b.fecha+(b.timestamp||'')); });
     if(!am.length) { showToast('Sin asistencias en '+mesLabel(ym)+(sufijo ? ' para'+sufijo.replace(/ - /g,' ') : '')); return; }
     filas = [['Fecha','Hora','Apellido','Nombre','DNI','Categoría','Turno','Horario','Tarde','Motivo','Con físico']];
