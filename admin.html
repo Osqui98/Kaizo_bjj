@@ -2610,7 +2610,7 @@ var XL_INFORMES = {
   padron:     { nom:'Padrón',              sub:'Datos, edad y clases de cada alumno' },
   contacto:   { nom:'Contacto y salud',    sub:'Teléfonos, tutor, emergencia y apto' },
   mesames:    { nom:'Clases mes a mes',    sub:'Cada alumno, mes por mes' },
-  asistencias:{ nom:'Asistencias del mes', sub:'Cada asistencia del mes elegido' }
+  asistencias:{ nom:'Asistencias del mes', sub:'Cada asistencia del mes, con los que hoy están discontinuados' }
 };
 var XL_ALU = 'id,nombre,apellido,dni,estado,bloqueado,categoria';
 
@@ -2629,7 +2629,7 @@ async function _descargarExcel(tipo, ym) {
     sb.from('alumnos').select(XL_ALU).eq('activo',true).order('apellido').order('nombre'),
     asistenciaDesde('2000-01-01', 'alumno_id,fecha'));
   else pedidos.push(
-    sb.from('alumnos').select('id,dni,categoria,estado').eq('activo',true),
+    sb.from('alumnos').select('id,dni,categoria,estado,bloqueado').eq('activo',true),
     asistenciaDesde(ym+'-01', 'alumno_id,fecha,nombre,apellido,categoria,turno,horario,tarde,motivo_tarde,con_fisico,timestamp', mesShift(ym,1)+'-01'));
   var res;
   try { res = await Promise.all(pedidos); }
@@ -2711,25 +2711,27 @@ async function _descargarExcel(tipo, ym) {
     // El grupo se mira en cada asistencia (el de la clase ese día), no en la ficha de hoy:
     // así un chico que pasó de Infantil a Adulto a mitad de mes sale en los dos.
     // "Sin categoría" no queda en la asistencia, ahí (y en filas viejas sin grupo) se mira la ficha.
+    // Los discontinuados de hoy siempre salen (ese mes vinieron); con "Solo discontinuados", solo ellos.
     var dniDe = {}, aluDe = {};
     (res[1].data || []).forEach(function(a){ dniDe[a.id] = a.dni; aluDe[a.id] = a; });
     var delGrupo = res[2].data.filter(function(x){
       var a = aluDe[x.alumno_id];
-      if(!a) return !grupo && disc==='con';
-      if(!enEstado(a)) return false;
+      if(!a) return !grupo && disc!=='solo';
+      if(disc==='solo' && a.estado!=='discontinuado') return false;
       if(!grupo) return true;
       if(grupo==='sin') return !CATS[a.categoria];
       return (CATS[x.categoria] ? x.categoria : a.categoria) === grupo;
     });
     var am = delGrupo.sort(function(a,b){ return (a.fecha+(a.timestamp||'')).localeCompare(b.fecha+(b.timestamp||'')); });
     if(!am.length) { showToast('Sin asistencias en '+mesLabel(ym)+(sufijo ? ' para'+sufijo.replace(/ - /g,' ') : '')); return; }
-    filas = [['Fecha','Hora','Apellido','Nombre','DNI','Categoría','Turno','Horario','Tarde','Motivo','Con físico']];
+    filas = [['Fecha','Hora','Apellido','Nombre','DNI','Categoría','Turno','Horario','Tarde','Motivo','Con físico','Estado hoy']];
     am.forEach(function(x){
       var hora = x.timestamp ? new Date(x.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false}) : '';
       filas.push([xFecha(x.fecha), xTxt(hora), xTxt(x.apellido), xTxt(x.nombre), xTxt(dniDe[x.alumno_id]||''), xTxt(capTxt(x.categoria||'')),
-        xTxt(x.turno), xTxt(x.horario), siNo(x.tarde), xTxt(x.motivo_tarde), siNo(x.con_fisico)]);
+        xTxt(x.turno), xTxt(x.horario), siNo(x.tarde), xTxt(x.motivo_tarde), siNo(x.con_fisico),
+        xTxt(aluDe[x.alumno_id] ? estadoTxt(aluDe[x.alumno_id]) : '')]);
     });
-    anchos = [12,7,16,16,11,10,10,14,7,24,10];
+    anchos = [12,7,16,16,11,10,10,14,7,24,10,14];
     archivo = 'Kaizo Asistencias '+mesLabel(ym);
   }
 
