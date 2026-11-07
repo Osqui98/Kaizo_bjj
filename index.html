@@ -448,7 +448,9 @@ function normDNI(v) { return v.replace(/[^0-9]/g,''); }
 async function cargarClases() {
   try {
     var r = await sb.from('config_clases').select('*').eq('activo',true);
-    if(r.data && r.data.length) {
+    // Si responde bien se toma siempre, aunque venga vacía (si no, quedarían clases viejas)
+    if(!r.error && r.data) {
+      _clasesOk = true;
       var map = {};
       r.data.forEach(function(c) {
         var key = c.hora_inicio+'|'+c.hora_fin+'|'+c.turno_id+'|'+(c.categoria||'adulto');
@@ -605,7 +607,7 @@ function enInicio() {
   return !alu && !visible('fs') && !visible('ts') && !visible('os') && !visible('modal-torneo') &&
     !!(document.getElementById('di') || document.getElementById('btn-ver-ficha-cron'));
 }
-var _cfgTs = Date.now();
+var _cfgTs = Date.now(), _clasesOk = false;
 function claveClases(cs){ return cs.map(function(c){ return c.hi+c.hf+c.tur+c.cat; }).join('|'); }
 setInterval(function(){
   ahora = new Date();
@@ -613,9 +615,10 @@ setInterval(function(){
     var di = document.getElementById('di');
     if(di && di.value) return;
     // Si arrancó sin conexión reintenta enseguida; si no, cada 30 min trae los cambios hechos en el panel
-    if(!CLASES.length || Date.now() - _cfgTs > 30*60000) {
+    if(!_clasesOk || Date.now() - _cfgTs > 30*60000) {
       _cfgTs = Date.now();
-      cargarClases().then(function(){ if(enInicio()) init(); });
+      // si el alumno empezó a tipear el DNI mientras cargaba, no se lo borra
+      cargarClases().then(function(){ var d = document.getElementById('di'); if(enInicio() && !(d && d.value)) init(); });
       return;
     }
     if(claveClases(findClasesActivas()) !== claveClases(clasesActivas)) { init(); return; }

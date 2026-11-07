@@ -995,7 +995,8 @@ async function cargarHoy() {
   var [r, ra, rc] = await Promise.all([
     sb.from('asistencia').select('*').eq('fecha', fechaHoy).order('timestamp'),
     alumnosTodos(),
-    sb.from('config_clases').select('nombre,dia,hora_inicio,hora_fin,profe,turno_id').eq('activo',true)
+    // también las discontinuadas, para ponerle nombre a una asistencia de hoy de una clase que se dio de baja
+    sb.from('config_clases').select('nombre,dia,hora_inicio,hora_fin,profe,turno_id,activo')
   ]);
   if(r.error) {
     var le = document.getElementById('lista-hoy'), he = document.getElementById('hoy-hero');
@@ -1013,7 +1014,7 @@ async function cargarHoy() {
   // Clase en curso (o resumen del día)
   var ahoraM = new Date().getHours()*60 + new Date().getMinutes();
   var toMin = function(t){ var p=String(t||'0:0').split(':'); return +p[0]*60 + +p[1]; };
-  var enCurso = (rc.data||[]).filter(function(c){ return c.dia===new Date().getDay() && ahoraM>=toMin(c.hora_inicio)-30 && ahoraM<=toMin(c.hora_fin); })
+  var enCurso = (rc.data||[]).filter(function(c){ return c.activo && c.dia===new Date().getDay() && ahoraM>=toMin(c.hora_inicio)-30 && ahoraM<=toMin(c.hora_fin); })
     .sort(function(a,b){ return toMin(b.hora_inicio)-toMin(a.hora_inicio); })[0];
   var regsClase = enCurso ? data.filter(function(x){ return x.turno===enCurso.turno_id && String(x.horario||'').indexOf(enCurso.hora_inicio)===0; }) : data;
   var ultimos = regsClase.slice(-3).reverse();
@@ -1047,7 +1048,7 @@ async function cargarHoy() {
     var filas = g.registros.slice().reverse().map(function(reg) {
       var a = Object.assign({}, porId[reg.alumno_id]||{}, {id:reg.alumno_id, nombre:reg.nombre});
       var hora = '';
-      try{ hora=new Date(reg.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}); }catch(e){}
+      try{ hora=new Date(reg.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Argentina/Buenos_Aires'}); }catch(e){}
       var cint = a.cinturon ? a.cinturon.charAt(0).toUpperCase()+a.cinturon.slice(1)+(a.stripes?' · '+a.stripes+(a.stripes>1?' grados':' grado'):'') : '';
       var sub = reg.cargada_por==='profe' ? 'Cargada por el profe' : reg.tarde && reg.motivo_tarde ? 'Tarde: '+escHTML(reg.motivo_tarde) : escHTML(cint);
       return '<div class="row-item" style="cursor:pointer" data-edit-id="'+escHTML(String(reg.alumno_id||''))+'">'+
@@ -1057,7 +1058,8 @@ async function cargarHoy() {
         '<span class="'+(reg.tarde?'badge-tarde':'badge-ok')+'">'+escHTML(hora||(reg.tarde?'tarde':'ok'))+(reg.tarde?' · tarde':'')+'</span>'+
       '</div>';
     }).join('');
-    var cl = (rc.data||[]).filter(function(c){ return c.turno_id===g.turno && String(g.horario).indexOf(c.hora_inicio)===0; })[0];
+    var cls = (rc.data||[]).filter(function(c){ return c.turno_id===g.turno && String(g.horario).indexOf(c.hora_inicio)===0; });
+    var cl = cls.filter(function(c){ return c.activo; })[0] || cls[0];
     return '<div class="section" style="margin-bottom:12px"><div class="section-header clase-h"><div><div class="section-title">'+escHTML(cl ? cl.nombre : capTxt(g.turno))+'</div>'+
       '<div class="section-sub">'+escHTML(g.horario)+'</div></div><div class="ct"><span class="badge-ok">'+(g.registros.length-nT)+' a tiempo</span>'+(nT?'<span class="badge-tarde">'+nT+' tarde</span>':'')+'</div></div>'+filas+'</div>';
   }).join('');
@@ -1496,7 +1498,13 @@ function estadoAlumnos() {
 // larga, se pide solo el tramo que falta.
 var AL_MESES_OPC = [1,2,3,4,6,9,12];
 var alMeses = 3, alUltAsis = {}, alAsisDesde = '';
-function desdeMeses(m){ var d = new Date(hoy); d.setMonth(d.getMonth()-m); return ymdLocal(d); }
+// El 31/03 menos un mes es el 28/02 (no el 03/03, como haría setMonth solo)
+function desdeMeses(m){
+  var d = new Date(hoy), dia = d.getDate();
+  d.setDate(1); d.setMonth(d.getMonth()-m);
+  d.setDate(Math.min(dia, new Date(d.getFullYear(), d.getMonth()+1, 0).getDate()));
+  return ymdLocal(d);
+}
 async function cambiarMesesAct() {
   var sel = document.getElementById('fil-al-meses'); if(!sel) return;
   alMeses = parseInt(sel.value) || 3;
@@ -1857,14 +1865,16 @@ async function cargarHistorial(id) {
 // Clases por mes, total y carga/borrado a mano. Se pide recién al abrir la pestaña.
 var feAsis = null;      // {id, filas, abierto:{ym:true}, todos, form}
 var feAsisAlu = null;   // {id, nombre, apellido, categoria} del alumno abierto
-var faClases = null;    // config_clases activas (una vez por sesión)
+var faClases = null;    // config_clases, activas y discontinuadas (una vez por sesión)
+var FA_FECHA_MIN = '2015-01-01';   // la carga a mano no acepta fechas anteriores (evita años mal tipeados)
 var DIAS_C = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 function fmtDM(f){ var p=String(f).slice(0,10).split('-'); return p[2]+'/'+p[1]; }
 function fmtDMA(f){ return fmtDM(f)+'/'+String(f).slice(0,4); }
 function diaSem(f){ return DIAS_C[new Date(String(f).slice(0,10)+'T12:00:00').getDay()]; }
 function nombreClaseAsis(x){
   var hi = String(x.horario||'').slice(0,5);
-  var c = (faClases||[]).filter(function(c){ return c.turno_id===x.turno && c.hora_inicio===hi; })[0];
+  var cs = (faClases||[]).filter(function(c){ return c.turno_id===x.turno && c.hora_inicio===hi; });
+  var c = cs.filter(function(c){ return c.activo; })[0] || cs[0];
   return (c ? c.nombre : capTxt(x.turno||'Clase'))+(hi ? ' · '+hi : '');
 }
 
@@ -1875,7 +1885,7 @@ async function cargarAsisFicha(id) {
   var [ra, rc] = await Promise.all([
     asistenciaAlumno(id),
     faClases ? Promise.resolve({ data: faClases, error: null })
-             : sb.from('config_clases').select('nombre,dia,hora_inicio,hora_fin,turno_id,categoria').eq('activo',true).order('hora_inicio')
+             : sb.from('config_clases').select('nombre,dia,hora_inicio,hora_fin,turno_id,categoria,activo').order('hora_inicio')
   ]);
   if(!feAsis || feAsis.id !== id) return;
   if(ra.error){ el.innerHTML = '<div class="empty-state">No se pudo cargar la asistencia. Probá de nuevo.</div>'; feAsis = null; return; }
@@ -1947,23 +1957,32 @@ function faDiaHTML(x) {
 }
 function faFormHTML() {
   return '<div class="fa-form"><div class="fe-grid">'+
-      '<div class="fe-f full"><label>Fecha</label><input type="date" id="fa-fecha" max="'+fechaHoy+'" value="'+fechaHoy+'"></div>'+
+      '<div class="fe-f full"><label>Fecha</label><input type="date" id="fa-fecha" min="'+FA_FECHA_MIN+'" max="'+fechaHoy+'" value="'+fechaHoy+'"></div>'+
       '<div class="fe-f full"><label>Clase</label><select id="fa-clase"></select></div></div>'+
     '<div class="fa-form-btns"><button type="button" class="fa-cancel" id="fa-cancel">Cancelar</button><button type="button" class="btn-red" id="fa-ok">Guardar</button></div></div>';
 }
-// Clases del día elegido; si ese día no hay ninguna, todas (con el día adelante)
+// Clases del día elegido; si ese día no hay ninguna, todas (con el día adelante).
+// Las discontinuadas van aparte al final, para cargar asistencias viejas de esas clases.
 function faOpcionesClase() {
   var sel = document.getElementById('fa-clase'), f = (document.getElementById('fa-fecha')||{}).value;
   if(!sel) return;
   var todas = faClases||[];
-  var lista = f ? todas.filter(function(c){ return c.dia === new Date(f+'T12:00:00').getDay(); }) : [];
-  var conDia = !lista.length;
-  if(conDia) lista = todas.slice().sort(function(a,b){ return DIAS_ORDEN.indexOf(a.dia)-DIAS_ORDEN.indexOf(b.dia) || String(a.hora_inicio).localeCompare(String(b.hora_inicio)); });
+  var delDia = function(cs){ return f ? cs.filter(function(c){ return c.dia === new Date(f+'T12:00:00').getDay(); }) : []; };
+  var porDia = function(cs){ return cs.slice().sort(function(a,b){ return DIAS_ORDEN.indexOf(a.dia)-DIAS_ORDEN.indexOf(b.dia) || String(a.hora_inicio).localeCompare(String(b.hora_inicio)); }); };
+  var act = todas.filter(function(c){ return c.activo; }), disc = todas.filter(function(c){ return !c.activo; });
+  var lista = delDia(act), conDia = !lista.length;
+  if(conDia) lista = porDia(act);
+  var listaD = delDia(disc), conDiaD = !listaD.length;
+  if(conDiaD) listaD = porDia(disc);
   var cat = feAsisAlu && feAsisAlu.categoria;
   var pref = lista.filter(function(c){ return c.categoria===cat; })[0];
-  sel.innerHTML = lista.length ? lista.map(function(c){
-    return '<option value="'+todas.indexOf(c)+'"'+(c===pref?' selected':'')+'>'+(conDia?DIAS_C[c.dia]+' · ':'')+escHTML(c.nombre)+' · '+escHTML(c.hora_inicio)+'</option>';
-  }).join('') : '<option value="">No hay clases cargadas</option>';
+  var opc = function(c, dia){
+    return '<option value="'+todas.indexOf(c)+'"'+(c===pref?' selected':'')+'>'+(dia?DIAS_C[c.dia]+' · ':'')+escHTML(c.nombre)+' · '+escHTML(c.hora_inicio)+'</option>';
+  };
+  sel.innerHTML = (lista.length || listaD.length)
+    ? lista.map(function(c){ return opc(c, conDia); }).join('') +
+      (listaD.length ? '<optgroup label="Discontinuadas">'+listaD.map(function(c){ return opc(c, conDiaD); }).join('')+'</optgroup>' : '')
+    : '<option value="">No hay clases cargadas</option>';
 }
 
 function guardarAsisManual() { return unaVez('asis-manual', _guardarAsisManual); }
@@ -1972,11 +1991,11 @@ async function _guardarAsisManual() {
   var c = (faClases||[])[parseInt((document.getElementById('fa-clase')||{}).value)];
   var a = feAsisAlu;
   if(!a || !feAsis || a.id !== feAsis.id) return;
-  if(!f || f > fechaHoy) { alert('Elegí una fecha válida (hasta hoy)'); return; }
+  if(!f || f > fechaHoy || f < FA_FECHA_MIN) { alert('Elegí una fecha válida (entre el '+fmtDMA(FA_FECHA_MIN)+' y hoy)'); return; }
   if(!c) { alert('Elegí la clase'); return; }
   // Igual que el kiosco: en las clases abiertas queda el grupo del alumno
   var cat = ['kinder','infantil','adulto'].indexOf(c.categoria)>=0 ? c.categoria : (a.categoria||'adulto');
-  var ts = new Date(f+'T'+c.hora_inicio+':00');
+  var ts = new Date(f+'T'+c.hora_inicio+':00-03:00');   // hora de Argentina, se abra el panel desde donde se abra
   var fila = { alumno_id: a.id, nombre: a.nombre, apellido: a.apellido, fecha: f, turno: c.turno_id,
     horario: c.hora_inicio+' - '+c.hora_fin, categoria: cat, tarde: false, con_fisico: null,
     timestamp: (isNaN(ts) ? new Date() : ts).toISOString(), cargada_por: 'profe' };
@@ -1993,7 +2012,7 @@ async function _guardarAsisManual() {
     pintarAsisFicha();
   }
   showToast('Asistencia cargada');
-  asisCambio(a.id, f, 1);
+  asisCambio(a.id, f, 1, false);
 }
 
 async function borrarAsis(idAs) {
@@ -2005,17 +2024,25 @@ async function borrarAsis(idAs) {
   if(r.error || !(r.data||[]).length) { alert('No se pudo borrar la asistencia'+(r.error ? ': '+r.error.message : '')); return; }
   if(feAsis && feAsis.id === alId) { feAsis.filas = feAsis.filas.filter(function(f){ return f !== x; }); pintarAsisFicha(); }
   showToast('Asistencia borrada');
-  asisCambio(alId, x.fecha, -1);
+  asisCambio(alId, x.fecha, -1, x.tarde);
 }
 // Mantiene al día el encabezado de la ficha, la lista de Alumnos y Hoy sin volver a pedir todo
-function asisCambio(id, fecha, delta) {
+function asisCambio(id, fecha, delta, tarde) {
   if(feAsisAlu && feAsisAlu.id === id) cargarResumenAlumno(feAsisAlu);   // encabezado de la ficha
   fecha = String(fecha).slice(0,10);
   var a = alumnosAll.filter(function(x){ return x.id === id; })[0];
   if(a) {
-    if(fecha.slice(0,7) === mesActual) a._mes = Math.max(0, (a._mes||0)+delta);
+    if(fecha.slice(0,7) === mesActual) {
+      a._mes = Math.max(0, (a._mes||0)+delta);
+      if(tarde) a._tard = Math.max(0, (a._tard||0)+delta);
+    }
     if(a._total != null) a._total = Math.max(0, a._total+delta);
     if(delta > 0 && (!alUltAsis[id] || fecha > alUltAsis[id])) alUltAsis[id] = fecha;
+    // Si se borró la última, la nueva última sale de la ficha (que tiene todas las del alumno)
+    if(delta < 0 && alUltAsis[id] === fecha && feAsis && feAsis.id === id && feAsis.filas) {
+      var ult = feAsis.filas.length ? String(feAsis.filas[0].fecha).slice(0,10) : '';
+      if(ult && ult >= alAsisDesde) alUltAsis[id] = ult; else delete alUltAsis[id];
+    }
     if(document.getElementById('lista-alumnos')) renderAlumnosPaginado();
   }
   if(fecha === fechaHoy && document.getElementById('lista-hoy')) cargarHoy();
@@ -2390,7 +2417,7 @@ function cfgTardanzaHTML() {
   if(!cfgData.clases.length) return '<div class="section"><div class="empty-state">Todavía no hay clases cargadas</div></div>';
   var porDia = {};
   cfgData.clases.forEach(function(c){ (porDia[c.dia] = porDia[c.dia] || []).push(c); });
-  return '<p class="cfg-ayuda">Minutos después del inicio de cada clase en los que todavía se cuenta como a tiempo.</p>'+
+  return '<p class="cfg-ayuda">Minutos después del inicio de cada clase en los que todavía se cuenta como a tiempo. La pantalla de Asistencia toma los cambios en hasta 30 minutos (o al recargarla).</p>'+
     '<div class="section cfg-sec"><div class="row-item"><div class="row-name" style="flex:1;min-width:0">Aplicar a todas</div>'+
       '<input type="number" id="tol-todas" min="0" max="120" step="5" value="15" style="width:70px;padding:8px;border:1px solid var(--g2);border-radius:10px;font-size:15px;text-align:center;background:var(--white);color:var(--black)" />'+
       '<button class="btn-red" type="button" onclick="aplicarTolTodas()">Aplicar</button></div></div>'+
@@ -2540,6 +2567,7 @@ async function _guardarClase() {
   cerrarModal('clase');
   showToast(editClaseId ? 'Clase actualizada' : 'Clase agregada');
   editClaseId = null;
+  faClases = null;   // la ficha vuelve a leer las clases
   renderConfig();
 }
 
@@ -2624,13 +2652,14 @@ async function _descargarExcel(tipo, ym) {
     asistenciaDesde('2000-01-01', 'alumno_id,fecha'),
     sb.from('graduaciones').select('alumno_id,fecha').order('fecha',{ascending:false}));
   else if(tipo==='contacto') pedidos.push(
-    sb.from('alumnos').select(XL_ALU+',fecha_nac,telefono,email,domicilio,apto_fisico,apto_vencimiento,tutor_nombre,tutor_relacion,tutor_telefono,emerg_nombre,emerg_relacion,emerg_telefono').eq('activo',true).order('apellido').order('nombre'));
+    sb.from('alumnos').select(XL_ALU+',fecha_nac,telefono,email,domicilio,apto_fisico,apto_vencimiento,tutor_nombre,tutor_relacion,tutor_telefono,tutor_email,emerg_nombre,emerg_relacion,emerg_telefono').eq('activo',true).order('apellido').order('nombre'));
   else if(tipo==='mesames') pedidos.push(
     sb.from('alumnos').select(XL_ALU).eq('activo',true).order('apellido').order('nombre'),
     asistenciaDesde('2000-01-01', 'alumno_id,fecha'));
   else pedidos.push(
     sb.from('alumnos').select('id,dni,categoria,estado,bloqueado').eq('activo',true),
-    asistenciaDesde(ym+'-01', 'alumno_id,fecha,nombre,apellido,categoria,turno,horario,tarde,motivo_tarde,con_fisico,timestamp', mesShift(ym,1)+'-01'));
+    asistenciaDesde(ym+'-01', 'alumno_id,fecha,nombre,apellido,categoria,turno,horario,tarde,motivo_tarde,con_fisico,timestamp', mesShift(ym,1)+'-01'),
+    sb.from('config_clases').select('nombre,turno_id,hora_inicio,activo'));
   var res;
   try { res = await Promise.all(pedidos); }
   catch(e) { alert('No se pudo bajar el generador de Excel. Revisá la conexión y probá de nuevo.'); return; }
@@ -2663,6 +2692,7 @@ async function _descargarExcel(tipo, ym) {
     return { st:st, primerMes:pri || mesActual };
   };
   var filas, anchos, archivo;
+  if(tipo!=='asistencias' && !alus.length) { showToast('No hay alumnos'+(sufijo ? ' para'+sufijo.replace(/ - /g,' ') : '')); return; }
 
   if(tipo==='padron') {
     var S = stats(res[2].data).st, ultGrad = {}, ymPrev = mesShift(mesActual,-1);
@@ -2687,13 +2717,13 @@ async function _descargarExcel(tipo, ym) {
   }
   else if(tipo==='contacto') {
     filas = [['Apellido','Nombre','DNI','Edad','Categoría','Estado','Teléfono','Email','Domicilio','Apto físico','Vence apto',
-      'Tutor','Relación tutor','Teléfono tutor','Emergencia','Relación emergencia','Teléfono emergencia']];
+      'Tutor','Relación tutor','Teléfono tutor','Email tutor','Emergencia','Relación emergencia','Teléfono emergencia']];
     alus.forEach(function(a){
       filas.push(base(a).concat([edadEn(a.fecha_nac, fechaHoy), xTxt(capTxt(a.categoria||'')), xTxt(estadoTxt(a)),
         xTxt(a.telefono), xTxt(a.email), xTxt(a.domicilio), siNo(a.apto_fisico), xFecha(a.apto_vencimiento),
-        xTxt(a.tutor_nombre), xTxt(a.tutor_relacion), xTxt(a.tutor_telefono), xTxt(a.emerg_nombre), xTxt(a.emerg_relacion), xTxt(a.emerg_telefono)]));
+        xTxt(a.tutor_nombre), xTxt(a.tutor_relacion), xTxt(a.tutor_telefono), xTxt(a.tutor_email), xTxt(a.emerg_nombre), xTxt(a.emerg_relacion), xTxt(a.emerg_telefono)]));
     });
-    anchos = [16,16,11,6,10,14,15,24,24,10,12,18,12,15,18,12,15];
+    anchos = [16,16,11,6,10,14,15,24,24,10,12,18,12,15,24,18,12,15];
     archivo = 'Kaizo Contacto y salud '+ymdLocal(new Date()).split('-').reverse().join('-');
   }
   else if(tipo==='mesames') {
@@ -2724,14 +2754,21 @@ async function _descargarExcel(tipo, ym) {
     });
     var am = delGrupo.sort(function(a,b){ return (a.fecha+(a.timestamp||'')).localeCompare(b.fecha+(b.timestamp||'')); });
     if(!am.length) { showToast('Sin asistencias en '+mesLabel(ym)+(sufijo ? ' para'+sufijo.replace(/ - /g,' ') : '')); return; }
-    filas = [['Fecha','Hora','Apellido','Nombre','DNI','Categoría','Turno','Horario','Tarde','Motivo','Con físico','Estado hoy']];
+    // Nombre de la clase en vez del código del turno (prefiere la clase activa si hay dos iguales)
+    var claseDe = function(x){
+      var hi = String(x.horario||'').slice(0,5);
+      var cs = (res[3].data||[]).filter(function(c){ return c.turno_id===x.turno && c.hora_inicio===hi; });
+      var c = cs.filter(function(c){ return c.activo; })[0] || cs[0];
+      return c ? c.nombre : capTxt(x.turno||'');
+    };
+    filas = [['Fecha','Hora','Apellido','Nombre','DNI','Categoría','Clase','Horario','Tarde','Motivo','Con físico','Estado hoy']];
     am.forEach(function(x){
-      var hora = x.timestamp ? new Date(x.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false}) : '';
+      var hora = x.timestamp ? new Date(x.timestamp).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'America/Argentina/Buenos_Aires'}) : '';
       filas.push([xFecha(x.fecha), xTxt(hora), xTxt(x.apellido), xTxt(x.nombre), xTxt(dniDe[x.alumno_id]||''), xTxt(capTxt(x.categoria||'')),
-        xTxt(x.turno), xTxt(x.horario), siNo(x.tarde), xTxt(x.motivo_tarde), siNo(x.con_fisico),
+        xTxt(claseDe(x)), xTxt(x.horario), siNo(x.tarde), xTxt(x.motivo_tarde), siNo(x.con_fisico),
         xTxt(aluDe[x.alumno_id] ? estadoTxt(aluDe[x.alumno_id]) : '')]);
     });
-    anchos = [12,7,16,16,11,10,10,14,7,24,10,14];
+    anchos = [12,7,16,16,11,10,18,14,7,24,10,14];
     archivo = 'Kaizo Asistencias '+mesLabel(ym);
   }
 
