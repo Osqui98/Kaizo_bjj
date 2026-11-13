@@ -405,7 +405,12 @@ input.sw:checked::after{transform:translateX(18px)}
 
 const SB_URL = 'https://whaqfschfxztiuhvqwam.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndoYXFmc2NoZnh6dGl1aHZxd2FtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTM0NjgsImV4cCI6MjA5NzYyOTQ2OH0.cKmCBX-BrvdveqSdFvbDH0dOyOB-cPPwYRvEiPpDpRs';
-const sb = supabase.createClient(SB_URL, SB_KEY);
+// El kiosco SIEMPRE entra como público (anon). Si no, usaría la sesión de Google que haya
+// quedado guardada en el celular por haber entrado a admin.html: con una cuenta no autorizada
+// la base devuelve 0 clases (sin error) y el alumno ve "Hoy no hay clases" toda la semana.
+const sb = supabase.createClient(SB_URL, SB_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'kaizo-kiosco' }
+});
 
 // Escape de HTML para prevenir XSS — aplica en TODOS los datos de usuario insertados en innerHTML
 function escHTML(s) {
